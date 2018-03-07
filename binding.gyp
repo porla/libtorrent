@@ -29,7 +29,9 @@
             "sources":
             [
                 "./src/porla-libtorrent.cc",
-                "./src/session.cc"
+                "./src/session.cc",
+                "./src/torrent_info.cc",
+                "./src/torrent_handle.cc"
             ],
             "defines": [
                 "BOOST_ALL_NO_LIB",

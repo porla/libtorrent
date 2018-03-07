@@ -6,7 +6,7 @@ const session = new lt.session();
 // The torrent_handle representing our
 // added torrent.
 const handle = session.add_torrent({
-    save_path: "./",
+    save_path: "C:\\tmp",
     ti: new lt.torrent_info(process.argv[2])
 });
 
