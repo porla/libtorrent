@@ -1,6 +1,6 @@
 {
   "name": "@porla/libtorrent",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Rasterbar-libtorrent bindings for Node.js (>= 8.6).",
   "main": "index.js",
   "scripts": {
