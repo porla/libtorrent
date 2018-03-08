@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node-gyp build",
     "clean": "node-gyp clean",
-    "configure": "node-gyp configure --msvs_version=2015"
+    "configure": "node-gyp configure"
   },
   "author": "",
   "license": "MIT",

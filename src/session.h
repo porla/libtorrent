@@ -21,6 +21,10 @@ namespace porla
         static napi_value New(napi_env env, napi_callback_info callback_info);
 
         static napi_value AddTorrent(napi_env env, napi_callback_info callback_info);
+        static napi_value PopAlerts(napi_env env, napi_callback_info callback_info);
+        static napi_value WaitForAlert(napi_env env, napi_callback_info callback_info);
+        static void WaitForAlertComplete(napi_env env, napi_status status, void* data);
+        static void WaitForAlertExecute(napi_env env, void* data);
 
         static napi_ref constructor;
 

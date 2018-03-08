@@ -3,6 +3,20 @@ const lt = require('../');
 // Construct a session. Hold on to this.
 const session = new lt.session();
 
+function alertHandler(err, result) {
+    if (result) {
+        const alerts = session.pop_alerts();
+
+        for (const alert of alerts) {
+            console.log(alert);
+        }
+    }
+
+    session.wait_for_alert(500, alertHandler);
+}
+
+session.wait_for_alert(500, alertHandler);
+
 // The torrent_handle representing our
 // added torrent.
 const handle = session.add_torrent({
