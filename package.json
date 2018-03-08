@@ -8,7 +8,7 @@
     "clean": "node-gyp clean",
     "configure": "node-gyp configure"
   },
-  "author": "",
+  "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",
   "dependencies": {
     "node-gyp": "^3.6.2"
