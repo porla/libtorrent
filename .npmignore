@@ -1,2 +1,4 @@
+binding.gyp
 build/
 examples/
+src/
