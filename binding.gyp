@@ -25,7 +25,7 @@
 
     "targets": [
         {
-            "target_name": "<(module_name)",
+            "target_name": "porla_libtorrent",
             "sources":
             [
                 "./src/porla-libtorrent.cc",
@@ -35,7 +35,6 @@
             ],
             "defines": [
                 "BOOST_ALL_NO_LIB",
-                "NAPI_BUILD_VERSION=<(napi_build_version)",
                 "TORRENT_NO_DEPRECATE",
                 "TORRENT_USE_OPENSSL"
             ],
@@ -90,17 +89,6 @@
                         "$(HOME)/libtorrent/lib/libtorrent-rasterbar.a"
                     ]
                 }]
-            ]
-        },
-        {
-            "target_name": "action_after_build",
-            "type": "none",
-            "dependencies": [ "<(module_name)" ],
-            "copies": [
-                {
-                    "files": [ "<(PRODUCT_DIR)/<(module_name).node" ],
-                    "destination": "<(module_path)"
-                }
             ]
         }
     ]

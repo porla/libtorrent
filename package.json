@@ -4,29 +4,15 @@
   "description": "Rasterbar-libtorrent bindings for Node.js (>= 8.6).",
   "main": "index.js",
   "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build",
-    "package": "node-pre-gyp package",
-    "publish": "node-pre-gyp publish"
+    "install": "node-gyp-build",
+    "prebuildify": "prebuildify --all --napi"
   },
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",
-  "dependencies": {
-    "node-pre-gyp": "^0.9.0"
-  },
   "devDependencies": {
-    "aws-sdk": "^2.209.0"
+    "prebuildify": "^2.7.0"
   },
-  "bundledDependencies": [
-    "node-pre-gyp"
-  ],
-  "binary": {
-    "module_name": "porla_libtorrent",
-    "module_path": "./lib/binding/napi-v{napi_build_version}",
-    "host": "https://porla-binaries.s3.amazonaws.com",
-    "remote_path": "./{module_name}/v{version}",
-    "package_name": "{platform}-{arch}-napi-v{napi_build_version}.tar.gz",
-    "napi_versions": [
-      1
-    ]
+  "dependencies": {
+    "node-gyp-build": "^3.4.0"
   }
 }
