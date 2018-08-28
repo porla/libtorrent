@@ -20,7 +20,7 @@ session.wait_for_alert(500, alertHandler);
 // The torrent_handle representing our
 // added torrent.
 const handle = session.add_torrent({
-    save_path: "C:\\tmp",
+    save_path: "./",
     ti: new lt.torrent_info(process.argv[2])
 });
 

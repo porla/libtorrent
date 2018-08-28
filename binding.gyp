@@ -85,8 +85,8 @@
                 },
                     'OS=="linux"', {
                     "libraries": [
-                        "$(HOME)/boost/lib/libboost_system.a",
-                        "$(HOME)/libtorrent/lib/libtorrent-rasterbar.a"
+                        "/usr/local/lib/libboost_system.a",
+                        "/usr/local/lib/libtorrent-rasterbar.a"
                     ]
                 }]
             ]

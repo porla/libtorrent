@@ -12,7 +12,8 @@ TorrentInfo::TorrentInfo(napi_env env, std::string const& filename)
     : env_(env),
     wrapper_(nullptr)
 {
-    ti_ = std::make_unique<libtorrent::torrent_info>(filename);
+    libtorrent::error_code ec;
+    ti_ = std::make_unique<libtorrent::torrent_info>(filename, ec);
 }
 
 void TorrentInfo::Destructor(napi_env env, void* native_obj, void* finalize_hint)
@@ -22,11 +23,6 @@ void TorrentInfo::Destructor(napi_env env, void* native_obj, void* finalize_hint
 
 napi_status TorrentInfo::Init(napi_env env, napi_value exports)
 {
-    napi_property_descriptor properties[] =
-    {
-        nullptr
-    };
-
     napi_status status;
     napi_value cons;
 
