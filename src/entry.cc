@@ -17,6 +17,52 @@ libtorrent::entry Entry::FromJson(napi_env env, napi_value value)
         return libtorrent::entry::integer_type(res);
     }
 
+    if (type == napi_object)
+    {
+        libtorrent::entry::dictionary_type dict;
+        Value v(env, value);
+        Value properties = v.GetPropertyNames();
+
+        for (uint32_t i = 0; i < properties.GetArrayLength(); i++)
+        {
+            Value property = properties.GetArrayItem(i);
+
+            napi_value item;
+            napi_get_named_property(env, value, property.ToString().c_str(), &item);
+
+            dict.insert({ property.ToString(), FromJson(env, item) });
+        }
+
+        return dict;
+    }
+
+    if (type == napi_string)
+    {
+        Value v(env, value);
+        return libtorrent::entry::string_type(v.ToString());
+    }
+
+    bool isArray;
+    napi_is_array(env, value, &isArray);
+
+    if (isArray)
+    {
+        libtorrent::entry::list_type list;
+
+        uint32_t len;
+        napi_get_array_length(env, value, &len);
+
+        for (uint32_t i = 0; i < len; i++)
+        {
+            napi_value item;
+            napi_get_element(env, value, i, &item);
+
+            list.push_back(FromJson(env, item));
+        }
+
+        return list;
+    }
+
     return libtorrent::entry();
 }
 

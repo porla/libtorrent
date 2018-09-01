@@ -19,65 +19,6 @@ using porla::Session;
 
 napi_ref Session::constructor;
 
-static libtorrent::entry ValueToEntry(napi_env env, napi_value value)
-{
-    napi_valuetype type;
-    napi_typeof(env, value, &type);
-
-    bool isArray;
-    napi_is_array(env, value, &isArray);
-
-    if (type == napi_valuetype::napi_number)
-    {
-        int64_t v;
-        napi_get_value_int64(env, value, &v);
-        return libtorrent::entry(v);
-    }
-
-    if (type == napi_valuetype::napi_object)
-    {
-        libtorrent::entry::dictionary_type dict;
-
-        porla::Value v(env, value);
-        porla::Value keys = v.GetPropertyNames();
-
-        for (uint32_t i = 0; i < keys.GetArrayLength(); i++)
-        {
-            porla::Value key = keys.GetArrayItem(i);
-
-            napi_value item;
-            napi_get_named_property(env, value, key.ToString().c_str(), &item);
-
-            dict.insert({ key.ToString(), ValueToEntry(env, item) });
-        }
-
-        return dict;
-    }
-
-    if (type == napi_valuetype::napi_string)
-    {
-        porla::Value v(env, value);
-        return libtorrent::entry(v.ToString());
-    }
-
-    if (isArray)
-    {
-        libtorrent::entry::list_type list;
-        porla::Value v(env, value);
-
-        for (uint32_t i = 0; i < v.GetArrayLength(); i++)
-        {
-            napi_value element;
-            napi_get_element(env, value, i, &element);
-            list.push_back(ValueToEntry(env, element));
-        }
-
-        return list;
-    }
-
-    return libtorrent::entry();
-}
-
 napi_status LOG(napi_env env, napi_value val)
 {
     napi_value global;
@@ -150,12 +91,12 @@ napi_status Session::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("is_valid", IsValid),
         PORLA_METHOD_DESCRIPTOR("listen_port", ListenPort),
         PORLA_METHOD_DESCRIPTOR("load_state", LoadState),
-        /*PORLA_METHOD_DESCRIPTOR("pause", Pause),*/
+        PORLA_METHOD_DESCRIPTOR("pause", Pause),
         PORLA_METHOD_DESCRIPTOR("pop_alerts", PopAlerts),
-        /*PORLA_METHOD_DESCRIPTOR("post_dht_stats", PostDhtStats),
+        PORLA_METHOD_DESCRIPTOR("post_dht_stats", PostDhtStats),
         PORLA_METHOD_DESCRIPTOR("post_session_stats", PostSessionStats),
         PORLA_METHOD_DESCRIPTOR("post_torrent_updates", PostTorrentUpdates),
-        PORLA_METHOD_DESCRIPTOR("refresh_torrent_status", RefreshTorrentStatus),
+        /*PORLA_METHOD_DESCRIPTOR("refresh_torrent_status", RefreshTorrentStatus),*/
         PORLA_METHOD_DESCRIPTOR("remove_torrent", RemoveTorrent),
         PORLA_METHOD_DESCRIPTOR("reopen_network_sockets", ReopenNetworkSockets),
         PORLA_METHOD_DESCRIPTOR("resume", Resume),
@@ -166,7 +107,7 @@ napi_status Session::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("set_peer_class_filter", SetPeerClassFilter),
         PORLA_METHOD_DESCRIPTOR("set_peer_class_type_filter", SetPeerClassTypeFilter),
         PORLA_METHOD_DESCRIPTOR("set_port_filter", SetPortFilter),
-        PORLA_METHOD_DESCRIPTOR("ssl_listen_port", SslListenPort),*/
+        PORLA_METHOD_DESCRIPTOR("ssl_listen_port", SslListenPort),
         PORLA_METHOD_DESCRIPTOR("wait_for_alert", WaitForAlert)
     };
 
@@ -761,6 +702,13 @@ napi_value Session::LoadState(napi_env env, napi_callback_info cbinfo)
     return nullptr;
 }
 
+napi_value Session::Pause(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+    info.wrap->session_->pause();
+    return nullptr;
+}
+
 napi_value Session::PopAlerts(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<Session>(env, cbinfo);
@@ -792,6 +740,205 @@ napi_value Session::PopAlerts(napi_env env, napi_callback_info cbinfo)
         // Add alert to array at index
         NAPI_CALL(env, napi_set_element(env, res, i, obj));
     }
+
+    return res;
+}
+
+napi_value Session::PostDhtStats(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+    info.wrap->session_->post_dht_stats();
+    return nullptr;
+}
+
+napi_value Session::PostSessionStats(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+    info.wrap->session_->post_session_stats();
+    return nullptr;
+}
+
+napi_value Session::PostTorrentUpdates(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+    //TODO: flags
+    info.wrap->session_->post_torrent_updates();
+    return nullptr;
+}
+
+napi_value Session::RemoveTorrent(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    Value v(env, info.args[0]);
+    TorrentHandle* th = v.Unwrap<TorrentHandle>();
+
+    // TODO: flags
+    info.wrap->session_->remove_torrent(th->Wrapped());
+
+    return nullptr;
+}
+
+napi_value Session::ReopenNetworkSockets(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+    //TODO: flags
+    info.wrap->session_->reopen_network_sockets();
+    return nullptr;
+}
+
+napi_value Session::Resume(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+    //TODO: flags
+    info.wrap->session_->resume();
+    return nullptr;
+}
+
+napi_value Session::SaveState(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+    //TODO: flags
+    libtorrent::entry e;
+    info.wrap->session_->save_state(e);
+
+    return Entry::ToJson(env, e);
+}
+
+napi_value Session::SetDhtSettings(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    Value v(env, info.args[0]);
+
+    libtorrent::dht::dht_settings dht;
+
+    if (v.HasNamedProperty("aggressive_lookups"))
+    {
+        dht.aggressive_lookups = v.GetNamedProperty("aggressive_lookups").ToBool();
+    }
+
+    // TODO: all dht settings
+
+    info.wrap->session_->set_dht_settings(dht);
+
+    return nullptr;
+}
+
+napi_value Session::SetIpFilter(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    Value v(env, info.args[0]);
+    IpFilter* ipf = v.Unwrap<IpFilter>();
+
+    info.wrap->session_->set_ip_filter(ipf->Wrapped());
+
+    return nullptr;
+}
+
+napi_value Session::SetPeerClass(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+
+    if (info.args.size() != 2)
+    {
+        napi_throw_error(env, nullptr, "Expected 2 arguments");
+        return nullptr;
+    }
+
+
+    Value cid(env, info.args[0]);
+    Value v(env, info.args[1]);
+
+    libtorrent::peer_class_info pci;
+    v.GetNamedProperty("connection_limit_factor", &pci.connection_limit_factor);
+    v.GetNamedProperty("download_limit", &pci.download_limit);
+    v.GetNamedProperty("download_priority", &pci.download_priority);
+    v.GetNamedProperty("ignore_unchoke_slots", &pci.ignore_unchoke_slots);
+    v.GetNamedProperty("label", &pci.label);
+    v.GetNamedProperty("upload_limit", &pci.upload_limit);
+    v.GetNamedProperty("upload_priority", &pci.upload_priority);
+
+    info.wrap->session_->set_peer_class(
+        static_cast<libtorrent::peer_class_t>(cid.ToInt32()),
+        pci);
+
+    return nullptr;
+}
+
+napi_value Session::SetPeerClassFilter(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    Value v(env, info.args[0]);
+    IpFilter* ipf = v.Unwrap<IpFilter>();
+
+    info.wrap->session_->set_peer_class_filter(ipf->Wrapped());
+
+    return nullptr;
+}
+
+napi_value Session::SetPeerClassTypeFilter(napi_env env, napi_callback_info cbinfo)
+{
+    // TODO
+    napi_throw_error(env, nullptr, "Not implemented");
+    return nullptr;
+}
+
+napi_value Session::SetPortFilter(napi_env env, napi_callback_info cbinfo)
+{
+    // TODO
+    napi_throw_error(env, nullptr, "Not implemented");
+    return nullptr;
+
+    /*auto info = UnwrapCallback<Session>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    info.wrap->session_->set_port_filter()*/
+}
+
+napi_value Session::SslListenPort(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);   
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    napi_value res;
+    napi_create_int32(env, info.wrap->session_->ssl_listen_port(), &res);
 
     return res;
 }

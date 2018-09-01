@@ -11,6 +11,7 @@ namespace porla
     public:
         static napi_status Init(napi_env env, napi_value exports);
         static napi_value New(napi_env env, napi_callback_info cbinfo);
+        libtorrent::ip_filter& Wrapped();
 
         static napi_ref constructor;
 

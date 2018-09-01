@@ -34,6 +34,43 @@ namespace porla
         Value GetArrayItem(uint32_t idx);
         uint32_t GetArrayLength();
         Value GetNamedProperty(const char* propertyName);
+
+        bool GetNamedProperty(const char* propertyName, bool* target)
+        {
+            if (!HasNamedProperty(propertyName))
+            {
+                return false;
+            }
+
+            auto v = GetNamedProperty(propertyName);
+            *target = v.ToBool();
+            return true;
+        }
+
+        bool GetNamedProperty(const char* propertyName, int32_t* target)
+        {
+            if (!HasNamedProperty(propertyName))
+            {
+                return false;
+            }
+
+            auto v = GetNamedProperty(propertyName);
+            *target = v.ToInt32();
+            return true;
+        }
+
+        bool GetNamedProperty(const char* propertyName, std::string* target)
+        {
+            if (!HasNamedProperty(propertyName))
+            {
+                return false;
+            }
+
+            auto v = GetNamedProperty(propertyName);
+            *target = v.ToString();
+            return true;
+        }
+
         Value GetPropertyNames();
         bool HasNamedProperty(const char* propertyName);
         void SetNamedProperty(const char* propertyName, bool value);

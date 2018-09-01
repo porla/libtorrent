@@ -12,6 +12,11 @@ IpFilter::IpFilter(libtorrent::ip_filter const& filter)
     ipf_ = std::make_unique<libtorrent::ip_filter>(filter);
 }
 
+libtorrent::ip_filter& IpFilter::Wrapped()
+{
+    return *ipf_.get();
+}
+
 void IpFilter::Destructor(napi_env env, void* native_obj, void* finalize_hint)
 {
     delete static_cast<IpFilter*>(native_obj);
