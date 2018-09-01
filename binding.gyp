@@ -28,10 +28,17 @@
             "target_name": "porla_libtorrent",
             "sources":
             [
+                "./src/add_torrent_params.cc",
+                "./src/bdecode.cc",
+                "./src/common.cc",
+                "./src/entry.cc",
+                "./src/ip_filter.cc",
                 "./src/porla-libtorrent.cc",
                 "./src/session.cc",
+                "./src/settings_pack.cc",
                 "./src/torrent_info.cc",
-                "./src/torrent_handle.cc"
+                "./src/torrent_handle.cc",
+                "./src/torrent_status.cc"
             ],
             "defines": [
                 "BOOST_ALL_NO_LIB",

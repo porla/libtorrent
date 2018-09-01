@@ -1,7 +1,8 @@
 # Node.js bindings for Rasterbar-libtorrent
 
 This library provides (mostly) complete bindings against Rasterbar-libtorrent
-compiled with SSL support.
+compiled with SSL support. It tries to map one-to-one against the Rastebar-
+libtorrent API.
 
 ***Warning:** The library is currently under development and should not be used
 in a production environment.*

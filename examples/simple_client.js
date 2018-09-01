@@ -1,19 +1,28 @@
 const lt = require('../');
+const fs = require('fs');
 
 // Construct a session. Hold on to this.
-const session = new lt.session();
+const session = new lt.session({
+    alert_mask: 4294967295,
+    enable_dht: true
+});
 
 function alertHandler(err, result) {
     if (result) {
         const alerts = session.pop_alerts();
 
         for (const alert of alerts) {
-            console.log(alert);
+            // console.log(alert.message);
         }
     }
 
     session.wait_for_alert(500, alertHandler);
 }
+
+fs.readFile(process.argv[2], (err, buf) => {
+    const meta = lt.bdecode(buf);
+    console.log(meta);
+});
 
 session.wait_for_alert(500, alertHandler);
 
@@ -32,12 +41,7 @@ function update() {
         return;
     }
 
-    console.log('%s [%s]: rate: %d, state: %s, progress: %d',
-        status.name,
-        status.info_hash,
-        status.download_rate,
-        status.state,
-        status.progress);
+    console.log(session.listen_port());
 
     if (status.progress >= 1) {
         console.log('finished');

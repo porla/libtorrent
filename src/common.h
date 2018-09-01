@@ -1,5 +1,100 @@
+#pragma once
+
+#include <node_api.h>
+
+#include <string>
+#include <vector>
+
 // Empty value so that macros here are able to return NULL or void
 #define NAPI_RETVAL_NOTHING  // Intentionally blank #define
+
+#define PORLA_METHOD_DESCRIPTOR(name, function) \
+    { name, nullptr, function, nullptr, nullptr, 0, napi_default, 0 }
+
+#define PORLA_GETTER_DESCRIPTOR(name, function) \
+    { name, nullptr, nullptr, function, nullptr, 0, napi_enumerable, 0 }
+
+namespace porla
+{
+    template<typename T>
+    struct Unwrapped
+    {
+        napi_value env;
+        napi_value this_arg;
+        napi_value new_target;
+        std::vector<napi_value> args;
+        T* wrap;
+    };
+
+    class Value
+    {
+    public:
+        Value(napi_env env, napi_value val);
+
+        Value GetArrayItem(uint32_t idx);
+        uint32_t GetArrayLength();
+        Value GetNamedProperty(const char* propertyName);
+        Value GetPropertyNames();
+        bool HasNamedProperty(const char* propertyName);
+        void SetNamedProperty(const char* propertyName, bool value);
+        void SetNamedProperty(const char* propertyName, int32_t value);
+        void SetNamedProperty(const char* propertyName, int64_t value);
+        void SetNamedProperty(const char* propertyName, std::string const& value);
+        void SetNamedProperty(const char* propertyName, uint32_t value);
+        bool ToBool();
+        int32_t ToInt32();
+        std::string ToString();
+        uint32_t ToUInt32();
+
+        template<typename T>
+        T* Unwrap()
+        {
+            T* val;
+            napi_unwrap(env_, value_, reinterpret_cast<void**>(&val));
+            return val;
+        }
+
+    private:
+        napi_env env_;
+        napi_value value_;
+    };
+
+    template<typename T>
+    static Unwrapped<T> UnwrapCallback(napi_env env, napi_callback_info cbinfo)
+    {
+        Unwrapped<T> unwrapped;
+
+        // Get arg count
+        size_t argCount = 0;
+        napi_get_cb_info(env, cbinfo, &argCount, nullptr, nullptr, nullptr);
+
+        // Resize args to fit
+        unwrapped.args.resize(argCount);
+
+        napi_get_new_target(env, cbinfo, &unwrapped.new_target);
+        napi_get_cb_info(env, cbinfo, &argCount, &unwrapped.args[0], &unwrapped.this_arg, nullptr);
+        napi_unwrap(env, unwrapped.this_arg, reinterpret_cast<void**>(&unwrapped.wrap));
+
+        return unwrapped;
+    }
+
+    template<typename T, typename U>
+    static napi_value WrapExternal(napi_env env, U* data)
+    {
+        napi_value external;
+        napi_create_external(env, data, nullptr, nullptr, &external);
+
+        napi_value cons;
+        napi_get_reference_value(env, T::constructor, &cons);
+
+        napi_value argv[] = { external };
+        napi_value instance;
+
+        napi_new_instance(env, cons, 1, argv, &instance);
+
+        return instance;
+    }
+}
 
 #define GET_AND_THROW_LAST_ERROR(env)                                    \
   do {                                                                   \
