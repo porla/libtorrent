@@ -13,7 +13,7 @@ export declare interface add_torrent_params {
 export declare interface alert {
     message: string;
     type: number;
-    what: string;
+    what: 'read_piece' | 'scrape_reply';
 }
 
 export declare interface session_settings {

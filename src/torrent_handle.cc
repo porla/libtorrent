@@ -100,7 +100,7 @@ napi_status TorrentHandle::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("get_download_queue", GetDownloadQueue),
         PORLA_METHOD_DESCRIPTOR("get_file_priorities", GetFilePriorities),
         PORLA_METHOD_DESCRIPTOR("get_peer_info", GetPeerInfo),
-        /*PORLA_METHOD_DESCRIPTOR("get_piece_priorities", GetPiecePriorities),
+        PORLA_METHOD_DESCRIPTOR("get_piece_priorities", GetPiecePriorities),
         PORLA_METHOD_DESCRIPTOR("have_piece", HavePiece),
         PORLA_METHOD_DESCRIPTOR("id", Id),
         PORLA_METHOD_DESCRIPTOR("info_hash", InfoHash),
@@ -108,21 +108,20 @@ napi_status TorrentHandle::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("max_connections", MaxConnections),
         PORLA_METHOD_DESCRIPTOR("max_uploads", MaxUploads),
         PORLA_METHOD_DESCRIPTOR("move_storage", MoveStorage),
-        PORLA_METHOD_DESCRIPTOR("name", Name),
         PORLA_METHOD_DESCRIPTOR("need_save_resume_data", NeedSaveResumeData),
         PORLA_METHOD_DESCRIPTOR("pause", Pause),
         PORLA_METHOD_DESCRIPTOR("piece_availability", PieceAvailability),
         PORLA_METHOD_DESCRIPTOR("piece_priority", PiecePriority),
-        PORLA_METHOD_DESCRIPTOR("prioritize_files", PrioritizeFiles),
+        /*PORLA_METHOD_DESCRIPTOR("prioritize_files", PrioritizeFiles),
         PORLA_METHOD_DESCRIPTOR("prioritize_pieces", PrioritizePieces),
         PORLA_METHOD_DESCRIPTOR("queue_position", QueuePosition),
         PORLA_METHOD_DESCRIPTOR("queue_position_bottom", QueuePositionBottom),
         PORLA_METHOD_DESCRIPTOR("queue_position_down", QueuePositionDown),
         PORLA_METHOD_DESCRIPTOR("queue_position_set", QueuePositionSet),
         PORLA_METHOD_DESCRIPTOR("queue_position_top", QueuePositionTop),
-        PORLA_METHOD_DESCRIPTOR("queue_position_up", QueuePositionUp),
+        PORLA_METHOD_DESCRIPTOR("queue_position_up", QueuePositionUp),*/
         PORLA_METHOD_DESCRIPTOR("read_piece", ReadPiece),
-        PORLA_METHOD_DESCRIPTOR("remove_http_seed", RemoveHttpSeed),
+        /*PORLA_METHOD_DESCRIPTOR("remove_http_seed", RemoveHttpSeed),
         PORLA_METHOD_DESCRIPTOR("remove_url_seed", RemoveUrlSeed),
         PORLA_METHOD_DESCRIPTOR("rename_file", RenameFile),
         PORLA_METHOD_DESCRIPTOR("replace_trackers", ReplaceTrackers),
@@ -590,20 +589,211 @@ napi_value TorrentHandle::GetPeerInfo(napi_env env, napi_callback_info cbinfo)
     return arr;
 }
 
+napi_value TorrentHandle::GetPiecePriorities(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+    auto prios = info.wrap->th_->get_piece_priorities();
+
+    napi_value arr;
+    napi_create_array_with_length(env, prios.size(), &arr);
+
+    for (size_t i = 0; i < prios.size(); i++)
+    {
+        napi_value val;
+        napi_create_uint32(env, static_cast<uint8_t>(prios.at(i)), &val);
+        napi_set_element(env, arr, i, val);
+    }
+
+    return arr;
+}
+
+napi_value TorrentHandle::HavePiece(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    Value v(env, info.args[0]);
+    libtorrent::piece_index_t idx = static_cast<libtorrent::piece_index_t>(v.ToUInt32());
+
+    napi_value res;
+    napi_get_boolean(env, info.wrap->th_->have_piece(idx), &res);
+
+    return res;
+}
+
+napi_value TorrentHandle::Id(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    napi_value res;
+    napi_create_uint32(env, info.wrap->th_->id(), &res);
+
+    return res;
+}
+
+napi_value TorrentHandle::InfoHash(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    std::stringstream ss;
+    ss << info.wrap->th_->info_hash();
+
+    napi_value res;
+    napi_create_string_utf8(env, ss.str().c_str(), NAPI_AUTO_LENGTH, &res);
+
+    return res;
+}
+
+napi_value TorrentHandle::IsValid(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    napi_value res;
+    napi_get_boolean(env, info.wrap->th_->is_valid(), &res);
+
+    return res;
+}
+
+napi_value TorrentHandle::MaxConnections(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    napi_value res;
+    napi_create_int32(env, info.wrap->th_->max_connections(), &res);
+
+    return res;
+}
+
+napi_value TorrentHandle::MaxUploads(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    napi_value res;
+    napi_create_int32(env, info.wrap->th_->max_uploads(), &res);
+
+    return res;
+}
+
+napi_value TorrentHandle::MoveStorage(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    // TODO flags
+
+    Value v(env, info.args[0]);
+
+    info.wrap->th_->move_storage(v.ToString());
+
+    return nullptr;
+}
+
+napi_value TorrentHandle::NeedSaveResumeData(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    napi_value res;
+    napi_get_boolean(env, info.wrap->th_->need_save_resume_data(), &res);
+
+    return res;
+}
+
+napi_value TorrentHandle::Pause(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+    // TODO flags
+    info.wrap->th_->pause();
+    return nullptr;
+}
+
+napi_value TorrentHandle::PieceAvailability(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    std::vector<int> avail;
+    info.wrap->th_->piece_availability(avail);
+
+    napi_value arr;
+    napi_create_array_with_length(env, avail.size(), &arr);
+
+    for (size_t i = 0; i < avail.size(); i++)
+    {
+        napi_value item;
+        napi_create_int32(env, avail.at(i), &item);
+        napi_set_element(env, arr, i, item);
+    }
+
+    return arr;
+}
+
+napi_value TorrentHandle::PiecePriority(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    switch (info.args.size())
+    {
+        case 1:
+        {
+            Value idx(env, info.args[0]);
+            auto prio = info.wrap->th_->piece_priority(libtorrent::piece_index_t(idx.ToInt32()));
+
+            napi_value val;
+            napi_create_int32(env, static_cast<uint8_t>(prio), &val);
+
+            return val;
+        }
+
+        case 2:
+        {
+            Value idx(env, info.args[0]);
+            Value prio(env, info.args[1]);
+
+            info.wrap->th_->piece_priority(
+                libtorrent::piece_index_t{ idx.ToInt32() },
+                libtorrent::download_priority_t{ static_cast<uint8_t>(prio.ToInt32()) });
+            break;
+        }
+
+        default:
+            napi_throw_error(env, nullptr, "Expected 1 or 2 arguments");
+            break;
+    }
+
+    return nullptr;
+}
+
+napi_value TorrentHandle::ReadPiece(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    Value v(env, info.args[0]);
+    libtorrent::piece_index_t idx = static_cast<libtorrent::piece_index_t>(v.ToInt32());
+
+    info.wrap->th_->read_piece(idx);
+
+    return nullptr;
+}
+
 napi_value TorrentHandle::Status(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
     libtorrent::torrent_status ts = info.wrap->th_->status();
 
-    napi_value external;
-    napi_create_external(env, &ts, nullptr, nullptr, &external);
-
-    napi_value cons;
-    NAPI_CALL(env, napi_get_reference_value(env, TorrentStatus::constructor, &cons));
-
-    napi_value argv[] = { external };
-    napi_value instance;
-    NAPI_CALL(env, napi_new_instance(env, cons, 1, argv, &instance));
-
-    return instance;
+    return WrapExternal<TorrentStatus, libtorrent::torrent_status>(env, &ts);
 }

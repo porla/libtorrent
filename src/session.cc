@@ -8,6 +8,7 @@
 #include <libtorrent/torrent_info.hpp>
 
 #include "add_torrent_params.h"
+#include "alert.h"
 #include "common.h"
 #include "entry.h"
 #include "ip_filter.h"
@@ -721,24 +722,8 @@ napi_value Session::PopAlerts(napi_env env, napi_callback_info cbinfo)
 
     for (size_t i = 0; i < alerts.size(); i++)
     {
-        libtorrent::alert* alert = alerts.at(i);
-
-        napi_value obj;
-        napi_value message;
-        napi_value type;
-        napi_value what;
-
-        NAPI_CALL(env, napi_create_object(env, &obj));
-        NAPI_CALL(env, napi_create_string_utf8(env, alert->message().c_str(), NAPI_AUTO_LENGTH, &message));
-        NAPI_CALL(env, napi_create_int32(env, alert->type(), &type));
-        NAPI_CALL(env, napi_create_string_utf8(env, alert->what(), NAPI_AUTO_LENGTH, &what));
-
-        NAPI_CALL(env, napi_set_named_property(env, obj, "message", message));
-        NAPI_CALL(env, napi_set_named_property(env, obj, "type", type));
-        NAPI_CALL(env, napi_set_named_property(env, obj, "what", what));
-
-        // Add alert to array at index
-        NAPI_CALL(env, napi_set_element(env, res, i, obj));
+        napi_value alert = Alert::ToJson(env, alerts.at(i));
+        napi_set_element(env, res, i, alert);
     }
 
     return res;

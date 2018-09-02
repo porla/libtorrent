@@ -29,6 +29,7 @@
             "sources":
             [
                 "./src/add_torrent_params.cc",
+                "./src/alert.cc",
                 "./src/bdecode.cc",
                 "./src/common.cc",
                 "./src/entry.cc",

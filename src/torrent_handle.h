@@ -51,7 +51,6 @@ namespace porla
         static napi_value MaxConnections(napi_env env, napi_callback_info callback_info);
         static napi_value MaxUploads(napi_env env, napi_callback_info callback_info);
         static napi_value MoveStorage(napi_env env, napi_callback_info callback_info);
-        static napi_value Name(napi_env env, napi_callback_info callback_info);
         static napi_value NeedSaveResumeData(napi_env env, napi_callback_info callback_info);
         static napi_value Pause(napi_env env, napi_callback_info callback_info);
         static napi_value PieceAvailability(napi_env env, napi_callback_info callback_info);
