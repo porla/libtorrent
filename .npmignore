@@ -1,4 +1,8 @@
+.vscode/
 binding.gyp
 build/
 examples/
 src/
+vendor/
+
+.gitmodules
