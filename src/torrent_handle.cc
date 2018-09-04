@@ -112,14 +112,14 @@ napi_status TorrentHandle::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("pause", Pause),
         PORLA_METHOD_DESCRIPTOR("piece_availability", PieceAvailability),
         PORLA_METHOD_DESCRIPTOR("piece_priority", PiecePriority),
-        /*PORLA_METHOD_DESCRIPTOR("prioritize_files", PrioritizeFiles),
+        PORLA_METHOD_DESCRIPTOR("prioritize_files", PrioritizeFiles),
         PORLA_METHOD_DESCRIPTOR("prioritize_pieces", PrioritizePieces),
         PORLA_METHOD_DESCRIPTOR("queue_position", QueuePosition),
         PORLA_METHOD_DESCRIPTOR("queue_position_bottom", QueuePositionBottom),
         PORLA_METHOD_DESCRIPTOR("queue_position_down", QueuePositionDown),
         PORLA_METHOD_DESCRIPTOR("queue_position_set", QueuePositionSet),
         PORLA_METHOD_DESCRIPTOR("queue_position_top", QueuePositionTop),
-        PORLA_METHOD_DESCRIPTOR("queue_position_up", QueuePositionUp),*/
+        PORLA_METHOD_DESCRIPTOR("queue_position_up", QueuePositionUp),
         PORLA_METHOD_DESCRIPTOR("read_piece", ReadPiece),
         /*PORLA_METHOD_DESCRIPTOR("remove_http_seed", RemoveHttpSeed),
         PORLA_METHOD_DESCRIPTOR("remove_url_seed", RemoveUrlSeed),
@@ -787,6 +787,108 @@ napi_value TorrentHandle::ReadPiece(napi_env env, napi_callback_info cbinfo)
 
     info.wrap->th_->read_piece(idx);
 
+    return nullptr;
+}
+
+napi_value TorrentHandle::PrioritizeFiles(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    std::vector<lt::download_priority_t> prio;
+    Value v(env, info.args[0]);
+
+    for (uint32_t i = 0; i < v.GetArrayLength(); i++)
+    {
+        prio.push_back(static_cast<lt::download_priority_t>(v.GetArrayItem(i).ToUInt32()));
+    }
+
+    info.wrap->th_->prioritize_files(prio);
+
+    return nullptr;
+}
+
+napi_value TorrentHandle::PrioritizePieces(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    std::vector<lt::download_priority_t> prio;
+    Value v(env, info.args[0]);
+
+    for (uint32_t i = 0; i < v.GetArrayLength(); i++)
+    {
+        prio.push_back(static_cast<lt::download_priority_t>(v.GetArrayItem(i).ToUInt32()));
+    }
+
+    info.wrap->th_->prioritize_pieces(prio);
+
+    return nullptr;
+}
+
+napi_value TorrentHandle::QueuePosition(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    napi_value val;
+    napi_create_int32(env, static_cast<int32_t>(info.wrap->th_->queue_position()), &val);
+
+    return val;
+}
+
+
+napi_value TorrentHandle::QueuePositionBottom(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+    info.wrap->th_->queue_position_bottom();
+    return nullptr;
+}
+
+napi_value TorrentHandle::QueuePositionDown(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+    info.wrap->th_->queue_position_down();
+    return nullptr;
+}
+
+napi_value TorrentHandle::QueuePositionSet(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    Value v(env, info.args[0]);
+
+    info.wrap->th_->queue_position_set(static_cast<lt::queue_position_t>(v.ToInt32()));
+
+    return nullptr;
+}
+
+napi_value TorrentHandle::QueuePositionTop(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+    info.wrap->th_->queue_position_top();
+    return nullptr;
+}
+
+napi_value TorrentHandle::QueuePositionUp(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+    info.wrap->th_->queue_position_up();
     return nullptr;
 }
 

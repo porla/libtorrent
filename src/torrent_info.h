@@ -23,6 +23,7 @@ namespace porla
         static napi_ref constructor;
 
         TorrentInfo(std::string const& filename, libtorrent::error_code& ec);
+        TorrentInfo(const char* buf, size_t len, libtorrent::error_code& ec);
 
         napi_ref wrapper_;
 

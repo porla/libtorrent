@@ -1,6 +1,8 @@
 const lt = require('../');
 const fs = require('fs');
 
+let torrents = {};
+
 // Construct a session. Hold on to this.
 const session = new lt.session({
     alert_mask: 4294967295,
@@ -12,7 +14,11 @@ function alertHandler(err, result) {
         const alerts = session.pop_alerts();
 
         for (const alert of alerts) {
-            console.log(alert.message);
+            switch (alert.what) {
+                case "add_torrent":
+                    torrents[alert.handle.info_hash()] = alert.handle;
+                    break;
+            }
         }
     }
 
@@ -21,14 +27,20 @@ function alertHandler(err, result) {
 
 session.wait_for_alert(500, alertHandler);
 
-const handle = session.add_torrent({
-    save_path: __dirname,
-    ti: new lt.torrent_info(process.argv[2])
+fs.readFile(process.argv[2], (err, buf) => {
+    session.async_add_torrent({
+        save_path: __dirname,
+        ti: new lt.torrent_info(buf)
+    });
 });
 
 function update() {
-    console.log(handle.status().progress);
-    setTimeout(update, 1000);
+    for (const hash in torrents) {
+        const torrent = torrents[hash];
+        const status = torrent.status();
+
+        console.log(status.info_hash, status.progress);
+    }
 }
 
-update();
+setInterval(update, 1000);

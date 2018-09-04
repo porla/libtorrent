@@ -13,16 +13,19 @@ namespace porla
         static napi_value ToJson(napi_env env, libtorrent::alert* alert);
 
     private:
+        static napi_value AddTorrentAlert(napi_env env, libtorrent::add_torrent_alert* alert);
         static napi_value AlertBase(napi_env env, libtorrent::alert* alert);
         static napi_value BlockDownloadingAlert(napi_env env, libtorrent::block_downloading_alert* alert);
         static napi_value BlockFinishedAlert(napi_env env, libtorrent::block_finished_alert* alert);
         static napi_value BlockTimeoutAlert(napi_env env, libtorrent::block_timeout_alert* alert);
         static napi_value DhtReplyAlert(napi_env env, libtorrent::dht_reply_alert* alert);
         static napi_value FileCompletedAlert(napi_env env, libtorrent::file_completed_alert* alert);
+        static napi_value FileErrorAlert(napi_env env, libtorrent::file_error_alert* alert);
         static napi_value FileRenamedAlert(napi_env env, libtorrent::file_renamed_alert* alert);
         static napi_value FileRenameFailedAlert(napi_env env, libtorrent::file_rename_failed_alert* alert);
         static napi_value HashFailedAlert(napi_env env, libtorrent::hash_failed_alert* alert);
         static napi_value InvalidRequestAlert(napi_env env, libtorrent::invalid_request_alert* alert);
+        static napi_value MetadataFailedAlert(napi_env env, libtorrent::metadata_failed_alert* alert);
         static napi_value PeerAlert(napi_env env, libtorrent::peer_alert* alert);
         static napi_value PeerBanAlert(napi_env env, libtorrent::peer_ban_alert* alert);
         static napi_value PeerConnectAlert(napi_env env, libtorrent::peer_connect_alert* alert);

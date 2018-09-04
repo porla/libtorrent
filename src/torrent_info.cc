@@ -14,6 +14,12 @@ TorrentInfo::TorrentInfo(std::string const& filename, libtorrent::error_code& ec
     ti_ = std::make_unique<libtorrent::torrent_info>(filename, ec);
 }
 
+TorrentInfo::TorrentInfo(const char* buf, size_t len, libtorrent::error_code& ec)
+    : wrapper_(nullptr)
+{
+    ti_ = std::make_unique<libtorrent::torrent_info>(buf, len, ec);
+}
+
 void TorrentInfo::Destructor(napi_env env, void* native_obj, void* finalize_hint)
 {
     delete static_cast<TorrentInfo*>(native_obj);
@@ -55,6 +61,7 @@ napi_value TorrentInfo::New(napi_env env, napi_callback_info cbinfo)
     {
     case napi_valuetype::napi_string:
     {
+        Console::Log(env, info.args[0]);
         Value v(env, info.args[0]);
 
         libtorrent::error_code ec;
@@ -69,8 +76,25 @@ napi_value TorrentInfo::New(napi_env env, napi_callback_info cbinfo)
         break;
     }
     default:
+    {
+        bool isBuffer;
+        napi_is_buffer(env, info.args[0], &isBuffer);
+
+        if (isBuffer)
+        {
+            char* buf;
+            size_t len;
+            napi_get_buffer_info(env, info.args[0], reinterpret_cast<void**>(&buf), &len);
+
+            libtorrent::error_code ec;
+            obj = new TorrentInfo(buf, len, ec);
+
+            break;
+        }
+
         napi_throw_error(env, nullptr, "Invalid argument type");
         return nullptr;
+    }
     }
 
     napi_wrap(env, info.this_arg, obj, TorrentInfo::Destructor, nullptr, &obj->wrapper_);

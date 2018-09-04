@@ -91,6 +91,15 @@ napi_value Alert::ToJson(napi_env env, libtorrent::alert* alert)
             return TorrentAlert(env, lt::alert_cast<lt::torrent_checked_alert>(alert));
         case lt::url_seed_alert::alert_type:
             return UrlSeedAlert(env, lt::alert_cast<lt::url_seed_alert>(alert));
+        case lt::file_error_alert::alert_type:
+            return FileErrorAlert(env, lt::alert_cast<lt::file_error_alert>(alert));
+        case lt::metadata_failed_alert::alert_type:
+            return MetadataFailedAlert(env, lt::alert_cast<lt::metadata_failed_alert>(alert));
+        case lt::metadata_received_alert::alert_type:
+            return TorrentAlert(env, lt::alert_cast<lt::metadata_received_alert>(alert));
+
+        case lt::add_torrent_alert::alert_type:
+            return AddTorrentAlert(env, lt::alert_cast<lt::add_torrent_alert>(alert));
         default:
             return AlertBase(env, alert);
     }
@@ -669,6 +678,81 @@ napi_value Alert::UrlSeedAlert(napi_env env, lt::url_seed_alert* alert)
     Value v(env, value);
     v.SetNamedProperty("error_message", std::string(alert->error_message()));
     v.SetNamedProperty("server_url", std::string(alert->server_url()));
+
+    return value;
+}
+
+napi_value Alert::FileErrorAlert(napi_env env, lt::file_error_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    if (alert->error)
+    {
+        napi_value message;
+        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+
+        napi_value val;
+        napi_create_int32(env, alert->error.value(), &val);
+
+        napi_value err;
+        napi_create_object(env, &err);
+        napi_set_named_property(env, err, "message", message);
+        napi_set_named_property(env, err, "value", val);
+
+        napi_set_named_property(env, value, "error", err);
+    }
+
+    Value v(env, value);
+    v.SetNamedProperty("filename", std::string(alert->filename()));
+    v.SetNamedProperty("op", static_cast<uint32_t>(alert->op));
+
+    return value;
+}
+
+napi_value Alert::MetadataFailedAlert(napi_env env, lt::metadata_failed_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    if (alert->error)
+    {
+        napi_value message;
+        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+
+        napi_value val;
+        napi_create_int32(env, alert->error.value(), &val);
+
+        napi_value err;
+        napi_create_object(env, &err);
+        napi_set_named_property(env, err, "message", message);
+        napi_set_named_property(env, err, "value", val);
+
+        napi_set_named_property(env, value, "error", err);
+    }
+
+    return value;
+}
+
+napi_value Alert::AddTorrentAlert(napi_env env, lt::add_torrent_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    if (alert->error)
+    {
+        napi_value message;
+        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+
+        napi_value val;
+        napi_create_int32(env, alert->error.value(), &val);
+
+        napi_value err;
+        napi_create_object(env, &err);
+        napi_set_named_property(env, err, "message", message);
+        napi_set_named_property(env, err, "value", val);
+
+        napi_set_named_property(env, value, "error", err);
+    }
+
+    // TODO: params
 
     return value;
 }

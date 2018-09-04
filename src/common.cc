@@ -98,13 +98,11 @@ int32_t Value::ToInt32()
 
 std::string Value::ToString()
 {
+    char str[1024];
     size_t sz;
-    napi_get_value_string_utf8(env_, value_, nullptr, 0, &sz);
+    napi_get_value_string_utf8(env_, value_, str, 1024, &sz);
 
-    std::string str('\0', sz);
-    napi_get_value_string_utf8(env_, value_, &str[0], sz, nullptr);
-
-    return str;
+    return std::string(str, sz);
 }
 
 uint32_t Value::ToUInt32()
