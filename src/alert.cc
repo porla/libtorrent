@@ -42,6 +42,36 @@ napi_value Alert::ToJson(napi_env env, libtorrent::alert* alert)
             return TrackerAnnounceAlert(env, lt::alert_cast<lt::tracker_announce_alert>(alert));
         case lt::hash_failed_alert::alert_type:
             return HashFailedAlert(env, lt::alert_cast<lt::hash_failed_alert>(alert));
+        case lt::peer_ban_alert::alert_type:
+            return PeerBanAlert(env, lt::alert_cast<lt::peer_ban_alert>(alert));
+        case lt::peer_unsnubbed_alert::alert_type:
+            return PeerAlert(env, lt::alert_cast<lt::peer_unsnubbed_alert>(alert));
+        case lt::peer_snubbed_alert::alert_type:
+            return PeerAlert(env, lt::alert_cast<lt::peer_snubbed_alert>(alert));
+        case lt::peer_error_alert::alert_type:
+            return PeerErrorAlert(env, lt::alert_cast<lt::peer_error_alert>(alert));
+        case lt::peer_connect_alert::alert_type:
+            return PeerConnectAlert(env, lt::alert_cast<lt::peer_connect_alert>(alert));
+        case lt::peer_disconnected_alert::alert_type:
+            return PeerDisconnectedAlert(env, lt::alert_cast<lt::peer_disconnected_alert>(alert));
+        case lt::invalid_request_alert::alert_type:
+            return InvalidRequestAlert(env, lt::alert_cast<lt::invalid_request_alert>(alert));
+        case lt::torrent_finished_alert::alert_type:
+            return TorrentAlert(env, lt::alert_cast<lt::torrent_finished_alert>(alert));
+        case lt::piece_finished_alert::alert_type:
+            return PieceFinishedAlert(env, lt::alert_cast<lt::piece_finished_alert>(alert));
+        case lt::request_dropped_alert::alert_type:
+            return RequestDroppedAlert(env, lt::alert_cast<lt::request_dropped_alert>(alert));
+        case lt::block_timeout_alert::alert_type:
+            return BlockTimeoutAlert(env, lt::alert_cast<lt::block_timeout_alert>(alert));
+        case lt::block_finished_alert::alert_type:
+            return BlockFinishedAlert(env, lt::alert_cast<lt::block_finished_alert>(alert));
+        case lt::block_downloading_alert::alert_type:
+            return BlockDownloadingAlert(env, lt::alert_cast<lt::block_downloading_alert>(alert));
+        case lt::unwanted_block_alert::alert_type:
+            return UnwantedBlockAlert(env, lt::alert_cast<lt::unwanted_block_alert>(alert));
+        case lt::storage_moved_alert::alert_type:
+            return StorageMovedAlert(env, lt::alert_cast<lt::storage_moved_alert>(alert));
         default:
             return AlertBase(env, alert);
     }
@@ -58,6 +88,31 @@ napi_value Alert::AlertBase(napi_env env, libtorrent::alert* alert)
     tmp.SetNamedProperty("timestamp", alert->timestamp().time_since_epoch().count());
     tmp.SetNamedProperty("type", alert->type());
     tmp.SetNamedProperty("what", std::string(alert->what()));
+
+    return value;
+}
+
+napi_value Alert::PeerAlert(napi_env env, libtorrent::peer_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    napi_value obj;
+    napi_create_object(env, &obj);
+    napi_value addr;
+    napi_create_string_utf8(env, alert->endpoint.address().to_string().c_str(), NAPI_AUTO_LENGTH, &addr);
+    napi_value port;
+    napi_create_uint32(env, alert->endpoint.port(), &port);
+    napi_set_named_property(env, obj, "address", addr);
+    napi_set_named_property(env, obj, "port", port);
+
+    napi_set_named_property(env, value, "endpoint", obj);
+
+    std::stringstream ss;
+    ss << alert->pid;
+
+    napi_value pid;
+    napi_create_string_utf8(env, ss.str().c_str(), NAPI_AUTO_LENGTH, &pid);
+    napi_set_named_property(env, value, "pid", pid);
 
     return value;
 }
@@ -302,6 +357,173 @@ napi_value Alert::HashFailedAlert(napi_env env, lt::hash_failed_alert* alert)
 
     Value v(env, value);
     v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
+
+    return value;
+}
+
+napi_value Alert::PeerBanAlert(napi_env env, lt::peer_ban_alert* alert)
+{
+    return PeerAlert(env, alert);
+}
+
+napi_value Alert::PeerErrorAlert(napi_env env, lt::peer_error_alert* alert)
+{
+    napi_value value = PeerAlert(env, alert);
+
+    napi_value op;
+    napi_create_string_utf8(env, reinterpret_cast<char*>(alert->op), NAPI_AUTO_LENGTH, &op);
+    napi_set_named_property(env, value, "op", op);
+
+    if (alert->error)
+    {
+        napi_value message;
+        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+
+        napi_value val;
+        napi_create_int32(env, alert->error.value(), &val);
+
+        napi_value err;
+        napi_create_object(env, &err);
+        napi_set_named_property(env, err, "message", message);
+        napi_set_named_property(env, err, "value", val);
+
+        napi_set_named_property(env, value, "error", err);
+    }
+
+    return value;
+}
+
+napi_value Alert::PeerConnectAlert(napi_env env, lt::peer_connect_alert* alert)
+{
+    napi_value value = PeerAlert(env, alert);
+
+    Value v(env, value);
+    v.SetNamedProperty("socket_type", alert->socket_type);
+
+    return value;
+}
+
+napi_value Alert::PeerDisconnectedAlert(napi_env env, lt::peer_disconnected_alert* alert)
+{
+    napi_value value = PeerAlert(env, alert);
+
+    Value v(env, value);
+    v.SetNamedProperty("op", static_cast<uint8_t>(alert->op));
+    v.SetNamedProperty("reason", static_cast<uint32_t>(alert->reason));
+    v.SetNamedProperty("socket_type", alert->socket_type);
+
+    if (alert->error)
+    {
+        napi_value message;
+        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+
+        napi_value val;
+        napi_create_int32(env, alert->error.value(), &val);
+
+        napi_value err;
+        napi_create_object(env, &err);
+        napi_set_named_property(env, err, "message", message);
+        napi_set_named_property(env, err, "value", val);
+
+        napi_set_named_property(env, value, "error", err);
+    }
+
+    return value;
+}
+
+napi_value Alert::InvalidRequestAlert(napi_env env, lt::invalid_request_alert* alert)
+{
+    napi_value value = PeerAlert(env, alert);
+
+    Value v(env, value);
+    v.SetNamedProperty("peer_interested", alert->peer_interested);
+    v.SetNamedProperty("we_have", alert->we_have);
+    v.SetNamedProperty("withheld", alert->withheld);
+
+    napi_value req;
+    napi_create_object(env, &req);
+
+    Value r(env, value);
+    r.SetNamedProperty("length", alert->request.length);
+    r.SetNamedProperty("piece", static_cast<int32_t>(alert->request.piece));
+    r.SetNamedProperty("start", alert->request.start);
+
+    napi_set_named_property(env, value, "request", req);
+
+    return value;
+}
+
+napi_value Alert::PieceFinishedAlert(napi_env env, lt::piece_finished_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    Value v(env, value);
+    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
+
+    return value;
+}
+
+napi_value Alert::RequestDroppedAlert(napi_env env, lt::request_dropped_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    Value v(env, value);
+    v.SetNamedProperty("block_index", alert->block_index);
+    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
+
+    return value;
+}
+
+napi_value Alert::BlockTimeoutAlert(napi_env env, lt::block_timeout_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    Value v(env, value);
+    v.SetNamedProperty("block_index", alert->block_index);
+    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
+
+    return value;
+}
+
+napi_value Alert::BlockFinishedAlert(napi_env env, lt::block_finished_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    Value v(env, value);
+    v.SetNamedProperty("block_index", alert->block_index);
+    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
+
+    return value;
+}
+
+napi_value Alert::BlockDownloadingAlert(napi_env env, lt::block_downloading_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    Value v(env, value);
+    v.SetNamedProperty("block_index", alert->block_index);
+    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
+
+    return value;
+}
+
+napi_value Alert::UnwantedBlockAlert(napi_env env, lt::unwanted_block_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    Value v(env, value);
+    v.SetNamedProperty("block_index", alert->block_index);
+    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
+
+    return value;
+}
+
+napi_value Alert::StorageMovedAlert(napi_env env, lt::storage_moved_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    Value v(env, value);
+    v.SetNamedProperty("storage_path", std::string(alert->storage_path()));
 
     return value;
 }

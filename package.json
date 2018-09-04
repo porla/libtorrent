@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "install": "node-gyp-build",
-    "prebuildify": "prebuildify --all --napi"
+    "prebuildify": "prebuildify --napi"
   },
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",
   "devDependencies": {
+    "node-gyp": "^3.8.0",
     "prebuildify": "^2.7.0"
   },
   "dependencies": {
