@@ -1,21 +1,13 @@
 {
     "conditions": [
         [ 'OS=="win"', {
-            'variables': {
-                'boost_root%': 'C:/Libraries/boost_1_66_0',
-            },
-
             'conditions': [
                 ['target_arch=="x64"', {
                     'variables': {
-                        'boostlib_root%': '<(boost_root)/lib64-msvc-14.0',
-                        'libtorrent_root%': 'C:/Libraries/Rasterbar-libtorrent/msvc-14.0/x64',
                         'openssl_root%': 'C:/OpenSSL-Win64/lib/VC/static'
                     },
                 }, {
                     'variables': {
-                        'boostlib_root%': '<(boost_root)/lib32-msvc-14.0',
-                        'libtorrent_root%': 'C:/Libraries/Rasterbar-libtorrent/msvc-14.0/x86',
                         'openssl_root%': 'C:/OpenSSL-Win32/lib/VC/static'
                     },
                 }],
@@ -32,6 +24,7 @@
                 "./vendor/boost-array/include",
                 "./vendor/boost-asio/include",
                 "./vendor/boost-assert/include",
+                "./vendor/boost-bind/include",
                 "./vendor/boost-concept_check/include",
                 "./vendor/boost-config/include",
                 "./vendor/boost-container/include",
@@ -40,6 +33,7 @@
                 "./vendor/boost-crc/include",
                 "./vendor/boost-date_time/include",
                 "./vendor/boost-detail/include",
+                "./vendor/boost-function/include",
                 "./vendor/boost-exception/include",
                 "./vendor/boost-integer/include",
                 "./vendor/boost-intrusive/include",
@@ -56,14 +50,17 @@
                 "./vendor/boost-preprocessor/include",
                 "./vendor/boost-range/include",
                 "./vendor/boost-rational/include",
+                "./vendor/boost-scope_exit/include",
                 "./vendor/boost-smart_ptr/include",
                 "./vendor/boost-static_assert/include",
                 "./vendor/boost-system/include",
                 "./vendor/boost-throw_exception/include",
                 "./vendor/boost-type_index/include",
                 "./vendor/boost-type_traits/include",
+                "./vendor/boost-typeof/include",
                 "./vendor/boost-utility/include",
                 "./vendor/boost-variant/include",
+                "./vendor/boost-winapi/include",
                 "./vendor/libtorrent/include"
             ],
             "sources":
@@ -88,22 +85,10 @@
             ],
             "conditions": [
                 [ 'OS=="win"', {
-                    'configurations': {
-                        'Debug': {
-                            'msvs_settings': {
-                                'VCCLCompilerTool': {
-                                    "ExceptionHandling": 1,
-                                    "RuntimeTypeInfo": 'true'
-                                }
-                            }
-                        }, # Debug
-                        'Release': {
-                            'msvs_settings': {
-                                'VCCLCompilerTool': {
-                                    "ExceptionHandling": 1,
-                                    "RuntimeTypeInfo": 'true'
-                                }
-                            }
+                    'msvs_settings': {
+                        'VCCLCompilerTool': {
+                            "ExceptionHandling": 1,
+                            "RuntimeTypeInfo": 'true'
                         }
                     },
                     "defines": [
@@ -112,23 +97,11 @@
                         "WIN32",
                         "WIN32_LEAN_AND_MEAN"
                     ],
-                    "include_dirs" : [
-                        "<(libtorrent_root)/include",
-                        '<(boost_root)/'
-                    ],
                     "libraries": [
-                        '-l<(boostlib_root)/libboost_system-vc140-mt-s-x64-1_66.lib',
-                        '-l<(libtorrent_root)/lib/libtorrent.lib',
                         '-l<(openssl_root)/libeay32MT.lib',
                         '-l<(openssl_root)/ssleay32MT.lib',
                         '-liphlpapi',
                         '-llegacy_stdio_definitions'
-                    ]
-                },
-                    'OS=="mac"', {
-                    "libraries": [
-                        "/usr/local/lib/libboost_system.a",
-                        "$(HOME)/libtorrent/lib/libtorrent-rasterbar.a"
                     ]
                 }]
             ]
@@ -153,16 +126,34 @@
                 "./vendor/boost-pool/include",
                 "./vendor/boost-predef/include",
                 "./vendor/boost-preprocessor/include",
+                "./vendor/boost-scope_exit/include",
                 "./vendor/boost-smart_ptr/include",
                 "./vendor/boost-static_assert/include",
                 "./vendor/boost-system/include",
                 "./vendor/boost-throw_exception/include",
                 "./vendor/boost-type_traits/include",
-                "./vendor/boost-utility/include"
+                "./vendor/boost-utility/include",
+                "./vendor/boost-winapi/include"
             ],
             "sources":
             [
                 "./vendor/boost-system/src/error_code.cpp"
+            ],
+             "conditions": [
+                [ 'OS=="win"', {
+                    'msvs_settings': {
+                        'VCCLCompilerTool': {
+                            "ExceptionHandling": 1,
+                            "RuntimeTypeInfo": 'true'
+                        }
+                    },
+                    "defines": [
+                        "_WIN32",
+                        "_WIN32_WINNT=0x0600",
+                        "WIN32",
+                        "WIN32_LEAN_AND_MEAN"
+                    ]
+                }]
             ]
         },
         {
@@ -207,6 +198,7 @@
                 "./vendor/boost-array/include",
                 "./vendor/boost-asio/include",
                 "./vendor/boost-assert/include",
+                "./vendor/boost-bind/include",
                 "./vendor/boost-concept_check/include",
                 "./vendor/boost-config/include",
                 "./vendor/boost-container/include",
@@ -215,6 +207,7 @@
                 "./vendor/boost-crc/include",
                 "./vendor/boost-date_time/include",
                 "./vendor/boost-detail/include",
+                "./vendor/boost-function/include",
                 "./vendor/boost-exception/include",
                 "./vendor/boost-integer/include",
                 "./vendor/boost-intrusive/include",
@@ -231,14 +224,17 @@
                 "./vendor/boost-preprocessor/include",
                 "./vendor/boost-range/include",
                 "./vendor/boost-rational/include",
+                "./vendor/boost-scope_exit/include",
                 "./vendor/boost-smart_ptr/include",
                 "./vendor/boost-static_assert/include",
                 "./vendor/boost-system/include",
                 "./vendor/boost-throw_exception/include",
                 "./vendor/boost-type_index/include",
                 "./vendor/boost-type_traits/include",
+                "./vendor/boost-typeof/include",
                 "./vendor/boost-utility/include",
                 "./vendor/boost-variant/include",
+                "./vendor/boost-winapi/include",
                 "./vendor/libtorrent/include"
             ],
             "sources":
@@ -263,6 +259,15 @@
                 "./vendor/libtorrent/src/kademlia/rpc_manager.cpp",
                 "./vendor/libtorrent/src/kademlia/sample_infohashes.cpp",
                 "./vendor/libtorrent/src/kademlia/traversal_algorithm.cpp",
+
+                "./vendor/libtorrent/ed25519/src/add_scalar.cpp",
+                "./vendor/libtorrent/ed25519/src/fe.cpp",
+                "./vendor/libtorrent/ed25519/src/ge.cpp",
+                "./vendor/libtorrent/ed25519/src/key_exchange.cpp",
+                "./vendor/libtorrent/ed25519/src/keypair.cpp",
+                "./vendor/libtorrent/ed25519/src/sc.cpp",
+                "./vendor/libtorrent/ed25519/src/sign.cpp",
+                "./vendor/libtorrent/ed25519/src/verify.cpp",
 
                 "./vendor/libtorrent/src/add_torrent_params.cpp",
                 "./vendor/libtorrent/src/alert_manager.cpp",
@@ -392,6 +397,30 @@
                 "./vendor/libtorrent/src/web_peer_connection.cpp",
                 "./vendor/libtorrent/src/write_resume_data.cpp",
                 "./vendor/libtorrent/src/xml_parse.cpp"
+            ],
+            "conditions": [
+                [ 'OS=="win"', {
+                    'msvs_settings': {
+                        'VCCLCompilerTool': {
+                            "DisableSpecificWarnings": [ "4373", "4503" ],
+                            "ExceptionHandling": 1,
+                            "RuntimeTypeInfo": 'true'
+                        }
+                    },
+                    "defines": [
+                        "_WIN32",
+                        "_WIN32_WINNT=0x0600",
+                        "WIN32",
+                        "WIN32_LEAN_AND_MEAN"
+                    ],
+                    "libraries": [
+                        '-l<(openssl_root)/libeay32MT.lib',
+                        '-l<(openssl_root)/ssleay32MT.lib',
+                        '-ladvapi32',
+                        '-liphlpapi',
+                        '-llegacy_stdio_definitions'
+                    ]
+                }]
             ]
         }
     ]

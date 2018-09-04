@@ -106,3 +106,18 @@
 [submodule "vendor/boost-crc"]
 	path = vendor/boost-crc
 	url = https://github.com/boostorg/crc
+[submodule "vendor/boost-winapi"]
+	path = vendor/boost-winapi
+	url = https://github.com/boostorg/winapi
+[submodule "vendor/boost-scope_exit"]
+	path = vendor/boost-scope_exit
+	url = https://github.com/boostorg/scope_exit
+[submodule "vendor/boost-function"]
+	path = vendor/boost-function
+	url = https://github.com/boostorg/function
+[submodule "vendor/boost-bind"]
+	path = vendor/boost-bind
+	url = https://github.com/boostorg/bind
+[submodule "vendor/boost-typeof"]
+	path = vendor/boost-typeof
+	url = https://github.com/boostorg/typeof

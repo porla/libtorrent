@@ -26,6 +26,27 @@ namespace porla
         T* wrap;
     };
 
+    class Console
+    {
+    public:
+        static napi_status Log(napi_env env, napi_value value)
+        {
+            napi_value global;
+            napi_get_global(env, &global);
+
+            napi_value console;
+            napi_get_named_property(env, global, "console", &console);
+
+            napi_value log;
+            napi_get_named_property(env, console, "log", &log);
+
+            napi_value args[1];
+            args[0] = value;
+
+            return napi_call_function(env, console, log, 1, args, nullptr);
+        }
+    };
+
     class Value
     {
     public:

@@ -1,5 +1,6 @@
 #include "alert.h"
 
+#include "add_torrent_params.h"
 #include "common.h"
 #include "torrent_handle.h"
 
@@ -72,6 +73,24 @@ napi_value Alert::ToJson(napi_env env, libtorrent::alert* alert)
             return UnwantedBlockAlert(env, lt::alert_cast<lt::unwanted_block_alert>(alert));
         case lt::storage_moved_alert::alert_type:
             return StorageMovedAlert(env, lt::alert_cast<lt::storage_moved_alert>(alert));
+        case lt::storage_moved_failed_alert::alert_type:
+            return StorageMovedFailedAlert(env, lt::alert_cast<lt::storage_moved_failed_alert>(alert));
+        case lt::torrent_deleted_alert::alert_type:
+            return TorrentDeletedAlert(env, lt::alert_cast<lt::torrent_deleted_alert>(alert));
+        case lt::torrent_delete_failed_alert::alert_type:
+            return TorrentDeleteFailedAlert(env, lt::alert_cast<lt::torrent_delete_failed_alert>(alert));
+        case lt::save_resume_data_alert::alert_type:
+            return SaveResumeDataAlert(env, lt::alert_cast<lt::save_resume_data_alert>(alert));
+        case lt::save_resume_data_failed_alert::alert_type:
+            return SaveResumeDataFailedAlert(env, lt::alert_cast<lt::save_resume_data_failed_alert>(alert));
+        case lt::torrent_paused_alert::alert_type:
+            return TorrentAlert(env, lt::alert_cast<lt::torrent_paused_alert>(alert));
+        case lt::torrent_resumed_alert::alert_type:
+            return TorrentAlert(env, lt::alert_cast<lt::torrent_resumed_alert>(alert));
+        case lt::torrent_checked_alert::alert_type:
+            return TorrentAlert(env, lt::alert_cast<lt::torrent_checked_alert>(alert));
+        case lt::url_seed_alert::alert_type:
+            return UrlSeedAlert(env, lt::alert_cast<lt::url_seed_alert>(alert));
         default:
             return AlertBase(env, alert);
     }
@@ -524,6 +543,132 @@ napi_value Alert::StorageMovedAlert(napi_env env, lt::storage_moved_alert* alert
 
     Value v(env, value);
     v.SetNamedProperty("storage_path", std::string(alert->storage_path()));
+
+    return value;
+}
+
+napi_value Alert::StorageMovedFailedAlert(napi_env env, lt::storage_moved_failed_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    if (alert->error)
+    {
+        napi_value message;
+        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+
+        napi_value val;
+        napi_create_int32(env, alert->error.value(), &val);
+
+        napi_value err;
+        napi_create_object(env, &err);
+        napi_set_named_property(env, err, "message", message);
+        napi_set_named_property(env, err, "value", val);
+
+        napi_set_named_property(env, value, "error", err);
+    }
+
+    Value v(env, value);
+    v.SetNamedProperty("file_path", std::string(alert->file_path()));
+    v.SetNamedProperty("operation", static_cast<uint8_t>(alert->op));
+
+    return value;
+}
+
+napi_value Alert::TorrentDeletedAlert(napi_env env, lt::torrent_deleted_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    std::stringstream ss;
+    ss << alert->info_hash;
+
+    Value v(env, value);
+    v.SetNamedProperty("info_hash", ss.str());
+
+    return value;
+}
+
+napi_value Alert::TorrentDeleteFailedAlert(napi_env env, lt::torrent_delete_failed_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    if (alert->error)
+    {
+        napi_value message;
+        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+
+        napi_value val;
+        napi_create_int32(env, alert->error.value(), &val);
+
+        napi_value err;
+        napi_create_object(env, &err);
+        napi_set_named_property(env, err, "message", message);
+        napi_set_named_property(env, err, "value", val);
+
+        napi_set_named_property(env, value, "error", err);
+    }
+
+    std::stringstream ss;
+    ss << alert->info_hash;
+
+    Value v(env, value);
+    v.SetNamedProperty("info_hash", ss.str());
+
+    return value;
+}
+
+napi_value Alert::SaveResumeDataAlert(napi_env env, lt::save_resume_data_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+    // TODO
+    return value;
+}
+
+napi_value Alert::SaveResumeDataFailedAlert(napi_env env, lt::save_resume_data_failed_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    if (alert->error)
+    {
+        napi_value message;
+        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+
+        napi_value val;
+        napi_create_int32(env, alert->error.value(), &val);
+
+        napi_value err;
+        napi_create_object(env, &err);
+        napi_set_named_property(env, err, "message", message);
+        napi_set_named_property(env, err, "value", val);
+
+        napi_set_named_property(env, value, "error", err);
+    }
+
+    return value;
+}
+
+napi_value Alert::UrlSeedAlert(napi_env env, lt::url_seed_alert* alert)
+{
+    napi_value value = TorrentAlert(env, alert);
+
+    if (alert->error)
+    {
+        napi_value message;
+        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+
+        napi_value val;
+        napi_create_int32(env, alert->error.value(), &val);
+
+        napi_value err;
+        napi_create_object(env, &err);
+        napi_set_named_property(env, err, "message", message);
+        napi_set_named_property(env, err, "value", val);
+
+        napi_set_named_property(env, value, "error", err);
+    }
+
+    Value v(env, value);
+    v.SetNamedProperty("error_message", std::string(alert->error_message()));
+    v.SetNamedProperty("server_url", std::string(alert->server_url()));
 
     return value;
 }

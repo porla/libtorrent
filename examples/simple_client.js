@@ -3,7 +3,7 @@ const fs = require('fs');
 
 // Construct a session. Hold on to this.
 const session = new lt.session({
-    //alert_mask: 4294967295,
+    alert_mask: 4294967295,
     enable_dht: true
 });
 
@@ -22,7 +22,7 @@ function alertHandler(err, result) {
 session.wait_for_alert(500, alertHandler);
 
 const handle = session.add_torrent({
-    save_path: './',
+    save_path: __dirname,
     ti: new lt.torrent_info(process.argv[2])
 });
 

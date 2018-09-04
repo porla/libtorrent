@@ -32,11 +32,16 @@ namespace porla
         static napi_value PieceFinishedAlert(napi_env env, libtorrent::piece_finished_alert* alert);
         static napi_value ReadPieceAlert(napi_env env, libtorrent::read_piece_alert* alert);
         static napi_value RequestDroppedAlert(napi_env env, libtorrent::request_dropped_alert* alert);
+        static napi_value SaveResumeDataAlert(napi_env env, libtorrent::save_resume_data_alert* alert);
+        static napi_value SaveResumeDataFailedAlert(napi_env env, libtorrent::save_resume_data_failed_alert* alert);
         static napi_value ScrapeFailedAlert(napi_env env, libtorrent::scrape_failed_alert* alert);
         static napi_value ScrapeReplyAlert(napi_env env, libtorrent::scrape_reply_alert* alert);
         static napi_value StateChangedAlert(napi_env env, libtorrent::state_changed_alert* alert);
         static napi_value StorageMovedAlert(napi_env env, libtorrent::storage_moved_alert* alert);
+        static napi_value StorageMovedFailedAlert(napi_env env, libtorrent::storage_moved_failed_alert* alert);
         static napi_value TorrentAlert(napi_env env, libtorrent::torrent_alert* alert);
+        static napi_value TorrentDeletedAlert(napi_env env, libtorrent::torrent_deleted_alert* alert);
+        static napi_value TorrentDeleteFailedAlert(napi_env env, libtorrent::torrent_delete_failed_alert* alert);
         static napi_value TorrentRemovedAlert(napi_env env, libtorrent::torrent_removed_alert* alert);
         static napi_value TrackerAlert(napi_env env, libtorrent::tracker_alert* alert);
         static napi_value TrackerAnnounceAlert(napi_env env, libtorrent::tracker_announce_alert* alert);
@@ -44,6 +49,7 @@ namespace porla
         static napi_value TrackerReplyAlert(napi_env env, libtorrent::tracker_reply_alert* alert);
         static napi_value TrackerWarningAlert(napi_env env, libtorrent::tracker_warning_alert* alert);
         static napi_value UnwantedBlockAlert(napi_env env, libtorrent::unwanted_block_alert* alert);
+        static napi_value UrlSeedAlert(napi_env env, libtorrent::url_seed_alert* alert);
     };
 }
 

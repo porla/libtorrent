@@ -4,12 +4,8 @@
 #include <memory>
 #include <string>
 
+#include <libtorrent/torrent_info.hpp>
 #include <node_api.h>
-
-namespace libtorrent
-{
-    class torrent_info;
-}
 
 namespace porla
 {
@@ -26,9 +22,8 @@ namespace porla
 
         static napi_ref constructor;
 
-        TorrentInfo(napi_env env, std::string const& filename);
+        TorrentInfo(std::string const& filename, libtorrent::error_code& ec);
 
-        napi_env env_;
         napi_ref wrapper_;
 
         std::unique_ptr<libtorrent::torrent_info> ti_;
