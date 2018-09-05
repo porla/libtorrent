@@ -5,8 +5,9 @@ let torrents = {};
 
 // Construct a session. Hold on to this.
 const session = new lt.session({
-    alert_mask: 4294967295,
-    enable_dht: true
+    alert_mask: lt.alert.all_categories,
+    enable_dht: true,
+    peer_fingerprint: lt.generate_fingerprint("XX", 1, 1)
 });
 
 function alertHandler(err, result) {

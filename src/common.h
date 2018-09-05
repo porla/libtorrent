@@ -14,6 +14,9 @@
 #define PORLA_GETTER_DESCRIPTOR(name, function) \
     { name, nullptr, nullptr, function, nullptr, 0, napi_enumerable, 0 }
 
+#define PORLA_VALUE_DESCRIPTOR(name, value) \
+    { name, nullptr, nullptr, nullptr, nullptr, value, napi_default, 0 }
+
 namespace porla
 {
     template<typename T>

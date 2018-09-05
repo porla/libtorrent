@@ -76,7 +76,8 @@
                 "./src/settings_pack.cc",
                 "./src/torrent_info.cc",
                 "./src/torrent_handle.cc",
-                "./src/torrent_status.cc"
+                "./src/torrent_status.cc",
+                "./src/utils.cc"
             ],
             "defines": [
                 "BOOST_ALL_NO_LIB",

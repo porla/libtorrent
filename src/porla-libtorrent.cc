@@ -6,6 +6,7 @@
 #include "torrent_info.h"
 #include "torrent_handle.h"
 #include "torrent_status.h"
+#include "utils.h"
 
 #ifdef WIN32
 // TODO: Ugly hack
@@ -20,6 +21,7 @@ napi_value Init(napi_env env, napi_value exports) {
     porla::TorrentInfo::Init(env, exports);
     porla::TorrentHandle::Init(env, exports);
     porla::TorrentStatus::Init(env, exports);
+    porla::Utils::Init(env, exports);
 
     return exports;
 }
