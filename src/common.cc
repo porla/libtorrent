@@ -1,5 +1,7 @@
 #include "common.h"
 
+#include <sstream>
+
 using porla::UnwrapCallback;
 using porla::Value;
 
@@ -98,11 +100,13 @@ int32_t Value::ToInt32()
 
 std::string Value::ToString()
 {
-    char str[1024];
-    size_t sz;
-    napi_get_value_string_utf8(env_, value_, str, 1024, &sz);
+    size_t size;
+    napi_get_value_string_utf8(env_, value_, nullptr, 0, &size);
 
-    return std::string(str, sz);
+    char str[size];
+    napi_get_value_string_utf8(env_, value_, str, size, nullptr);
+
+    return std::string(str, size);
 }
 
 uint32_t Value::ToUInt32()

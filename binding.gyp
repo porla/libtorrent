@@ -19,6 +19,8 @@
         {
             "target_name": "porla_libtorrent",
             "dependencies": [ "boost-system", "libtorrent-rasterbar" ],
+            "cflags!": [ "-fno-exceptions" ],
+            "cflags_cc!": [ "-fno-exceptions" ],
             "include_dirs":
             [
                 "./vendor/boost-array/include",

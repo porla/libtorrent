@@ -9,6 +9,9 @@ libtorrent::entry Entry::FromJson(napi_env env, napi_value value)
     napi_valuetype type;
     napi_typeof(env, value, &type);
 
+    bool isArray;
+    napi_is_array(env, value, &isArray);
+
     if (type == napi_number)
     {
         int64_t res;
@@ -17,20 +20,27 @@ libtorrent::entry Entry::FromJson(napi_env env, napi_value value)
         return libtorrent::entry::integer_type(res);
     }
 
-    if (type == napi_object)
+    if (type == napi_object && !isArray)
     {
         libtorrent::entry::dictionary_type dict;
-        Value v(env, value);
-        Value properties = v.GetPropertyNames();
 
-        for (uint32_t i = 0; i < properties.GetArrayLength(); i++)
+        napi_value props;
+        napi_get_property_names(env, value, &props);
+
+        uint32_t len;
+        napi_get_array_length(env, props, &len);
+
+        for (uint32_t i = 0; i < len; i++)
         {
-            Value property = properties.GetArrayItem(i);
+            napi_value property;
+            napi_get_element(env, props, i, &property);
 
             napi_value item;
-            napi_get_named_property(env, value, property.ToString().c_str(), &item);
+            napi_get_property(env, value, property, &item);
 
-            dict.insert({ property.ToString(), FromJson(env, item) });
+            Value v(env, property);
+
+            dict.insert({ v.ToString(), FromJson(env, item) });
         }
 
         return dict;
@@ -41,9 +51,6 @@ libtorrent::entry Entry::FromJson(napi_env env, napi_value value)
         Value v(env, value);
         return libtorrent::entry::string_type(v.ToString());
     }
-
-    bool isArray;
-    napi_is_array(env, value, &isArray);
 
     if (isArray)
     {
