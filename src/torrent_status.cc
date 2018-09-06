@@ -344,18 +344,7 @@ napi_value TorrentStatus::Get_Flags(napi_env env, napi_callback_info cbinfo)
 napi_value TorrentStatus::Get_Handle(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value external;
-    napi_create_external(env, &info.wrap->ts_->handle, nullptr, nullptr, &external);
-
-    napi_value cons;
-    NAPI_CALL(env, napi_get_reference_value(env, TorrentHandle::constructor, &cons));
-
-    napi_value argv[] = { external };
-    napi_value instance;
-    NAPI_CALL(env, napi_new_instance(env, cons, 1, argv, &instance));
-
-    return instance;
+    return WrapExternal<TorrentHandle, lt::torrent_handle>(env, &info.wrap->ts_->handle);
 }
 
 napi_value TorrentStatus::Get_HasIncoming(napi_env env, napi_callback_info cbinfo)

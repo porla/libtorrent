@@ -125,10 +125,10 @@ napi_status TorrentHandle::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("remove_url_seed", RemoveUrlSeed),
         PORLA_METHOD_DESCRIPTOR("rename_file", RenameFile),
         PORLA_METHOD_DESCRIPTOR("replace_trackers", ReplaceTrackers),
-        PORLA_METHOD_DESCRIPTOR("reset_piece_deadline", ResetPieceDeadline),
+        PORLA_METHOD_DESCRIPTOR("reset_piece_deadline", ResetPieceDeadline),*/
         PORLA_METHOD_DESCRIPTOR("resume", Resume),
         PORLA_METHOD_DESCRIPTOR("save_resume_data", SaveResumeData),
-        PORLA_METHOD_DESCRIPTOR("scrape_tracker", ScrapeTracker),
+        /*PORLA_METHOD_DESCRIPTOR("scrape_tracker", ScrapeTracker),
         PORLA_METHOD_DESCRIPTOR("set_download_limit", SetDownloadLimit),
         PORLA_METHOD_DESCRIPTOR("set_flags", SetFlags),
         PORLA_METHOD_DESCRIPTOR("set_max_connections", SetMaxConnections),
@@ -889,6 +889,20 @@ napi_value TorrentHandle::QueuePositionUp(napi_env env, napi_callback_info cbinf
 {
     auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
     info.wrap->th_->queue_position_up();
+    return nullptr;
+}
+
+napi_value TorrentHandle::Resume(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+    info.wrap->th_->resume();
+    return nullptr;
+}
+
+napi_value TorrentHandle::SaveResumeData(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentHandle>(env, cbinfo);
+    info.wrap->th_->save_resume_data();
     return nullptr;
 }
 
