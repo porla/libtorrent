@@ -4,6 +4,7 @@
   "description": "Rasterbar-libtorrent bindings for Node.js (>= 8.6).",
   "main": "index.js",
   "scripts": {
+    "build:linux": "node-gyp build && cp build/Release/porla_libtorrent.node prebuilds/linux-x64/node-napi.node",
     "install": "node-gyp-build",
     "prebuildify": "prebuildify --napi"
   },

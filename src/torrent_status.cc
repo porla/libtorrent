@@ -43,7 +43,7 @@ napi_status TorrentStatus::Init(napi_env env, napi_value exports)
         PORLA_GETTER_DESCRIPTOR("down_bandwidth_queue", Get_DownBandwidthQueue),
         PORLA_GETTER_DESCRIPTOR("download_payload_rate", Get_DownloadPayloadRate),
         PORLA_GETTER_DESCRIPTOR("download_rate", Get_DownloadRate),
-        // TODO: errc
+        PORLA_GETTER_DESCRIPTOR("errc", Get_Errc),
         PORLA_GETTER_DESCRIPTOR("error_file", Get_ErrorFile),
         PORLA_GETTER_DESCRIPTOR("finished_duration", Get_FinishedDuration),
         PORLA_GETTER_DESCRIPTOR("flags", Get_Flags),
@@ -290,6 +290,25 @@ napi_value TorrentStatus::Get_DownloadRate(napi_env env, napi_callback_info cbin
     napi_create_int32(env, info.wrap->ts_->download_rate, &val);
 
     return val;
+}
+
+napi_value TorrentStatus::Get_Errc(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
+
+    if (info.wrap->ts_->errc)
+    {
+        napi_value obj;
+        napi_create_object(env, &obj);
+
+        Value v(env, obj);
+        v.SetNamedProperty("message", std::string(info.wrap->ts_->errc.message().c_str()));
+        v.SetNamedProperty("value", info.wrap->ts_->errc.value());
+
+        return obj;
+    }
+
+    return nullptr;
 }
 
 napi_value TorrentStatus::Get_ErrorFile(napi_env env, napi_callback_info cbinfo)

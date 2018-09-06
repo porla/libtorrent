@@ -15,6 +15,7 @@
 #include "settings_pack.h"
 #include "torrent_info.h"
 #include "torrent_handle.h"
+#include "torrent_status.h"
 
 using porla::Session;
 
@@ -602,8 +603,22 @@ napi_value Session::GetSettings(napi_env env, napi_callback_info cbinfo)
 
 napi_value Session::GetTorrentStatus(napi_env env, napi_callback_info cbinfo)
 {
-    napi_throw_error(env, nullptr, "Not implemented");
-    return nullptr;
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+    auto status = info.wrap->session_->get_torrent_status(
+        [](lt::torrent_status const&) { return true; });
+
+    // TODO: filter
+
+    napi_value arr;
+    napi_create_array_with_length(env, status.size(), &arr);
+
+    for (size_t i = 0; i < status.size(); i++)
+    {
+        napi_value ts = WrapExternal<TorrentStatus, lt::torrent_status>(env, &status.at(i));
+        napi_set_element(env, arr, i, ts);
+    }
+
+    return arr;
 }
 
 napi_value Session::GetTorrents(napi_env env, napi_callback_info cbinfo)

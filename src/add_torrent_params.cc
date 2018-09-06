@@ -39,15 +39,8 @@ libtorrent::add_torrent_params AddTorrentParams::Parse(napi_env env, napi_value 
         }
     }
 
-    if (p.HasNamedProperty("name"))
-    {
-        params.name = p.GetNamedProperty("name").ToString();
-    }
-
-    if (p.HasNamedProperty("save_path"))
-    {
-        params.save_path = p.GetNamedProperty("save_path").ToString();
-    }
+    p.GetNamedProperty("name", &params.name);
+    p.GetNamedProperty("save_path", &params.save_path);
 
     if (p.HasNamedProperty("storage_mode"))
     {

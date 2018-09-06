@@ -101,12 +101,14 @@ int32_t Value::ToInt32()
 std::string Value::ToString()
 {
     size_t size;
-    napi_get_value_string_utf8(env_, value_, nullptr, 0, &size);
+    napi_get_value_string_utf8(env_, value_, NULL, 0, &size);
 
-    char str[size];
-    napi_get_value_string_utf8(env_, value_, str, size, nullptr);
+    std::vector<char> buf;
+    buf.reserve(size + 1);
 
-    return std::string(str, size);
+    napi_get_value_string_utf8(env_, value_, buf.data(), size + 1, nullptr);
+
+    return std::string(buf.data());
 }
 
 uint32_t Value::ToUInt32()

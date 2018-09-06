@@ -61,7 +61,6 @@ napi_value TorrentInfo::New(napi_env env, napi_callback_info cbinfo)
     {
     case napi_valuetype::napi_string:
     {
-        Console::Log(env, info.args[0]);
         Value v(env, info.args[0]);
 
         libtorrent::error_code ec;

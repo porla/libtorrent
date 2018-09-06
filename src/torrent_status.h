@@ -36,6 +36,7 @@ namespace porla
         static napi_value Get_DownBandwidthQueue(napi_env env, napi_callback_info cbinfo);
         static napi_value Get_DownloadPayloadRate(napi_env env, napi_callback_info cbinfo);
         static napi_value Get_DownloadRate(napi_env env, napi_callback_info cbinfo);
+        static napi_value Get_Errc(napi_env env, napi_callback_info cbinfo);
         static napi_value Get_ErrorFile(napi_env env, napi_callback_info cbinfo);
         static napi_value Get_FinishedDuration(napi_env env, napi_callback_info cbinfo);
         static napi_value Get_Flags(napi_env env, napi_callback_info cbinfo);
