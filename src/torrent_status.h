@@ -69,6 +69,7 @@ namespace porla
         static napi_value Get_SeedingDuration(napi_env env, napi_callback_info cbinfo);
         static napi_value Get_State(napi_env env, napi_callback_info cbinfo);
         static napi_value Get_StorageMode(napi_env env, napi_callback_info cbinfo);
+        static napi_value Get_TorrentFile(napi_env env, napi_callback_info cbinfo);
         static napi_value Get_Total(napi_env env, napi_callback_info cbinfo);
         static napi_value Get_TotalDone(napi_env env, napi_callback_info cbinfo);
         static napi_value Get_TotalDownload(napi_env env, napi_callback_info cbinfo);

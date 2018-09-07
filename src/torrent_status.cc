@@ -5,6 +5,7 @@
 #include <libtorrent/torrent_handle.hpp>
 
 #include "common.h"
+#include "torrent_info.h"
 #include "torrent_handle.h"
 
 using porla::TorrentStatus;
@@ -77,7 +78,7 @@ napi_status TorrentStatus::Init(napi_env env, napi_value exports)
         PORLA_GETTER_DESCRIPTOR("seeding_duration", Get_SeedingDuration),
         PORLA_GETTER_DESCRIPTOR("state", Get_State),
         PORLA_GETTER_DESCRIPTOR("storage_mode", Get_StorageMode),
-        // TODO: torrent file
+        PORLA_GETTER_DESCRIPTOR("torrent_file", Get_TorrentFile),
         PORLA_GETTER_DESCRIPTOR("total", Get_Total),
         PORLA_GETTER_DESCRIPTOR("total_done", Get_TotalDone),
         PORLA_GETTER_DESCRIPTOR("total_download", Get_TotalDownload),
@@ -628,6 +629,21 @@ napi_value TorrentStatus::Get_StorageMode(napi_env env, napi_callback_info cbinf
     napi_create_int32(env, info.wrap->ts_->storage_mode, &val);
 
     return val;
+}
+
+napi_value TorrentStatus::Get_TorrentFile(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
+    
+    if (auto ti = info.wrap->ts_->torrent_file.lock())
+    {
+        return WrapExternal<TorrentInfo, std::shared_ptr<const lt::torrent_info>>(env, &ti);
+    }
+
+    napi_value null;
+    napi_get_null(env, &null);
+
+    return null;
 }
 
 napi_value TorrentStatus::Get_Total(napi_env env, napi_callback_info cbinfo)
