@@ -2,6 +2,7 @@
 
 #include "add_torrent_params.h"
 #include "bdecode.h"
+#include "create_torrent.h"
 #include "ip_filter.h"
 #include "session.h"
 #include "torrent_info.h"
@@ -18,6 +19,7 @@ extern "C" FILE * __cdecl __iob_func(void) { return _iob; }
 napi_value Init(napi_env env, napi_value exports) {
     porla::AddTorrentParams::Init(env, exports);
     porla::BDecode::Init(env, exports);
+    porla::CreateTorrent::Init(env, exports);
     porla::IpFilter::Init(env, exports);
     porla::Session::Init(env, exports);
     porla::TorrentInfo::Init(env, exports);

@@ -71,6 +71,7 @@
                 "./src/alert.cc",
                 "./src/bdecode.cc",
                 "./src/common.cc",
+                "./src/create_torrent.cc",
                 "./src/entry.cc",
                 "./src/ip_filter.cc",
                 "./src/porla-libtorrent.cc",

@@ -12,12 +12,24 @@ libtorrent::entry Entry::FromJson(napi_env env, napi_value value)
     bool isArray;
     napi_is_array(env, value, &isArray);
 
+    bool isBuffer;
+    napi_is_buffer(env, value, &isBuffer);
+
     if (type == napi_number)
     {
         int64_t res;
         napi_get_value_int64(env, value, &res);
 
         return libtorrent::entry::integer_type(res);
+    }
+
+    if (isBuffer)
+    {
+        size_t size;
+        char* buf;
+        napi_get_buffer_info(env, value, reinterpret_cast<void**>(&buf), &size);
+
+        return libtorrent::entry::preformatted_type(buf, buf + size);
     }
 
     if (type == napi_object && !isArray)
