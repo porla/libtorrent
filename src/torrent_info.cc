@@ -4,20 +4,27 @@
 
 #include "common.h"
 
+namespace lt = libtorrent;
 using porla::TorrentInfo;
 
 napi_ref TorrentInfo::constructor;
 
+TorrentInfo::TorrentInfo(std::shared_ptr<lt::torrent_info> ti)
+    : wrapper_(nullptr)
+{
+    ti_ = ti;
+}
+
 TorrentInfo::TorrentInfo(std::string const& filename, libtorrent::error_code& ec)
     : wrapper_(nullptr)
 {
-    ti_ = std::make_unique<libtorrent::torrent_info>(filename, ec);
+    ti_ = std::make_shared<lt::torrent_info>(filename, ec);
 }
 
 TorrentInfo::TorrentInfo(const char* buf, size_t len, libtorrent::error_code& ec)
     : wrapper_(nullptr)
 {
-    ti_ = std::make_unique<libtorrent::torrent_info>(buf, len, ec);
+    ti_ = std::make_shared<lt::torrent_info>(buf, len, ec);
 }
 
 void TorrentInfo::Destructor(napi_env env, void* native_obj, void* finalize_hint)
@@ -74,6 +81,13 @@ napi_value TorrentInfo::New(napi_env env, napi_callback_info cbinfo)
 
         break;
     }
+    case napi_external:
+    {
+        std::shared_ptr<lt::torrent_info>* ti;
+        napi_get_value_external(env, info.args[0], reinterpret_cast<void**>(&ti));
+        obj = new TorrentInfo(*ti);
+        break;
+    }
     default:
     {
         bool isBuffer;
@@ -101,7 +115,7 @@ napi_value TorrentInfo::New(napi_env env, napi_callback_info cbinfo)
     return info.this_arg;
 }
 
-libtorrent::torrent_info& TorrentInfo::Wrapped()
+std::shared_ptr<lt::torrent_info> TorrentInfo::Wrapped()
 {
-    return *ti_.get();
+    return ti_;
 }

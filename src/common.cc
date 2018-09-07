@@ -84,6 +84,13 @@ void Value::SetNamedProperty(const char* propertyName, uint32_t value)
     napi_set_named_property(env_, value_, propertyName, v);
 }
 
+void Value::SetNamedProperty(const char* propertyName, uint64_t value)
+{
+    napi_value v;
+    napi_create_double(env_, static_cast<double>(value), &v);
+    napi_set_named_property(env_, value_, propertyName, v);
+}
+
 bool Value::ToBool()
 {
     bool result;

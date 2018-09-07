@@ -14,6 +14,9 @@
 #define PORLA_GETTER_DESCRIPTOR(name, function) \
     { name, nullptr, nullptr, function, nullptr, 0, napi_enumerable, 0 }
 
+#define PORLA_GETSET_DESCRIPTOR(name, getter, setter) \
+    { name, nullptr, nullptr, getter, setter, 0, napi_enumerable, 0 }
+
 #define PORLA_VALUE_DESCRIPTOR(name, value) \
     { name, nullptr, nullptr, nullptr, nullptr, value, napi_default, 0 }
 
@@ -102,6 +105,7 @@ namespace porla
         void SetNamedProperty(const char* propertyName, int64_t value);
         void SetNamedProperty(const char* propertyName, std::string const& value);
         void SetNamedProperty(const char* propertyName, uint32_t value);
+        void SetNamedProperty(const char* propertyName, uint64_t value);
         bool ToBool();
         int32_t ToInt32();
         std::string ToString();

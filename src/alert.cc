@@ -628,7 +628,10 @@ napi_value Alert::TorrentDeleteFailedAlert(napi_env env, lt::torrent_delete_fail
 napi_value Alert::SaveResumeDataAlert(napi_env env, lt::save_resume_data_alert* alert)
 {
     napi_value value = TorrentAlert(env, alert);
-    // TODO
+
+    napi_value params = WrapExternal<AddTorrentParams, lt::add_torrent_params>(env, &alert->params);
+    napi_set_named_property(env, value, "params", params);
+
     return value;
 }
 

@@ -1,5 +1,6 @@
 #include <node_api.h>
 
+#include "add_torrent_params.h"
 #include "bdecode.h"
 #include "ip_filter.h"
 #include "session.h"
@@ -15,6 +16,7 @@ extern "C" FILE * __cdecl __iob_func(void) { return _iob; }
 #endif
 
 napi_value Init(napi_env env, napi_value exports) {
+    porla::AddTorrentParams::Init(env, exports);
     porla::BDecode::Init(env, exports);
     porla::IpFilter::Init(env, exports);
     porla::Session::Init(env, exports);

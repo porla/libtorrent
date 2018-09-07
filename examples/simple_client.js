@@ -29,10 +29,11 @@ function alertHandler(err, result) {
 session.wait_for_alert(500, alertHandler);
 
 fs.readFile(process.argv[2], (err, buf) => {
-    session.async_add_torrent({
-        save_path: __dirname,
-        ti: new lt.torrent_info(buf)
-    });
+    const params = new lt.add_torrent_params();
+    params.save_path = './';
+    params.ti = new lt.torrent_info(buf);
+
+    session.async_add_torrent(params);
 });
 
 function update() {

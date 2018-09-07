@@ -224,10 +224,11 @@ napi_value Session::AddTorrent(napi_env env, napi_callback_info cbinfo)
         return nullptr;
     }
 
-    auto params = AddTorrentParams::Parse(env, info.args[0]);
+    Value v(env, info.args[0]);
+    auto params = v.Unwrap<AddTorrentParams>();
 
     libtorrent::error_code ec;
-    libtorrent::torrent_handle handle = info.wrap->session_->add_torrent(params, ec);
+    libtorrent::torrent_handle handle = info.wrap->session_->add_torrent(params->Wrapped(), ec);
 
     if (ec)
     {
@@ -264,8 +265,10 @@ napi_value Session::AsyncAddTorrent(napi_env env, napi_callback_info cbinfo)
         return nullptr;
     }
 
-    auto params = AddTorrentParams::Parse(env, info.args[0]);
-    info.wrap->session_->async_add_torrent(params);
+    Value v(env, info.args[0]);
+    auto params = v.Unwrap<AddTorrentParams>();
+
+    info.wrap->session_->async_add_torrent(params->Wrapped());
 
     return nullptr;
 }

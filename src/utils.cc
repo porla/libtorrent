@@ -2,9 +2,12 @@
 
 #include <libtorrent/fingerprint.hpp>
 #include <libtorrent/session.hpp>
+#include <libtorrent/write_resume_data.hpp>
 #include <vector>
 
+#include "add_torrent_params.h"
 #include "common.h"
+#include "entry.h"
 #include "settings_pack.h"
 
 namespace lt = libtorrent;
@@ -56,14 +59,41 @@ napi_status Utils::Init(napi_env env, napi_value exports)
 
     std::vector<napi_property_descriptor> properties
     {
+        PORLA_METHOD_DESCRIPTOR("bencode", BEncode),
         PORLA_METHOD_DESCRIPTOR("generate_fingerprint", GenerateFingerprint),
         PORLA_METHOD_DESCRIPTOR("high_performance_seed", HighPerformanceSeed),
         PORLA_METHOD_DESCRIPTOR("min_memory_usage", MinMemoryUsage),
         PORLA_VALUE_DESCRIPTOR("download_priority", download_priority),
         PORLA_VALUE_DESCRIPTOR("alert", alert),
+        PORLA_METHOD_DESCRIPTOR("write_resume_data", WriteResumeData),
+        PORLA_METHOD_DESCRIPTOR("write_resume_data_buf", WriteResumeDataBuf)
     };
 
     return napi_define_properties(env, exports, properties.size(), properties.data());
+}
+
+napi_value Utils::BEncode(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Dummy>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    auto entry = Entry::FromJson(env, info.args[0]);
+
+    std::vector<char> buf;
+    lt::bencode(std::back_inserter(buf), entry);
+
+    napi_value val;
+    char* data;
+    napi_create_buffer(env, buf.size(), reinterpret_cast<void**>(&data), &val);
+
+    std::copy(buf.begin(), buf.end(), data);
+
+    return val;
 }
 
 napi_value Utils::GenerateFingerprint(napi_env env, napi_callback_info cbinfo)
@@ -116,4 +146,44 @@ napi_value Utils::HighPerformanceSeed(napi_env env, napi_callback_info cbinfo)
 napi_value Utils::MinMemoryUsage(napi_env env, napi_callback_info cbinfo)
 {
     return SettingsPack::Objectify(env, lt::min_memory_usage());
+}
+
+napi_value Utils::WriteResumeData(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Dummy>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    Value v(env, info.args[0]);
+    auto params = v.Unwrap<AddTorrentParams>();
+    auto entry = lt::write_resume_data(params->Wrapped());
+
+    return Entry::ToJson(env, entry);
+}
+
+napi_value Utils::WriteResumeDataBuf(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Dummy>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    Value v(env, info.args[0]);
+    auto params = v.Unwrap<AddTorrentParams>();
+    auto buf = lt::write_resume_data_buf(params->Wrapped());
+
+    napi_value val;
+    char* data;
+    napi_create_buffer(env, buf.size(), reinterpret_cast<void**>(&data), &val);
+
+    std::copy(buf.begin(), buf.end(), data);
+
+    return val;
 }
