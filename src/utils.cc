@@ -1,6 +1,7 @@
 #include "utils.h"
 
 #include <libtorrent/fingerprint.hpp>
+#include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/write_resume_data.hpp>
 #include <vector>
@@ -65,6 +66,7 @@ napi_status Utils::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("min_memory_usage", MinMemoryUsage),
         PORLA_VALUE_DESCRIPTOR("download_priority", download_priority),
         PORLA_VALUE_DESCRIPTOR("alert", alert),
+        PORLA_METHOD_DESCRIPTOR("read_resume_data", ReadResumeData),
         PORLA_METHOD_DESCRIPTOR("write_resume_data", WriteResumeData),
         PORLA_METHOD_DESCRIPTOR("write_resume_data_buf", WriteResumeDataBuf)
     };
@@ -146,6 +148,33 @@ napi_value Utils::HighPerformanceSeed(napi_env env, napi_callback_info cbinfo)
 napi_value Utils::MinMemoryUsage(napi_env env, napi_callback_info cbinfo)
 {
     return SettingsPack::Objectify(env, lt::min_memory_usage());
+}
+
+napi_value Utils::ReadResumeData(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Dummy>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    auto entry = Entry::FromJson(env, info.args[0]);
+    
+    std::vector<char> buf;
+    lt::bencode(std::back_inserter(buf), entry);
+
+    lt::error_code ec;
+    auto params = lt::read_resume_data(buf, ec);
+
+    if (ec)
+    {
+        napi_throw_error(env, nullptr, ec.message().c_str());
+        return nullptr;
+    }
+
+    return WrapExternal<AddTorrentParams, lt::add_torrent_params>(env, &params);
 }
 
 napi_value Utils::WriteResumeData(napi_env env, napi_callback_info cbinfo)
