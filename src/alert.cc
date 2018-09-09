@@ -5,6 +5,7 @@
 #include "torrent_handle.h"
 
 #include <libtorrent/torrent_handle.hpp>
+#include <napi.h>
 
 using porla::Alert;
 namespace lt = libtorrent;
@@ -629,8 +630,10 @@ napi_value Alert::SaveResumeDataAlert(napi_env env, lt::save_resume_data_alert* 
 {
     napi_value value = TorrentAlert(env, alert);
 
-    napi_value params = WrapExternal<AddTorrentParams, lt::add_torrent_params>(env, &alert->params);
-    napi_set_named_property(env, value, "params", params);
+    Napi::Value arg = Napi::External<lt::add_torrent_params>::New(env, &alert->params);
+    Napi::Object inst = AddTorrentParams::NewInstance(arg);
+
+    napi_set_named_property(env, value, "params", inst);
 
     return value;
 }

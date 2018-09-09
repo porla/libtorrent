@@ -8,74 +8,34 @@
 
 using porla::AddTorrentParams;
 
-napi_ref AddTorrentParams::constructor;
+Napi::FunctionReference AddTorrentParams::constructor;
 
-AddTorrentParams::AddTorrentParams()
-    : wrapper_(nullptr)
+Napi::Object AddTorrentParams::Init(Napi::Env env, Napi::Object exports)
 {
-    p_ = std::make_unique<libtorrent::add_torrent_params>();
+    Napi::HandleScope scope(env);
+
+    Napi::Function func = DefineClass(env, "AddTorrentParams", {
+        InstanceAccessor("save_path", &AddTorrentParams::Get_SavePath, &AddTorrentParams::Set_SavePath),
+        InstanceAccessor("ti", &AddTorrentParams::Get_TorrentInfo, &AddTorrentParams::Set_TorrentInfo),
+    });
+
+    constructor = Napi::Persistent(func);
+    constructor.SuppressDestruct();
+
+    exports.Set("add_torrent_params", func);
+
+    return exports;
 }
 
-AddTorrentParams::AddTorrentParams(libtorrent::add_torrent_params const& params)
-    : wrapper_(nullptr)
+Napi::Object AddTorrentParams::NewInstance(Napi::Value arg)
 {
-    p_ = std::make_unique<libtorrent::add_torrent_params>(params);
+    return constructor.New({ arg });
 }
 
-void AddTorrentParams::Destructor(napi_env env, void* native_obj, void* finalize_hint)
+AddTorrentParams::AddTorrentParams(const Napi::CallbackInfo& info)
+    : Napi::ObjectWrap<AddTorrentParams>(info)
 {
-    delete static_cast<AddTorrentParams*>(native_obj);
-}
-
-napi_status AddTorrentParams::Init(napi_env env, napi_value exports)
-{
-    std::vector<napi_property_descriptor> properties
-    {
-        PORLA_GETSET_DESCRIPTOR("save_path", Get_SavePath, Set_SavePath),
-        PORLA_GETSET_DESCRIPTOR("ti", Get_TorrentInfo, Set_TorrentInfo)
-    };
-
-    napi_status status;
-    napi_value cons;
-
-    status = napi_define_class(env, "AddTorrentParams", NAPI_AUTO_LENGTH, New, nullptr, properties.size(), properties.data(), &cons);
-    if (status != napi_ok) return status;
-
-    status = napi_create_reference(env, cons, 1, &constructor);
-    if (status != napi_ok) return status;
-
-    status = napi_set_named_property(env, exports, "add_torrent_params", cons);
-    if (status != napi_ok) return status;
-
-    return napi_ok;
-}
-
-napi_value AddTorrentParams::New(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<AddTorrentParams>(env, cbinfo);
-
-    if (info.new_target == nullptr)
-    {
-        napi_throw_error(env, nullptr, "Not a construct (new) call");
-        return nullptr;
-    }
-
-    AddTorrentParams* obj = nullptr;
-
-    if (info.args.size() > 0)
-    {
-        libtorrent::add_torrent_params* p;
-        napi_get_value_external(env, info.args[0], reinterpret_cast<void**>(&p));
-        obj = new AddTorrentParams(*p);
-    }
-    else
-    {
-        obj = new AddTorrentParams();
-    }
-
-    napi_wrap(env, info.this_arg, obj, AddTorrentParams::Destructor, nullptr, &obj->wrapper_);
-
-    return info.this_arg;
+    p_ = std::make_unique<lt::add_torrent_params>();
 }
 
 libtorrent::add_torrent_params& AddTorrentParams::Wrapped()
@@ -83,46 +43,24 @@ libtorrent::add_torrent_params& AddTorrentParams::Wrapped()
     return *p_.get();
 }
 
-napi_value AddTorrentParams::Get_SavePath(napi_env env, napi_callback_info cbinfo)
+Napi::Value AddTorrentParams::Get_SavePath(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<AddTorrentParams>(env, cbinfo);
-
-    napi_value sp;
-    napi_create_string_utf8(env, info.wrap->p_->save_path.c_str(), NAPI_AUTO_LENGTH, &sp);
-
-    return sp;
+    return Napi::String::New(info.Env(), p_->save_path);
 }
 
-napi_value AddTorrentParams::Get_TorrentInfo(napi_env env, napi_callback_info cbinfo)
+Napi::Value AddTorrentParams::Get_TorrentInfo(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<AddTorrentParams>(env, cbinfo);
-    auto ti = info.wrap->p_->ti;
-
-    if (ti)
-    {
-        return WrapExternal<TorrentInfo, std::shared_ptr<lt::torrent_info>>(env, &ti);
-    }
-
-    return nullptr;
+    auto arg = Napi::External<std::shared_ptr<lt::torrent_info>>::New(info.Env(), &p_->ti);
+    return TorrentInfo::NewInstance(arg);
 }
 
-napi_value AddTorrentParams::Set_SavePath(napi_env env, napi_callback_info cbinfo)
+void AddTorrentParams::Set_SavePath(const Napi::CallbackInfo& info, const Napi::Value& value)
 {
-    auto info = UnwrapCallback<AddTorrentParams>(env, cbinfo);
-
-    Value v(env, info.args[0]);
-    info.wrap->p_->save_path = v.ToString();
-
-    return nullptr;
+    p_->save_path = value.As<Napi::String>();
 }
 
-napi_value AddTorrentParams::Set_TorrentInfo(napi_env env, napi_callback_info cbinfo)
+void AddTorrentParams::Set_TorrentInfo(const Napi::CallbackInfo& info, const Napi::Value& value)
 {
-    auto info = UnwrapCallback<AddTorrentParams>(env, cbinfo);
-
-    Value v(env, info.args[0]);
-    info.wrap->p_->ti = v.Unwrap<TorrentInfo>()->Wrapped();
-
-    return nullptr;
+    TorrentInfo* ti = Napi::ObjectWrap<TorrentInfo>::Unwrap(value.As<Napi::Object>());
+    p_->ti = ti->Wrapped();
 }
-

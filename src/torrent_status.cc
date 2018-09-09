@@ -637,7 +637,8 @@ napi_value TorrentStatus::Get_TorrentFile(napi_env env, napi_callback_info cbinf
     
     if (auto ti = info.wrap->ts_->torrent_file.lock())
     {
-        return WrapExternal<TorrentInfo, std::shared_ptr<const lt::torrent_info>>(env, &ti);
+        auto arg = Napi::External<std::shared_ptr<const lt::torrent_info>>::New(env, &ti);
+        return TorrentInfo::NewInstance(arg);
     }
 
     napi_value null;

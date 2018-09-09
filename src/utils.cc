@@ -187,7 +187,8 @@ napi_value Utils::ReadResumeData(napi_env env, napi_callback_info cbinfo)
         return nullptr;
     }
 
-    return WrapExternal<AddTorrentParams, lt::add_torrent_params>(env, &params);
+    auto arg = Napi::External<lt::add_torrent_params>::New(env, &params);
+    return AddTorrentParams::NewInstance(arg);
 }
 
 napi_value Utils::WriteResumeData(napi_env env, napi_callback_info cbinfo)
