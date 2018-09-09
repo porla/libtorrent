@@ -1,81 +1,58 @@
 #include "entry.h"
 
+#include <napi.h>
+
 #include "common.h"
 
+namespace lt = libtorrent;
 using porla::Entry;
 
 libtorrent::entry Entry::FromJson(napi_env env, napi_value value)
 {
-    napi_valuetype type;
-    napi_typeof(env, value, &type);
+    Napi::Value v(env, value);
 
-    bool isArray;
-    napi_is_array(env, value, &isArray);
-
-    bool isBuffer;
-    napi_is_buffer(env, value, &isBuffer);
-
-    if (type == napi_number)
+    if (v.IsNumber())
     {
-        int64_t res;
-        napi_get_value_int64(env, value, &res);
-
-        return libtorrent::entry::integer_type(res);
+        return lt::entry::integer_type(v.As<Napi::Number>().Int64Value());
     }
 
-    if (isBuffer)
+    if (v.IsBuffer())
     {
-        size_t size;
-        char* buf;
-        napi_get_buffer_info(env, value, reinterpret_cast<void**>(&buf), &size);
-
-        return libtorrent::entry::preformatted_type(buf, buf + size);
+        auto buf = v.As<Napi::Buffer<char>>();
+        return lt::entry::preformatted_type(buf.Data(), buf.Data() + buf.Length());
     }
 
-    if (type == napi_object && !isArray)
+    if (v.IsObject() && !v.IsArray())
     {
-        libtorrent::entry::dictionary_type dict;
+        lt::entry::dictionary_type dict;
 
-        napi_value props;
-        napi_get_property_names(env, value, &props);
+        auto obj = v.As<Napi::Object>();
+        auto propertyNames = obj.GetPropertyNames();
 
-        uint32_t len;
-        napi_get_array_length(env, props, &len);
-
-        for (uint32_t i = 0; i < len; i++)
+        for (uint32_t i = 0; i < propertyNames.Length(); i++)
         {
-            napi_value property;
-            napi_get_element(env, props, i, &property);
+            auto prop = propertyNames.Get(i);
+            auto item = obj.Get(prop);
 
-            napi_value item;
-            napi_get_property(env, value, property, &item);
-
-            Value v(env, property);
-
-            dict.insert({ v.ToString(), FromJson(env, item) });
+            dict.insert({ prop.As<Napi::String>().Utf8Value(), FromJson(env, item) });
         }
 
         return dict;
     }
 
-    if (type == napi_string)
+    if (v.IsString())
     {
-        Value v(env, value);
-        return libtorrent::entry::string_type(v.ToString());
+        return v.As<Napi::String>().Utf8Value();
     }
 
-    if (isArray)
+    if (v.IsArray())
     {
-        libtorrent::entry::list_type list;
+        auto arr = v.As<Napi::Array>();
+        lt::entry::list_type list;
 
-        uint32_t len;
-        napi_get_array_length(env, value, &len);
-
-        for (uint32_t i = 0; i < len; i++)
+        for (uint32_t i = 0; i < arr.Length(); i++)
         {
-            napi_value item;
-            napi_get_element(env, value, i, &item);
-
+            auto item = arr.Get(i);
             list.push_back(FromJson(env, item));
         }
 
@@ -92,17 +69,11 @@ napi_value Entry::ToJson(napi_env env, libtorrent::entry const& entry)
     case libtorrent::entry::data_type::dictionary_t:
     {
         auto dict = entry.dict();
-
-        napi_value result;
-        napi_create_object(env, &result);
+        auto result = Napi::Object::New(env);
 
         for (auto const& p : dict)
         {
-            napi_set_named_property(
-                env,
-                result,
-                p.first.data(),
-                ToJson(env, p.second));
+            result.Set(p.first, ToJson(env, p.second));
         }
 
         return result;
@@ -111,27 +82,17 @@ napi_value Entry::ToJson(napi_env env, libtorrent::entry const& entry)
     case libtorrent::entry::data_type::int_t:
     {
         auto integer = entry.integer();
-
-        napi_value result;
-        napi_create_int64(env, integer, &result);
-
-        return result;
+        return Napi::Number::New(env, integer);
     }
 
     case libtorrent::entry::data_type::list_t:
     {
         auto list = entry.list();
-
-        napi_value result;
-        napi_create_array_with_length(env, list.size(), &result);
+        auto result = Napi::Array::New(env, list.size());
 
         for (size_t i = 0; i < list.size(); i++)
         {
-            napi_set_element(
-                env,
-                result,
-                i,
-                ToJson(env, list.at(i)));
+            result.Set(i, ToJson(env, list.at(i)));
         }
 
         return result;
@@ -140,24 +101,12 @@ napi_value Entry::ToJson(napi_env env, libtorrent::entry const& entry)
     case libtorrent::entry::data_type::preformatted_t:
     {
         auto pref = entry.preformatted();
-
-        char* data;
-        napi_value result;
-        napi_create_buffer(env, pref.size(), reinterpret_cast<void**>(&data), &result);
-
-        std::copy(pref.begin(), pref.end(), data);
-
-        return result;
+        return Napi::Buffer<char>::Copy(env, pref.data(), pref.size());
     }
 
     case libtorrent::entry::data_type::string_t:
     {
-        auto string = entry.string();
-
-        napi_value result;
-        napi_create_string_utf8(env, string.data(), string.size(), &result);
-
-        return result;
+        return Napi::String::New(env, entry.string());
     }
 
     case libtorrent::entry::data_type::undefined_t:

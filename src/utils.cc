@@ -1,5 +1,7 @@
 #include "utils.h"
 
+#include <napi.h>
+
 #include <libtorrent/fingerprint.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
@@ -160,13 +162,24 @@ napi_value Utils::ReadResumeData(napi_env env, napi_callback_info cbinfo)
         return nullptr;
     }
 
-    auto entry = Entry::FromJson(env, info.args[0]);
-    
-    std::vector<char> buf;
-    lt::bencode(std::back_inserter(buf), entry);
-
+    lt::add_torrent_params params;
     lt::error_code ec;
-    auto params = lt::read_resume_data(buf, ec);
+
+    Napi::Value v(env, info.args[0]);
+
+    if (v.IsBuffer())
+    {
+        auto b = v.As<Napi::Buffer<char>>();
+        std::vector<char> buf(b.Data(), b.Data() + b.Length());
+        params = lt::read_resume_data(buf, ec);
+    }
+    else
+    {
+        auto entry = Entry::FromJson(env, info.args[0]);
+        std::vector<char> buf;
+        lt::bencode(std::back_inserter(buf), entry);
+        params = lt::read_resume_data(buf, ec);
+    }
 
     if (ec)
     {

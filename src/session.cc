@@ -7,6 +7,8 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
 
+#include <napi.h>
+
 #include "add_torrent_params.h"
 #include "alert.h"
 #include "common.h"
@@ -103,6 +105,7 @@ napi_status Session::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("reopen_network_sockets", ReopenNetworkSockets),
         PORLA_METHOD_DESCRIPTOR("resume", Resume),
         PORLA_METHOD_DESCRIPTOR("save_state", SaveState),
+        PORLA_METHOD_DESCRIPTOR("save_state_buf", SaveStateBuffer),
         PORLA_METHOD_DESCRIPTOR("set_dht_settings", SetDhtSettings),
         PORLA_METHOD_DESCRIPTOR("set_ip_filter", SetIpFilter),
         PORLA_METHOD_DESCRIPTOR("set_peer_class", SetPeerClass),
@@ -701,22 +704,43 @@ napi_value Session::LoadState(napi_env env, napi_callback_info cbinfo)
         return nullptr;
     }
 
-    libtorrent::entry e = Entry::FromJson(env, info.args[0]);
+    Napi::Value v(env, info.args[0]);
 
-    std::vector<char> buf;
-    libtorrent::bencode(std::back_inserter(buf), e);
-
-    libtorrent::bdecode_node node;
-    libtorrent::error_code ec;
-    libtorrent::bdecode(buf, ec);
-
-    if (ec)
+    if (v.IsBuffer())
     {
-        napi_throw_error(env, nullptr, ec.message().c_str());
-        return nullptr;
-    }
+        auto buf = v.As<Napi::Buffer<char>>();
+        std::vector<char> b(buf.Data(), buf.Data() + buf.Length());
 
-    info.wrap->session_->load_state(node);
+        lt::error_code ec;
+        lt::bdecode_node node = lt::bdecode(b, ec);
+
+        if (ec)
+        {
+            napi_throw_error(env, nullptr, ec.message().c_str());
+            return nullptr;
+        }
+
+        info.wrap->session_->load_state(node);
+    }
+    else
+    {
+        libtorrent::entry e = Entry::FromJson(env, info.args[0]);
+
+        std::vector<char> buf;
+        libtorrent::bencode(std::back_inserter(buf), e);
+
+        libtorrent::bdecode_node node;
+        libtorrent::error_code ec;
+        libtorrent::bdecode(buf, ec);
+
+        if (ec)
+        {
+            napi_throw_error(env, nullptr, ec.message().c_str());
+            return nullptr;
+        }
+
+        info.wrap->session_->load_state(node);
+    }
 
     return nullptr;
 }
@@ -812,6 +836,19 @@ napi_value Session::SaveState(napi_env env, napi_callback_info cbinfo)
     info.wrap->session_->save_state(e);
 
     return Entry::ToJson(env, e);
+}
+
+napi_value Session::SaveStateBuffer(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+    //TODO: flags
+    libtorrent::entry e;
+    info.wrap->session_->save_state(e);
+
+    std::vector<char> buffer;
+    lt::bencode(std::back_inserter(buffer), e);
+
+    return Napi::Buffer<char>::Copy(env, buffer.data(), buffer.size());
 }
 
 napi_value Session::SetDhtSettings(napi_env env, napi_callback_info cbinfo)

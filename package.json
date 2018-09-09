@@ -11,6 +11,7 @@
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",
   "devDependencies": {
+    "node-addon-api": "^1.4.0",
     "node-gyp": "^3.8.0",
     "prebuildify": "^2.7.0"
   },

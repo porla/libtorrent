@@ -62,6 +62,7 @@ namespace porla
         static napi_value ReopenNetworkSockets(napi_env env, napi_callback_info callback_info);
         static napi_value Resume(napi_env env, napi_callback_info callback_info);
         static napi_value SaveState(napi_env env, napi_callback_info callback_info);
+        static napi_value SaveStateBuffer(napi_env env, napi_callback_info callback_info);
         static napi_value SetDhtSettings(napi_env env, napi_callback_info callback_info);
         static napi_value SetIpFilter(napi_env env, napi_callback_info callback_info);
         static napi_value SetPeerClass(napi_env env, napi_callback_info callback_info);

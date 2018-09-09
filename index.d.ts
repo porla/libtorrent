@@ -10,10 +10,35 @@ export declare interface add_torrent_params {
     trackers: string[];
 }
 
-export declare interface alert {
+export declare class alert {
     message: string;
     type: number;
     what: 'read_piece' | 'scrape_reply';
+
+    static all_categories: number;
+    static block_progress_notification: number;
+    static debug_notification: number;
+    static dht_log_notification: number;
+    static dht_notification: number;
+    static dht_operation_notification: number;
+    static error_notification: number;
+    static file_progress_notification: number;
+    static incoming_request_notification: number;
+    static ip_block_notification: number;
+    static peer_log_notification: number;
+    static peer_notification: number;
+    static performance_warning: number;
+    static picker_log_notification: number;
+    static piece_progress_notification: number;
+    static port_mapping_log_notification: number;
+    static port_mapping_notification: number;
+    static session_log_notification: number;
+    static stats_notification: number;
+    static status_notification: number;
+    static storage_notification: number;
+    static torrent_log_notification: number;
+    static tracker_notification: number;
+    static upload_notification: number;
 }
 
 export declare interface session_settings {
@@ -312,5 +337,13 @@ export declare class session {
 
     add_torrent(params: add_torrent_params): torrent_handle;
     pop_alerts(): Array<alert>;
+    save_state(): Object;
+    save_state_buf(): any; // TODO: buffer
     wait_for_alert(timeout: number, callback: (err: Error, result: boolean) => void): void;
 }
+
+export declare function bencode(obj: Object): any; // TODO: Buffer
+export declare function generate_fingerprint(name: string, major: number, minor?: number, rev?: number, tag?: number): string;
+export declare function read_resume_data(params: add_torrent_params) : Object;
+export declare function write_resume_data(params: add_torrent_params) : Object;
+export declare function write_resume_data_buf(params: add_torrent_params);

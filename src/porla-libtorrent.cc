@@ -1,4 +1,4 @@
-#include <node_api.h>
+#include <napi.h>
 
 #include "add_torrent_params.h"
 #include "bdecode.h"
@@ -16,7 +16,7 @@ FILE _iob[] = { *stdin, *stdout, *stderr };
 extern "C" FILE * __cdecl __iob_func(void) { return _iob; }
 #endif
 
-napi_value Init(napi_env env, napi_value exports) {
+Napi::Object Init(Napi::Env env, Napi::Object exports) {
     porla::AddTorrentParams::Init(env, exports);
     porla::BDecode::Init(env, exports);
     porla::CreateTorrent::Init(env, exports);
@@ -30,4 +30,4 @@ napi_value Init(napi_env env, napi_value exports) {
     return exports;
 }
 
-NAPI_MODULE(NODE_GYP_MODULE_NAME, Init)
+NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init)

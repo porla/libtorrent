@@ -63,7 +63,8 @@
                 "./vendor/boost-utility/include",
                 "./vendor/boost-variant/include",
                 "./vendor/boost-winapi/include",
-                "./vendor/libtorrent/include"
+                "./vendor/libtorrent/include",
+                "<!@(node -p \"require('node-addon-api').include\")"
             ],
             "sources":
             [
@@ -84,6 +85,7 @@
             ],
             "defines": [
                 "BOOST_ALL_NO_LIB",
+                "NAPI_DISABLE_CPP_EXCEPTIONS",
                 "TORRENT_NO_DEPRECATE",
                 "TORRENT_USE_OPENSSL"
             ],
