@@ -4,785 +4,432 @@
 
 #include <libtorrent/torrent_handle.hpp>
 
-#include "common.h"
 #include "torrent_info.h"
 #include "torrent_handle.h"
 
 using porla::TorrentStatus;
 
-napi_ref TorrentStatus::constructor;
+Napi::FunctionReference TorrentStatus::constructor;
 
-TorrentStatus::TorrentStatus(napi_env env, libtorrent::torrent_status const& ts)
-    : env_(env),
-    wrapper_(nullptr)
+Napi::Object TorrentStatus::Init(Napi::Env env, Napi::Object exports)
 {
-    ts_ = std::make_unique<libtorrent::torrent_status>(ts);
-}
+    Napi::HandleScope scope(env);
 
-void TorrentStatus::Destructor(napi_env env, void* native_obj, void* finalize_hint)
-{
-    delete static_cast<TorrentStatus*>(native_obj);
-}
-
-napi_status TorrentStatus::Init(napi_env env, napi_value exports)
-{
-    std::vector<napi_property_descriptor> properties
+    Napi::Function func = DefineClass(env, "TorrentStatus",
     {
-        PORLA_GETTER_DESCRIPTOR("active_time", Get_ActiveTime),
-        PORLA_GETTER_DESCRIPTOR("added_time", Get_AddedTime),
-        PORLA_GETTER_DESCRIPTOR("all_time_download", Get_AllTimeDownload),
-        PORLA_GETTER_DESCRIPTOR("all_time_upload", Get_AllTimeUpload),
-        PORLA_GETTER_DESCRIPTOR("announcing_to_dht", Get_AnnouncingToDht),
-        PORLA_GETTER_DESCRIPTOR("announcing_to_lsd", Get_AnnouncingToLsd),
-        PORLA_GETTER_DESCRIPTOR("announcing_to_trackers", Get_AnnouncingToTrackers),
-        PORLA_GETTER_DESCRIPTOR("block_size", Get_BlockSize),
-        PORLA_GETTER_DESCRIPTOR("completed_time", Get_CompletedTime),
-        PORLA_GETTER_DESCRIPTOR("connect_candidates", Get_ConnectCandidates),
-        PORLA_GETTER_DESCRIPTOR("connections_limit", Get_ConnectionsLimit),
-        PORLA_GETTER_DESCRIPTOR("current_tracker", Get_CurrentTracker),
-        PORLA_GETTER_DESCRIPTOR("distributed_copies", Get_DistributedCopies),
-        PORLA_GETTER_DESCRIPTOR("down_bandwidth_queue", Get_DownBandwidthQueue),
-        PORLA_GETTER_DESCRIPTOR("download_payload_rate", Get_DownloadPayloadRate),
-        PORLA_GETTER_DESCRIPTOR("download_rate", Get_DownloadRate),
-        PORLA_GETTER_DESCRIPTOR("errc", Get_Errc),
-        PORLA_GETTER_DESCRIPTOR("error_file", Get_ErrorFile),
-        PORLA_GETTER_DESCRIPTOR("finished_duration", Get_FinishedDuration),
-        PORLA_GETTER_DESCRIPTOR("flags", Get_Flags),
-        PORLA_GETTER_DESCRIPTOR("handle", Get_Handle),
-        PORLA_GETTER_DESCRIPTOR("has_incoming", Get_HasIncoming),
-        PORLA_GETTER_DESCRIPTOR("has_metadata", Get_HasMetadata),
-        PORLA_GETTER_DESCRIPTOR("info_hash", Get_InfoHash),
-        PORLA_GETTER_DESCRIPTOR("is_finished", Get_IsFinished),
-        PORLA_GETTER_DESCRIPTOR("is_seeding", Get_IsSeeding),
-        PORLA_GETTER_DESCRIPTOR("last_download", Get_LastDownload),
-        PORLA_GETTER_DESCRIPTOR("last_seen_complete", Get_LastSeenComplete),
-        PORLA_GETTER_DESCRIPTOR("last_upload", Get_LastUpload),
-        PORLA_GETTER_DESCRIPTOR("list_peers", Get_ListPeers),
-        PORLA_GETTER_DESCRIPTOR("list_seeds", Get_ListSeeds),
-        PORLA_GETTER_DESCRIPTOR("moving_storage", Get_MovingStorage),
-        PORLA_GETTER_DESCRIPTOR("name", Get_Name),
-        PORLA_GETTER_DESCRIPTOR("need_save_resume", Get_NeedSaveResume),
-        PORLA_GETTER_DESCRIPTOR("next_announce", Get_NextAnnounce),
-        PORLA_GETTER_DESCRIPTOR("num_complete", Get_NumComplete),
-        PORLA_GETTER_DESCRIPTOR("num_connections", Get_NumConnections),
-        PORLA_GETTER_DESCRIPTOR("num_incomplete", Get_NumIncomplete),
-        PORLA_GETTER_DESCRIPTOR("num_peers", Get_NumPeers),
-        PORLA_GETTER_DESCRIPTOR("num_pieces", Get_NumPieces),
-        PORLA_GETTER_DESCRIPTOR("num_seeds", Get_NumSeeds),
-        PORLA_GETTER_DESCRIPTOR("num_uploads", Get_NumUploads),
-        // TODO: pieces
-        PORLA_GETTER_DESCRIPTOR("progress", Get_Progress),
-        PORLA_GETTER_DESCRIPTOR("queue_position", Get_QueuePosition),
-        PORLA_GETTER_DESCRIPTOR("save_path", Get_SavePath),
-        PORLA_GETTER_DESCRIPTOR("seed_rank", Get_SeedRank),
-        PORLA_GETTER_DESCRIPTOR("seeding_duration", Get_SeedingDuration),
-        PORLA_GETTER_DESCRIPTOR("state", Get_State),
-        PORLA_GETTER_DESCRIPTOR("storage_mode", Get_StorageMode),
-        PORLA_GETTER_DESCRIPTOR("torrent_file", Get_TorrentFile),
-        PORLA_GETTER_DESCRIPTOR("total", Get_Total),
-        PORLA_GETTER_DESCRIPTOR("total_done", Get_TotalDone),
-        PORLA_GETTER_DESCRIPTOR("total_download", Get_TotalDownload),
-        PORLA_GETTER_DESCRIPTOR("total_failed_bytes", Get_TotalFailedBytes),
-        PORLA_GETTER_DESCRIPTOR("total_payload_download", Get_TotalPayloadDownload),
-        PORLA_GETTER_DESCRIPTOR("total_payload_upload", Get_TotalPayloadUpload),
-        PORLA_GETTER_DESCRIPTOR("total_redundant_bytes", Get_TotalRedundantBytes),
-        PORLA_GETTER_DESCRIPTOR("total_upload", Get_TotalUpload),
-        PORLA_GETTER_DESCRIPTOR("total_wanted", Get_TotalWanted),
-        PORLA_GETTER_DESCRIPTOR("total_wanted_done", Get_TotalWantedDone),
-        PORLA_GETTER_DESCRIPTOR("up_bandwidth_queue", Get_UpBandwidthQueue),
-        PORLA_GETTER_DESCRIPTOR("upload_payload_rate", Get_UploadPayloadRate),
-        PORLA_GETTER_DESCRIPTOR("upload_rate", Get_UploadRate),
-        PORLA_GETTER_DESCRIPTOR("uploads_limit", Get_UploadsLimit),
-        // TODO: verified pieces
-    };
+        InstanceAccessor("added_time", &TorrentStatus::Get_AddedTime, nullptr),
+        InstanceAccessor("all_time_download", &TorrentStatus::Get_AllTimeDownload, nullptr),
+        InstanceAccessor("all_time_upload", &TorrentStatus::Get_AllTimeUpload, nullptr),
+        InstanceAccessor("announcing_to_dht", &TorrentStatus::Get_AnnouncingToDht, nullptr),
+        InstanceAccessor("announcing_to_lsd", &TorrentStatus::Get_AnnouncingToLsd, nullptr),
+        InstanceAccessor("announcing_to_trackers", &TorrentStatus::Get_AnnouncingToTrackers, nullptr),
+        InstanceAccessor("block_size", &TorrentStatus::Get_BlockSize, nullptr),
+        InstanceAccessor("completed_time", &TorrentStatus::Get_CompletedTime, nullptr),
+        InstanceAccessor("connect_candidates", &TorrentStatus::Get_ConnectCandidates, nullptr),
+        InstanceAccessor("connections_limit", &TorrentStatus::Get_ConnectionsLimit, nullptr),
+        InstanceAccessor("current_tracker", &TorrentStatus::Get_CurrentTracker, nullptr),
+        InstanceAccessor("distributed_copies", &TorrentStatus::Get_DistributedCopies, nullptr),
+        InstanceAccessor("down_bandwidth_queue", &TorrentStatus::Get_DownBandwidthQueue, nullptr),
+        InstanceAccessor("download_payload_rate", &TorrentStatus::Get_DownloadPayloadRate, nullptr),
+        InstanceAccessor("download_rate", &TorrentStatus::Get_DownloadRate, nullptr),
+        InstanceAccessor("errc", &TorrentStatus::Get_Errc, nullptr),
+        InstanceAccessor("error_file", &TorrentStatus::Get_ErrorFile, nullptr),
+        InstanceAccessor("finished_duration", &TorrentStatus::Get_FinishedDuration, nullptr),
+        InstanceAccessor("flags", &TorrentStatus::Get_Flags, nullptr),
+        InstanceAccessor("handle", &TorrentStatus::Get_Handle, nullptr),
+        InstanceAccessor("has_incoming", &TorrentStatus::Get_HasIncoming, nullptr),
+        InstanceAccessor("has_metadata", &TorrentStatus::Get_HasMetadata, nullptr),
+        InstanceAccessor("info_hash", &TorrentStatus::Get_InfoHash, nullptr),
+        InstanceAccessor("is_finished", &TorrentStatus::Get_IsFinished, nullptr),
+        InstanceAccessor("is_seeding", &TorrentStatus::Get_IsSeeding, nullptr),
+        InstanceAccessor("last_download", &TorrentStatus::Get_LastDownload, nullptr),
+        InstanceAccessor("last_seen_complete", &TorrentStatus::Get_LastSeenComplete, nullptr),
+        InstanceAccessor("last_upload", &TorrentStatus::Get_LastUpload, nullptr),
+        InstanceAccessor("list_peers", &TorrentStatus::Get_ListPeers, nullptr),
+        InstanceAccessor("list_seeds", &TorrentStatus::Get_ListSeeds, nullptr),
+        InstanceAccessor("moving_storage", &TorrentStatus::Get_MovingStorage, nullptr),
+        InstanceAccessor("name", &TorrentStatus::Get_Name, nullptr),
+        InstanceAccessor("need_save_resume", &TorrentStatus::Get_NeedSaveResume, nullptr),
+        InstanceAccessor("next_announce", &TorrentStatus::Get_NextAnnounce, nullptr),
+        InstanceAccessor("num_complete", &TorrentStatus::Get_NumComplete, nullptr),
+        InstanceAccessor("num_connections", &TorrentStatus::Get_NumConnections, nullptr),
+        InstanceAccessor("num_incomplete", &TorrentStatus::Get_NumIncomplete, nullptr),
+        InstanceAccessor("num_peers", &TorrentStatus::Get_NumPeers, nullptr),
+        InstanceAccessor("num_pieces", &TorrentStatus::Get_NumPieces, nullptr),
+        InstanceAccessor("num_seeds", &TorrentStatus::Get_NumSeeds, nullptr),
+        InstanceAccessor("num_uploads", &TorrentStatus::Get_NumUploads, nullptr),
+        // TODO piecesInstanceAccessor("num_uploads", &TorrentStatus::Get_NumUploads, nullptr),
+        InstanceAccessor("progress", &TorrentStatus::Get_Progress, nullptr),
+        InstanceAccessor("queue_position", &TorrentStatus::Get_QueuePosition, nullptr),
+        InstanceAccessor("save_path", &TorrentStatus::Get_SavePath, nullptr),
+        InstanceAccessor("seed_rank", &TorrentStatus::Get_SeedRank, nullptr),
+        InstanceAccessor("seeding_duration", &TorrentStatus::Get_SeedingDuration, nullptr),
+        InstanceAccessor("state", &TorrentStatus::Get_State, nullptr),
+        InstanceAccessor("storage_mode", &TorrentStatus::Get_StorageMode, nullptr),
+        InstanceAccessor("torrent_file", &TorrentStatus::Get_TorrentFile, nullptr),
+        InstanceAccessor("total", &TorrentStatus::Get_Total, nullptr),
+        InstanceAccessor("total_done", &TorrentStatus::Get_TotalDone, nullptr),
+        InstanceAccessor("total_download", &TorrentStatus::Get_TotalDownload, nullptr),
+        InstanceAccessor("total_failed_bytes", &TorrentStatus::Get_TotalFailedBytes, nullptr),
+        InstanceAccessor("total_payload_download", &TorrentStatus::Get_TotalPayloadDownload, nullptr),
+        InstanceAccessor("total_payload_upload", &TorrentStatus::Get_TotalPayloadUpload, nullptr),
+        InstanceAccessor("total_redundant_bytes", &TorrentStatus::Get_TotalRedundantBytes, nullptr),
+        InstanceAccessor("total_upload", &TorrentStatus::Get_TotalUpload, nullptr),
+        InstanceAccessor("total_wanted", &TorrentStatus::Get_TotalWanted, nullptr),
+        InstanceAccessor("total_wanted_done", &TorrentStatus::Get_TotalWantedDone, nullptr),
+        InstanceAccessor("up_bandwidth_queue", &TorrentStatus::Get_UpBandwidthQueue, nullptr),
+        InstanceAccessor("upload_payload_rate", &TorrentStatus::Get_UploadPayloadRate, nullptr),
+        InstanceAccessor("upload_rate", &TorrentStatus::Get_UploadRate, nullptr),
+        InstanceAccessor("uploads_limit", &TorrentStatus::Get_UploadsLimit, nullptr),
+        // TODO verified pieces
+    });
 
-    napi_status status;
-    napi_value cons;
+    constructor = Napi::Persistent(func);
+    constructor.SuppressDestruct();
 
-    status = napi_define_class(env, "TorrentStatus", NAPI_AUTO_LENGTH, New, nullptr, properties.size(), properties.data(), &cons);
-    if (status != napi_ok) return status;
-
-    status = napi_create_reference(env, cons, 1, &constructor);
-    if (status != napi_ok) return status;
-
-    return napi_ok;
+    return exports;
 }
 
-napi_value TorrentStatus::New(napi_env env, napi_callback_info callback_info)
+Napi::Object TorrentStatus::NewInstance(Napi::Value arg)
 {
-    napi_value target;
-    napi_get_new_target(env, callback_info, &target);
+    return constructor.New({ arg });
+}
 
-    if (target == nullptr)
+TorrentStatus::TorrentStatus(const Napi::CallbackInfo& info)
+    : Napi::ObjectWrap<TorrentStatus>(info)
+{
+    auto val = info[0].As<Napi::External<lt::torrent_status>>();
+    ts_ = std::make_unique<libtorrent::torrent_status>(*val.Data());
+}
+
+Napi::Value TorrentStatus::Get_AddedTime(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->added_time);
+}
+
+Napi::Value TorrentStatus::Get_AllTimeDownload(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->all_time_download);
+}
+
+Napi::Value TorrentStatus::Get_AllTimeUpload(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->all_time_upload);
+}
+
+Napi::Value TorrentStatus::Get_AnnouncingToDht(const Napi::CallbackInfo& info)
+{
+    return Napi::Boolean::New(info.Env(), ts_->announcing_to_dht);
+}
+
+Napi::Value TorrentStatus::Get_AnnouncingToLsd(const Napi::CallbackInfo& info)
+{
+    return Napi::Boolean::New(info.Env(), ts_->announcing_to_lsd);
+}
+
+Napi::Value TorrentStatus::Get_AnnouncingToTrackers(const Napi::CallbackInfo& info)
+{
+    return Napi::Boolean::New(info.Env(), ts_->announcing_to_trackers);
+}
+
+Napi::Value TorrentStatus::Get_BlockSize(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->block_size);
+}
+
+Napi::Value TorrentStatus::Get_CompletedTime(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->completed_time);
+}
+
+Napi::Value TorrentStatus::Get_ConnectCandidates(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->connect_candidates);
+}
+
+Napi::Value TorrentStatus::Get_ConnectionsLimit(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->connections_limit);
+}
+
+Napi::Value TorrentStatus::Get_CurrentTracker(const Napi::CallbackInfo& info)
+{
+    return Napi::String::New(info.Env(), ts_->current_tracker);
+}
+
+Napi::Value TorrentStatus::Get_DistributedCopies(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->distributed_copies);
+}
+
+Napi::Value TorrentStatus::Get_DownBandwidthQueue(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->down_bandwidth_queue);
+}
+
+Napi::Value TorrentStatus::Get_DownloadPayloadRate(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->download_payload_rate);
+}
+
+Napi::Value TorrentStatus::Get_DownloadRate(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), ts_->download_rate);
+}
+
+Napi::Value TorrentStatus::Get_Errc(const Napi::CallbackInfo& info)
+{
+    if (ts_->errc)
     {
-        napi_throw_error(env, nullptr, "Not a construct (new) call");
-        return nullptr;
+        auto err = Napi::Object::New(info.Env());
+        err.Set("message", Napi::String::New(info.Env(), ts_->errc.message()));
+        err.Set("value", Napi::Number::New(info.Env(), ts_->errc.value()));
+        return err;
     }
 
-    size_t argc = 1;
-    napi_value args[1];
-    napi_value _this;
-    NAPI_CALL(env, napi_get_cb_info(env, callback_info, &argc, args, &_this, nullptr));
-
-    libtorrent::torrent_status* ts;
-    napi_get_value_external(env, args[0], reinterpret_cast<void**>(&ts));
-
-    TorrentStatus* obj = new TorrentStatus(env, *ts);
-    NAPI_CALL(env, napi_wrap(env, _this, obj, TorrentStatus::Destructor, nullptr, &obj->wrapper_));
-
-    return _this;
+    return info.Env().Null();
 }
 
-napi_value TorrentStatus::Get_ActiveTime(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_ErrorFile(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int64(env, libtorrent::total_seconds(info.wrap->ts_->active_duration), &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), static_cast<int32_t>(ts_->error_file));
 }
 
-napi_value TorrentStatus::Get_AddedTime(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_FinishedDuration(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->added_time, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->finished_duration.count());
 }
 
-napi_value TorrentStatus::Get_AllTimeDownload(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_Flags(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->all_time_download, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), static_cast<uint64_t>(ts_->flags));
 }
 
-napi_value TorrentStatus::Get_AllTimeUpload(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_Handle(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->all_time_upload, &val);
-
-    return val;
+    auto arg = Napi::External<lt::torrent_handle>::New(info.Env(), &ts_->handle);
+    return TorrentHandle::NewInstance(arg);
 }
 
-napi_value TorrentStatus::Get_AnnouncingToDht(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_HasIncoming(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_get_boolean(env, info.wrap->ts_->announcing_to_dht, &val);
-
-    return val;
+    return Napi::Boolean::New(info.Env(), ts_->has_incoming);
 }
 
-napi_value TorrentStatus::Get_AnnouncingToLsd(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_HasMetadata(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_get_boolean(env, info.wrap->ts_->announcing_to_lsd, &val);
-
-    return val;
+    return Napi::Boolean::New(info.Env(), ts_->has_metadata);
 }
 
-napi_value TorrentStatus::Get_AnnouncingToTrackers(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_InfoHash(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_get_boolean(env, info.wrap->ts_->announcing_to_trackers, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_BlockSize(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->block_size, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_CompletedTime(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->completed_time, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_ConnectCandidates(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->connect_candidates, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_ConnectionsLimit(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->connections_limit, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_CurrentTracker(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_string_utf8(env, info.wrap->ts_->current_tracker.c_str(), NAPI_AUTO_LENGTH, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_DistributedCopies(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_double(env, info.wrap->ts_->distributed_copies, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_DownBandwidthQueue(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->down_bandwidth_queue, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_DownloadPayloadRate(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->download_payload_rate, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_DownloadRate(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->download_rate, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_Errc(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    if (info.wrap->ts_->errc)
-    {
-        napi_value obj;
-        napi_create_object(env, &obj);
-
-        Value v(env, obj);
-        v.SetNamedProperty("message", std::string(info.wrap->ts_->errc.message().c_str()));
-        v.SetNamedProperty("value", info.wrap->ts_->errc.value());
-
-        return obj;
-    }
-
-    return nullptr;
-}
-
-napi_value TorrentStatus::Get_ErrorFile(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, static_cast<int32_t>(info.wrap->ts_->error_file), &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_FinishedDuration(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->finished_duration.count(), &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_Flags(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_double(env, static_cast<uint64_t>(info.wrap->ts_->flags), &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_Handle(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    return WrapExternal<TorrentHandle, lt::torrent_handle>(env, &info.wrap->ts_->handle);
-}
-
-napi_value TorrentStatus::Get_HasIncoming(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_get_boolean(env, info.wrap->ts_->has_incoming, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_HasMetadata(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_get_boolean(env, info.wrap->ts_->has_metadata, &val);
-
-    return val;
-}
-
-napi_value TorrentStatus::Get_InfoHash(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
     std::stringstream ss;
-    ss << info.wrap->ts_->info_hash;
-
-    napi_value val;
-    napi_create_string_utf8(env, ss.str().c_str(), NAPI_AUTO_LENGTH, &val);
-
-    return val;
+    ss << ts_->info_hash;
+    return Napi::String::New(info.Env(), ss.str());
 }
 
-napi_value TorrentStatus::Get_IsFinished(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_IsFinished(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_get_boolean(env, info.wrap->ts_->is_finished, &val);
-
-    return val;
+    return Napi::Boolean::New(info.Env(), ts_->is_finished);
 }
 
-napi_value TorrentStatus::Get_IsSeeding(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_IsSeeding(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_get_boolean(env, info.wrap->ts_->is_seeding, &val);
-
-    return val;
+    return Napi::Boolean::New(info.Env(), ts_->is_seeding);
 }
 
-napi_value TorrentStatus::Get_LastDownload(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_LastDownload(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int64(env, libtorrent::time_point_cast<libtorrent::seconds>(info.wrap->ts_->last_download).time_since_epoch().count(), &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), lt::time_point_cast<lt::seconds>(ts_->last_download).time_since_epoch().count());
 }
 
-napi_value TorrentStatus::Get_LastSeenComplete(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_LastSeenComplete(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->last_seen_complete, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->last_seen_complete);
 }
 
-napi_value TorrentStatus::Get_LastUpload(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_LastUpload(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int64(env, libtorrent::time_point_cast<libtorrent::seconds>(info.wrap->ts_->last_upload).time_since_epoch().count(), &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), lt::time_point_cast<lt::seconds>(ts_->last_upload).time_since_epoch().count());
 }
 
-napi_value TorrentStatus::Get_ListPeers(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_ListPeers(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->list_peers, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->list_peers);
 }
 
-napi_value TorrentStatus::Get_ListSeeds(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_ListSeeds(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->list_seeds, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->list_seeds);
 }
 
-napi_value TorrentStatus::Get_MovingStorage(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_MovingStorage(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_get_boolean(env, info.wrap->ts_->moving_storage, &val);
-
-    return val;
+    return Napi::Boolean::New(info.Env(), ts_->moving_storage);
 }
 
-napi_value TorrentStatus::Get_Name(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_Name(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_string_utf8(env, info.wrap->ts_->name.c_str(), NAPI_AUTO_LENGTH, &val);
-
-    return val;
+    return Napi::String::New(info.Env(), ts_->name);
 }
 
-napi_value TorrentStatus::Get_NeedSaveResume(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_NeedSaveResume(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_get_boolean(env, info.wrap->ts_->need_save_resume, &val);
-
-    return val;
+    return Napi::Boolean::New(info.Env(), ts_->need_save_resume);
 }
 
-napi_value TorrentStatus::Get_NextAnnounce(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_NextAnnounce(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int64(env, libtorrent::total_seconds(info.wrap->ts_->next_announce), &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), lt::total_seconds(ts_->next_announce));
 }
 
-napi_value TorrentStatus::Get_NumComplete(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_NumComplete(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->num_complete, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->num_complete);
 }
 
-napi_value TorrentStatus::Get_NumConnections(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_NumConnections(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->num_connections, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->num_connections);
 }
 
-napi_value TorrentStatus::Get_NumIncomplete(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_NumIncomplete(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->num_incomplete, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->num_incomplete);
 }
 
-napi_value TorrentStatus::Get_NumPeers(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_NumPeers(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->num_peers, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->num_peers);
 }
 
-napi_value TorrentStatus::Get_NumPieces(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_NumPieces(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->num_pieces, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->num_pieces);
 }
 
-napi_value TorrentStatus::Get_NumSeeds(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_NumSeeds(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->num_seeds, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->num_seeds);
 }
 
-napi_value TorrentStatus::Get_NumUploads(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_NumUploads(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->num_uploads, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->num_uploads);
 }
 
-napi_value TorrentStatus::Get_Progress(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_Progress(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    napi_value val;
-    napi_create_double(env, info.wrap->ts_->progress, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->progress);
 }
 
-napi_value TorrentStatus::Get_QueuePosition(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_QueuePosition(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int32(env, static_cast<int32_t>(info.wrap->ts_->queue_position), &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), static_cast<int32_t>(ts_->queue_position));
 }
 
-napi_value TorrentStatus::Get_SavePath(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_SavePath(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_string_utf8(env, info.wrap->ts_->save_path.c_str(), NAPI_AUTO_LENGTH, &val);
-
-    return val;
+    return Napi::String::New(info.Env(), ts_->save_path);
 }
 
-napi_value TorrentStatus::Get_SeedRank(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_SeedRank(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->seed_rank, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->seed_rank);
 }
 
-napi_value TorrentStatus::Get_SeedingDuration(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_SeedingDuration(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->seeding_duration.count(), &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->seeding_duration.count());
 }
 
-napi_value TorrentStatus::Get_State(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_State(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->state, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->state);
 }
 
-napi_value TorrentStatus::Get_StorageMode(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_StorageMode(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->storage_mode, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->storage_mode);
 }
 
-napi_value TorrentStatus::Get_TorrentFile(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_TorrentFile(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-    
-    if (auto ti = info.wrap->ts_->torrent_file.lock())
+    if (auto ti = ts_->torrent_file.lock())
     {
-        auto arg = Napi::External<std::shared_ptr<const lt::torrent_info>>::New(env, &ti);
+        auto arg = Napi::External<std::shared_ptr<const lt::torrent_info>>::New(info.Env(), &ti);
         return TorrentInfo::NewInstance(arg);
     }
 
-    napi_value null;
-    napi_get_null(env, &null);
-
-    return null;
+    return info.Env().Null();
 }
 
-napi_value TorrentStatus::Get_Total(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_Total(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->total, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->total);
 }
 
-napi_value TorrentStatus::Get_TotalDone(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_TotalDone(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->total_done, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->total_done);
 }
 
-napi_value TorrentStatus::Get_TotalDownload(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_TotalDownload(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->total_download, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->total_download);
 }
 
-napi_value TorrentStatus::Get_TotalFailedBytes(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_TotalFailedBytes(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->total_failed_bytes, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->total_failed_bytes);
 }
 
-napi_value TorrentStatus::Get_TotalPayloadDownload(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_TotalPayloadDownload(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->total_payload_download, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->total_payload_download);
 }
 
-napi_value TorrentStatus::Get_TotalPayloadUpload(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_TotalPayloadUpload(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->total_payload_upload, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->total_payload_upload);
 }
 
-napi_value TorrentStatus::Get_TotalRedundantBytes(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_TotalRedundantBytes(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->total_redundant_bytes, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->total_redundant_bytes);
 }
 
-napi_value TorrentStatus::Get_TotalUpload(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_TotalUpload(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->total_upload, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->total_upload);
 }
 
-napi_value TorrentStatus::Get_TotalWanted(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_TotalWanted(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->total_wanted, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->total_wanted);
 }
 
-napi_value TorrentStatus::Get_TotalWantedDone(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_TotalWantedDone(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int64(env, info.wrap->ts_->total_wanted_done, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->total_wanted_done);
 }
 
-napi_value TorrentStatus::Get_UpBandwidthQueue(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_UpBandwidthQueue(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->up_bandwidth_queue, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->up_bandwidth_queue);
 }
 
-napi_value TorrentStatus::Get_UploadPayloadRate(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_UploadPayloadRate(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->upload_payload_rate, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->upload_payload_rate);
 }
 
-napi_value TorrentStatus::Get_UploadRate(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_UploadRate(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->upload_rate, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->upload_rate);
 }
 
-napi_value TorrentStatus::Get_UploadsLimit(napi_env env, napi_callback_info cbinfo)
+Napi::Value TorrentStatus::Get_UploadsLimit(const Napi::CallbackInfo& info)
 {
-    auto info = UnwrapCallback<TorrentStatus>(env, cbinfo);
-
-    napi_value val;
-    napi_create_int32(env, info.wrap->ts_->uploads_limit, &val);
-
-    return val;
+    return Napi::Number::New(info.Env(), ts_->uploads_limit);
 }

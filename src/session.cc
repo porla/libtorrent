@@ -239,7 +239,8 @@ napi_value Session::AddTorrent(napi_env env, napi_callback_info cbinfo)
         return nullptr;
     }
 
-    return WrapExternal<TorrentHandle, libtorrent::torrent_handle>(env, &handle);
+    auto arg = Napi::External<lt::torrent_handle>::New(env, &handle);
+    return TorrentHandle::NewInstance(arg);
 }
 
 napi_value Session::ApplySettings(napi_env env, napi_callback_info cbinfo)
@@ -451,8 +452,9 @@ napi_value Session::FindTorrent(napi_env env, napi_callback_info cbinfo)
     ss >> hash;
 
     auto th = info.wrap->session_->find_torrent(hash);
+    auto arg = Napi::External<lt::torrent_handle>::New(env, &th);
 
-    return WrapExternal<TorrentHandle, libtorrent::torrent_handle>(env, &th);
+    return TorrentHandle::NewInstance(arg);
 }
 
 napi_value Session::GetCacheInfo(napi_env env, napi_callback_info cbinfo)
@@ -620,8 +622,8 @@ napi_value Session::GetTorrentStatus(napi_env env, napi_callback_info cbinfo)
 
     for (size_t i = 0; i < status.size(); i++)
     {
-        napi_value ts = WrapExternal<TorrentStatus, lt::torrent_status>(env, &status.at(i));
-        napi_set_element(env, arr, i, ts);
+        auto arg = Napi::External<lt::torrent_status>::New(env, &status.at(i));
+        napi_set_element(env, arr, i, TorrentStatus::NewInstance(arg));
     }
 
     return arr;
@@ -637,8 +639,8 @@ napi_value Session::GetTorrents(napi_env env, napi_callback_info cbinfo)
 
     for (size_t i = 0; i < torrents.size(); i++)
     {
-        napi_value wrap = WrapExternal<TorrentHandle, libtorrent::torrent_handle>(env, &torrents.at(i));
-        napi_set_element(env, arr, i, wrap);
+        auto arg = Napi::External<lt::torrent_handle>::New(env, &torrents.at(i));
+        napi_set_element(env, arr, i, TorrentHandle::NewInstance(arg));
     }
 
     return arr;
@@ -970,12 +972,6 @@ napi_value Session::SetPortFilter(napi_env env, napi_callback_info cbinfo)
 napi_value Session::SslListenPort(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<Session>(env, cbinfo);   
-
-    if (info.args.size() != 1)
-    {
-        napi_throw_error(env, nullptr, "Expected 1 argument");
-        return nullptr;
-    }
 
     napi_value res;
     napi_create_int32(env, info.wrap->session_->ssl_listen_port(), &res);

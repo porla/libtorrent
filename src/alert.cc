@@ -1,16 +1,15 @@
 #include "alert.h"
 
 #include "add_torrent_params.h"
-#include "common.h"
 #include "torrent_handle.h"
+#include "torrent_status.h"
 
 #include <libtorrent/torrent_handle.hpp>
-#include <napi.h>
 
 using porla::Alert;
 namespace lt = libtorrent;
 
-napi_value Alert::ToJson(napi_env env, libtorrent::alert* alert)
+Napi::Value Alert::ToJson(Napi::Env env, libtorrent::alert* alert)
 {
     switch (alert->type())
     {
@@ -98,667 +97,531 @@ napi_value Alert::ToJson(napi_env env, libtorrent::alert* alert)
             return MetadataFailedAlert(env, lt::alert_cast<lt::metadata_failed_alert>(alert));
         case lt::metadata_received_alert::alert_type:
             return TorrentAlert(env, lt::alert_cast<lt::metadata_received_alert>(alert));
-
         case lt::add_torrent_alert::alert_type:
             return AddTorrentAlert(env, lt::alert_cast<lt::add_torrent_alert>(alert));
+        case lt::state_update_alert::alert_type:
+            return StateUpdateAlert(env, lt::alert_cast<lt::state_update_alert>(alert));
+        case lt::session_stats_alert::alert_type:
+            return SessionStatsAlert(env, lt::alert_cast<lt::session_stats_alert>(alert));
         default:
             return AlertBase(env, alert);
     }
 }
 
-napi_value Alert::AlertBase(napi_env env, libtorrent::alert* alert)
+Napi::Object Alert::AlertBase(Napi::Env env, libtorrent::alert* alert)
 {
-    napi_value value;
-    napi_create_object(env, &value);
-
-    Value tmp(env, value);
-    tmp.SetNamedProperty("category", static_cast<uint32_t>(alert->category()));
-    tmp.SetNamedProperty("message", alert->message());
-    tmp.SetNamedProperty("timestamp", alert->timestamp().time_since_epoch().count());
-    tmp.SetNamedProperty("type", alert->type());
-    tmp.SetNamedProperty("what", std::string(alert->what()));
+    auto value = Napi::Object::New(env);
+    value.Set("category", Napi::Number::New(env, static_cast<uint32_t>(alert->category())));
+    value.Set("message", Napi::String::New(env, alert->message()));
+    value.Set("timestamp", Napi::Number::New(env, alert->timestamp().time_since_epoch().count()));
+    value.Set("type", Napi::Number::New(env, alert->type()));
+    value.Set("what", Napi::String::New(env, alert->what()));
 
     return value;
 }
 
-napi_value Alert::PeerAlert(napi_env env, libtorrent::peer_alert* alert)
+Napi::Object Alert::PeerAlert(Napi::Env env, libtorrent::peer_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    Napi::Object value = TorrentAlert(env, alert);
 
-    napi_value obj;
-    napi_create_object(env, &obj);
-    napi_value addr;
-    napi_create_string_utf8(env, alert->endpoint.address().to_string().c_str(), NAPI_AUTO_LENGTH, &addr);
-    napi_value port;
-    napi_create_uint32(env, alert->endpoint.port(), &port);
-    napi_set_named_property(env, obj, "address", addr);
-    napi_set_named_property(env, obj, "port", port);
-
-    napi_set_named_property(env, value, "endpoint", obj);
+    auto obj = Napi::Object::New(env);
+    obj.Set("address", Napi::String::New(env, alert->endpoint.address().to_string()));
+    obj.Set("port", Napi::Number::New(env, alert->endpoint.port()));
 
     std::stringstream ss;
     ss << alert->pid;
 
-    napi_value pid;
-    napi_create_string_utf8(env, ss.str().c_str(), NAPI_AUTO_LENGTH, &pid);
-    napi_set_named_property(env, value, "pid", pid);
+    value.Set("endpoint", obj);
+    value.Set("pid", Napi::String::New(env, ss.str()));
 
     return value;
 }
 
-napi_value Alert::TorrentAlert(napi_env env, libtorrent::torrent_alert* alert)
+Napi::Object Alert::TorrentAlert(Napi::Env env, libtorrent::torrent_alert* alert)
 {
-    napi_value value = AlertBase(env, alert);
+    Napi::Object value = AlertBase(env, alert);
 
-    napi_value handle = WrapExternal<TorrentHandle, libtorrent::torrent_handle>(env, &alert->handle);
-    napi_set_named_property(env, value, "handle", handle);
+    value.Set("torrent_name", Napi::String::New(env, alert->torrent_name()));
 
-    napi_value torrentName;
-    napi_create_string_utf8(env, alert->torrent_name(), NAPI_AUTO_LENGTH, &torrentName);
-    napi_set_named_property(env, value, "torrent_name", torrentName);
+    auto arg = Napi::External<lt::torrent_handle>::New(env, &alert->handle);
+    value.Set("handle", TorrentHandle::NewInstance(arg));
 
     return value;
 }
 
-napi_value Alert::TrackerAlert(napi_env env, libtorrent::tracker_alert* alert)
+Napi::Object Alert::TrackerAlert(Napi::Env env, libtorrent::tracker_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("tracker_url", std::string(alert->tracker_url()));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("tracker_url", Napi::String::New(env, alert->tracker_url()));
     return value;
 }
 
-napi_value Alert::TorrentRemovedAlert(napi_env env, libtorrent::torrent_removed_alert* alert)
+Napi::Object Alert::TorrentRemovedAlert(Napi::Env env, libtorrent::torrent_removed_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     std::stringstream ss;
     ss << alert->info_hash;
 
-    napi_value hash;
-    napi_create_string_utf8(env, ss.str().c_str(), NAPI_AUTO_LENGTH, &hash);
-    napi_set_named_property(env, value, "info_hash", hash);
+    value.Set("info_hash", Napi::String::New(env, ss.str()));
 
     return value;
 }
 
-napi_value Alert::ReadPieceAlert(napi_env env, lt::read_piece_alert* alert)
+Napi::Object Alert::ReadPieceAlert(Napi::Env env, lt::read_piece_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     if (alert->error)
     {
-        napi_value err;
-        napi_create_object(env, &err);
-
-        Value errTmp(env, err);
-        errTmp.SetNamedProperty("message", alert->error.message());
-        errTmp.SetNamedProperty("value", alert->error.value());
-
-        napi_set_named_property(env, value, "error", err);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
+        
+        value.Set("error", err);
     }
-
-    Value tmp(env, value);
-    tmp.SetNamedProperty("piece", static_cast<int32_t>(alert->piece));
-    tmp.SetNamedProperty("size", alert->size);
 
     if (alert->buffer)
     {
-        char* buffer = alert->buffer.get();
+        char* data = alert->buffer.get();
+        auto buf = Napi::Buffer<char>::Copy(env, data, alert->size);
 
-        char* data;
-        napi_value buf;
-        napi_create_buffer(env, alert->size, reinterpret_cast<void**>(&data), &buf);
-        napi_set_named_property(env, value, "buffer", buf);
-
-        std::copy(buffer, buffer + alert->size, data);
+        value.Set("buffer", buf);
     }
 
-    return value;
-}
-
-napi_value Alert::FileCompletedAlert(napi_env env, lt::file_completed_alert* alert)
-{
-    napi_value value = TorrentAlert(env, alert);
-
-    napi_value idx;
-    napi_create_int32(env, static_cast<int32_t>(alert->index), &idx);
-    napi_set_named_property(env, value, "index", idx);
+    value.Set("piece", Napi::Number::New(env, static_cast<int32_t>(alert->piece)));
+    value.Set("size", Napi::Number::New(env, alert->size));
 
     return value;
 }
 
-napi_value Alert::FileRenamedAlert(napi_env env, lt::file_renamed_alert* alert)
+Napi::Object Alert::FileCompletedAlert(Napi::Env env, lt::file_completed_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("index", static_cast<int32_t>(alert->index));
-    v.SetNamedProperty("new_name", std::string(alert->new_name()));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("index", Napi::Number::New(env, static_cast<int32_t>(alert->index)));
     return value;
 }
 
-napi_value Alert::FileRenameFailedAlert(napi_env env, lt::file_rename_failed_alert* alert)
+Napi::Object Alert::FileRenamedAlert(Napi::Env env, lt::file_renamed_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
+    value.Set("index", Napi::Number::New(env, static_cast<int32_t>(alert->index)));
+    value.Set("new_name", Napi::String::New(env, alert->new_name()));
+    return value;
+}
 
-    Value v(env, value);
-    v.SetNamedProperty("index", static_cast<int32_t>(alert->index));
+Napi::Object Alert::FileRenameFailedAlert(Napi::Env env, lt::file_rename_failed_alert* alert)
+{
+    auto value = TorrentAlert(env, alert);
 
     if (alert->error)
     {
-        napi_value err;
-        napi_create_object(env, &err);
-
-        Value errTmp(env, err);
-        errTmp.SetNamedProperty("message", alert->error.message());
-        errTmp.SetNamedProperty("value", alert->error.value());
-
-        napi_set_named_property(env, value, "error", err);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
+        
+        value.Set("error", err);
     }
 
     return value;
 }
 
-napi_value Alert::PerformanceAlert(napi_env env, lt::performance_alert* alert)
+Napi::Object Alert::PerformanceAlert(Napi::Env env, lt::performance_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("warning_code", static_cast<int32_t>(alert->warning_code));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("warning_code", Napi::Number::New(env, alert->warning_code));
     return value;
 }
 
-napi_value Alert::StateChangedAlert(napi_env env, lt::state_changed_alert* alert)
+Napi::Object Alert::StateChangedAlert(Napi::Env env, lt::state_changed_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("prev_state", static_cast<int32_t>(alert->prev_state));
-    v.SetNamedProperty("state", static_cast<int32_t>(alert->state));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("prev_state", Napi::Number::New(env, alert->prev_state));
+    value.Set("state", Napi::Number::New(env, alert->state));
     return value;
 }
 
-napi_value Alert::TrackerErrorAlert(napi_env env, lt::tracker_error_alert* alert)
+Napi::Object Alert::TrackerErrorAlert(Napi::Env env, lt::tracker_error_alert* alert)
 {
-    napi_value value = TrackerAlert(env, alert);
+    auto value = TrackerAlert(env, alert);
 
-    Value v(env, value);
-    v.SetNamedProperty("error_message", std::string(alert->error_message()));
-    v.SetNamedProperty("times_in_row", static_cast<int32_t>(alert->times_in_row));
+    value.Set("error_message", Napi::String::New(env, alert->error_message()));
+    value.Set("times_in_row", Napi::Number::New(env, alert->times_in_row));
 
     if (alert->error)
     {
-        napi_value err;
-        napi_create_object(env, &err);
-
-        Value errTmp(env, err);
-        errTmp.SetNamedProperty("message", alert->error.message());
-        errTmp.SetNamedProperty("value", alert->error.value());
-
-        napi_set_named_property(env, value, "error", err);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
+        
+        value.Set("error", err);
     }
 
     return value;
 }
 
-napi_value Alert::TrackerWarningAlert(napi_env env, lt::tracker_warning_alert* alert)
+Napi::Object Alert::TrackerWarningAlert(Napi::Env env, lt::tracker_warning_alert* alert)
 {
-    napi_value value = TrackerAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("warning_message", std::string(alert->warning_message()));
-
+    auto value = TrackerAlert(env, alert);
+    value.Set("warning_message", Napi::String::New(env, alert->warning_message()));
     return value;
 }
 
-napi_value Alert::ScrapeReplyAlert(napi_env env, lt::scrape_reply_alert* alert)
+Napi::Object Alert::ScrapeReplyAlert(Napi::Env env, lt::scrape_reply_alert* alert)
 {
-    napi_value value = TrackerAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("complete", alert->complete);
-    v.SetNamedProperty("incomplete", alert->incomplete);
-
+    auto value = TrackerAlert(env, alert);
+    value.Set("complete", Napi::Number::New(env, alert->complete));
+    value.Set("incomplete", Napi::Number::New(env, alert->incomplete));
     return value;
 }
 
-napi_value Alert::ScrapeFailedAlert(napi_env env, lt::scrape_failed_alert* alert)
+Napi::Object Alert::ScrapeFailedAlert(Napi::Env env, lt::scrape_failed_alert* alert)
 {
-    napi_value value = TrackerAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("error_message", std::string(alert->error_message()));
+    auto value = TrackerAlert(env, alert);
+    value.Set("error_message", Napi::String::New(env, alert->error_message()));
 
     if (alert->error)
     {
-        napi_value err;
-        napi_create_object(env, &err);
-
-        Value errTmp(env, err);
-        errTmp.SetNamedProperty("message", alert->error.message());
-        errTmp.SetNamedProperty("value", alert->error.value());
-
-        napi_set_named_property(env, value, "error", err);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
+        
+        value.Set("error", err);
     }
 
     return value;
 }
 
-napi_value Alert::TrackerReplyAlert(napi_env env, lt::tracker_reply_alert* alert)
+Napi::Object Alert::TrackerReplyAlert(Napi::Env env, lt::tracker_reply_alert* alert)
 {
-    napi_value value = TrackerAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("num_peers", alert->num_peers);
-
+    auto value = TrackerAlert(env, alert);
+    value.Set("num_peers", Napi::Number::New(env, alert->num_peers));
     return value;
 }
 
-napi_value Alert::DhtReplyAlert(napi_env env, lt::dht_reply_alert* alert)
+Napi::Object Alert::DhtReplyAlert(Napi::Env env, lt::dht_reply_alert* alert)
 {
-    napi_value value = TrackerAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("num_peers", alert->num_peers);
-
+    auto value = TrackerAlert(env, alert);
+    value.Set("num_peers", Napi::Number::New(env, alert->num_peers));
     return value;
 }
 
-napi_value Alert::TrackerAnnounceAlert(napi_env env, lt::tracker_announce_alert* alert)
+Napi::Object Alert::TrackerAnnounceAlert(Napi::Env env, lt::tracker_announce_alert* alert)
 {
-    napi_value value = TrackerAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("event", alert->event);
-
+    auto value = TrackerAlert(env, alert);
+    value.Set("event", Napi::Number::New(env, alert->event));
     return value;
 }
 
-napi_value Alert::HashFailedAlert(napi_env env, lt::hash_failed_alert* alert)
+Napi::Object Alert::HashFailedAlert(Napi::Env env, lt::hash_failed_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
 
-napi_value Alert::PeerBanAlert(napi_env env, lt::peer_ban_alert* alert)
+Napi::Object Alert::PeerBanAlert(Napi::Env env, lt::peer_ban_alert* alert)
 {
     return PeerAlert(env, alert);
 }
 
-napi_value Alert::PeerErrorAlert(napi_env env, lt::peer_error_alert* alert)
+Napi::Object Alert::PeerErrorAlert(Napi::Env env, lt::peer_error_alert* alert)
 {
-    napi_value value = PeerAlert(env, alert);
-
-    napi_value op;
-    napi_create_string_utf8(env, reinterpret_cast<char*>(alert->op), NAPI_AUTO_LENGTH, &op);
-    napi_set_named_property(env, value, "op", op);
+    auto value = PeerAlert(env, alert);
+    value.Set("op", Napi::Number::New(env, static_cast<uint32_t>(alert->op)));
 
     if (alert->error)
     {
-        napi_value message;
-        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
-
-        napi_value val;
-        napi_create_int32(env, alert->error.value(), &val);
-
-        napi_value err;
-        napi_create_object(env, &err);
-        napi_set_named_property(env, err, "message", message);
-        napi_set_named_property(env, err, "value", val);
-
-        napi_set_named_property(env, value, "error", err);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
+        
+        value.Set("error", err);
     }
 
     return value;
 }
 
-napi_value Alert::PeerConnectAlert(napi_env env, lt::peer_connect_alert* alert)
+Napi::Object Alert::PeerConnectAlert(Napi::Env env, lt::peer_connect_alert* alert)
 {
-    napi_value value = PeerAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("socket_type", alert->socket_type);
-
+    auto value = PeerAlert(env, alert);
+    value.Set("socket_type", Napi::Number::New(env, alert->socket_type));
     return value;
 }
 
-napi_value Alert::PeerDisconnectedAlert(napi_env env, lt::peer_disconnected_alert* alert)
+Napi::Object Alert::PeerDisconnectedAlert(Napi::Env env, lt::peer_disconnected_alert* alert)
 {
-    napi_value value = PeerAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("op", static_cast<uint8_t>(alert->op));
-    v.SetNamedProperty("reason", static_cast<uint32_t>(alert->reason));
-    v.SetNamedProperty("socket_type", alert->socket_type);
+    auto value = PeerAlert(env, alert);
+    value.Set("op", Napi::Number::New(env, static_cast<uint8_t>(alert->op)));
+    value.Set("reason", Napi::Number::New(env, static_cast<uint32_t>(alert->reason)));
+    value.Set("socket_type", Napi::Number::New(env, alert->socket_type));
 
     if (alert->error)
     {
-        napi_value message;
-        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
 
-        napi_value val;
-        napi_create_int32(env, alert->error.value(), &val);
-
-        napi_value err;
-        napi_create_object(env, &err);
-        napi_set_named_property(env, err, "message", message);
-        napi_set_named_property(env, err, "value", val);
-
-        napi_set_named_property(env, value, "error", err);
+        value.Set("error", err);
     }
 
     return value;
 }
 
-napi_value Alert::InvalidRequestAlert(napi_env env, lt::invalid_request_alert* alert)
+Napi::Object Alert::InvalidRequestAlert(Napi::Env env, lt::invalid_request_alert* alert)
 {
-    napi_value value = PeerAlert(env, alert);
+    auto value = PeerAlert(env, alert);
+    value.Set("peer_interested", Napi::Boolean::New(env, alert->peer_interested));
+    value.Set("we_have", Napi::Boolean::New(env, alert->we_have));
+    value.Set("withheld", Napi::Boolean::New(env, alert->withheld));
 
-    Value v(env, value);
-    v.SetNamedProperty("peer_interested", alert->peer_interested);
-    v.SetNamedProperty("we_have", alert->we_have);
-    v.SetNamedProperty("withheld", alert->withheld);
+    auto req = Napi::Object::New(env);
+    req.Set("length", Napi::Number::New(env, alert->request.length));
+    req.Set("piece", Napi::Number::New(env, static_cast<int32_t>(alert->request.piece)));
+    req.Set("start", Napi::Number::New(env, alert->request.start));
 
-    napi_value req;
-    napi_create_object(env, &req);
-
-    Value r(env, value);
-    r.SetNamedProperty("length", alert->request.length);
-    r.SetNamedProperty("piece", static_cast<int32_t>(alert->request.piece));
-    r.SetNamedProperty("start", alert->request.start);
-
-    napi_set_named_property(env, value, "request", req);
+    value.Set("request", req);
 
     return value;
 }
 
-napi_value Alert::PieceFinishedAlert(napi_env env, lt::piece_finished_alert* alert)
+Napi::Object Alert::PieceFinishedAlert(Napi::Env env, lt::piece_finished_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
 
-napi_value Alert::RequestDroppedAlert(napi_env env, lt::request_dropped_alert* alert)
+Napi::Object Alert::RequestDroppedAlert(Napi::Env env, lt::request_dropped_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("block_index", alert->block_index);
-    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("block_index", Napi::Number::New(env, static_cast<int64_t>(alert->block_index)));
+    value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
 
-napi_value Alert::BlockTimeoutAlert(napi_env env, lt::block_timeout_alert* alert)
+Napi::Object Alert::BlockTimeoutAlert(Napi::Env env, lt::block_timeout_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("block_index", alert->block_index);
-    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("block_index", Napi::Number::New(env, static_cast<int64_t>(alert->block_index)));
+    value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
 
-napi_value Alert::BlockFinishedAlert(napi_env env, lt::block_finished_alert* alert)
+Napi::Object Alert::BlockFinishedAlert(Napi::Env env, lt::block_finished_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("block_index", alert->block_index);
-    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("block_index", Napi::Number::New(env, static_cast<int64_t>(alert->block_index)));
+    value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
 
-napi_value Alert::BlockDownloadingAlert(napi_env env, lt::block_downloading_alert* alert)
+Napi::Object Alert::BlockDownloadingAlert(Napi::Env env, lt::block_downloading_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("block_index", alert->block_index);
-    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("block_index", Napi::Number::New(env, static_cast<int64_t>(alert->block_index)));
+    value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
 
-napi_value Alert::UnwantedBlockAlert(napi_env env, lt::unwanted_block_alert* alert)
+Napi::Object Alert::UnwantedBlockAlert(Napi::Env env, lt::unwanted_block_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("block_index", alert->block_index);
-    v.SetNamedProperty("piece_index", static_cast<int32_t>(alert->piece_index));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("block_index", Napi::Number::New(env, static_cast<int64_t>(alert->block_index)));
+    value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
 
-napi_value Alert::StorageMovedAlert(napi_env env, lt::storage_moved_alert* alert)
+Napi::Object Alert::StorageMovedAlert(Napi::Env env, lt::storage_moved_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
-
-    Value v(env, value);
-    v.SetNamedProperty("storage_path", std::string(alert->storage_path()));
-
+    auto value = TorrentAlert(env, alert);
+    value.Set("storage_path", Napi::String::New(env, alert->storage_path()));
     return value;
 }
 
-napi_value Alert::StorageMovedFailedAlert(napi_env env, lt::storage_moved_failed_alert* alert)
+Napi::Object Alert::StorageMovedFailedAlert(Napi::Env env, lt::storage_moved_failed_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     if (alert->error)
     {
-        napi_value message;
-        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
 
-        napi_value val;
-        napi_create_int32(env, alert->error.value(), &val);
-
-        napi_value err;
-        napi_create_object(env, &err);
-        napi_set_named_property(env, err, "message", message);
-        napi_set_named_property(env, err, "value", val);
-
-        napi_set_named_property(env, value, "error", err);
+        value.Set("error", err);
     }
 
-    Value v(env, value);
-    v.SetNamedProperty("file_path", std::string(alert->file_path()));
-    v.SetNamedProperty("operation", static_cast<uint8_t>(alert->op));
+    value.Set("file_path", Napi::String::New(env, alert->file_path()));
+    value.Set("operation", Napi::Number::New(env, static_cast<uint8_t>(alert->op)));
 
     return value;
 }
 
-napi_value Alert::TorrentDeletedAlert(napi_env env, lt::torrent_deleted_alert* alert)
+Napi::Object Alert::TorrentDeletedAlert(Napi::Env env, lt::torrent_deleted_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     std::stringstream ss;
     ss << alert->info_hash;
 
-    Value v(env, value);
-    v.SetNamedProperty("info_hash", ss.str());
+    value.Set("info_hash", Napi::String::New(env, ss.str()));
 
     return value;
 }
 
-napi_value Alert::TorrentDeleteFailedAlert(napi_env env, lt::torrent_delete_failed_alert* alert)
+Napi::Object Alert::TorrentDeleteFailedAlert(Napi::Env env, lt::torrent_delete_failed_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     if (alert->error)
     {
-        napi_value message;
-        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
-
-        napi_value val;
-        napi_create_int32(env, alert->error.value(), &val);
-
-        napi_value err;
-        napi_create_object(env, &err);
-        napi_set_named_property(env, err, "message", message);
-        napi_set_named_property(env, err, "value", val);
-
-        napi_set_named_property(env, value, "error", err);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
+        
+        value.Set("error", err);
     }
 
     std::stringstream ss;
     ss << alert->info_hash;
 
-    Value v(env, value);
-    v.SetNamedProperty("info_hash", ss.str());
+    value.Set("info_hash", Napi::String::New(env, ss.str()));
 
     return value;
 }
 
-napi_value Alert::SaveResumeDataAlert(napi_env env, lt::save_resume_data_alert* alert)
+Napi::Object Alert::SaveResumeDataAlert(Napi::Env env, lt::save_resume_data_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     Napi::Value arg = Napi::External<lt::add_torrent_params>::New(env, &alert->params);
     Napi::Object inst = AddTorrentParams::NewInstance(arg);
 
-    napi_set_named_property(env, value, "params", inst);
+    value.Set("params", inst);
 
     return value;
 }
 
-napi_value Alert::SaveResumeDataFailedAlert(napi_env env, lt::save_resume_data_failed_alert* alert)
+Napi::Object Alert::SaveResumeDataFailedAlert(Napi::Env env, lt::save_resume_data_failed_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     if (alert->error)
     {
-        napi_value message;
-        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
 
-        napi_value val;
-        napi_create_int32(env, alert->error.value(), &val);
-
-        napi_value err;
-        napi_create_object(env, &err);
-        napi_set_named_property(env, err, "message", message);
-        napi_set_named_property(env, err, "value", val);
-
-        napi_set_named_property(env, value, "error", err);
+        value.Set("error", err);
     }
 
     return value;
 }
 
-napi_value Alert::UrlSeedAlert(napi_env env, lt::url_seed_alert* alert)
+Napi::Object Alert::UrlSeedAlert(Napi::Env env, lt::url_seed_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     if (alert->error)
     {
-        napi_value message;
-        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
 
-        napi_value val;
-        napi_create_int32(env, alert->error.value(), &val);
-
-        napi_value err;
-        napi_create_object(env, &err);
-        napi_set_named_property(env, err, "message", message);
-        napi_set_named_property(env, err, "value", val);
-
-        napi_set_named_property(env, value, "error", err);
+        value.Set("error", err);
     }
 
-    Value v(env, value);
-    v.SetNamedProperty("error_message", std::string(alert->error_message()));
-    v.SetNamedProperty("server_url", std::string(alert->server_url()));
+    value.Set("error_message", Napi::String::New(env, alert->error_message()));
+    value.Set("server_url", Napi::String::New(env, alert->server_url()));
 
     return value;
 }
 
-napi_value Alert::FileErrorAlert(napi_env env, lt::file_error_alert* alert)
+Napi::Object Alert::FileErrorAlert(Napi::Env env, lt::file_error_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     if (alert->error)
     {
-        napi_value message;
-        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
 
-        napi_value val;
-        napi_create_int32(env, alert->error.value(), &val);
-
-        napi_value err;
-        napi_create_object(env, &err);
-        napi_set_named_property(env, err, "message", message);
-        napi_set_named_property(env, err, "value", val);
-
-        napi_set_named_property(env, value, "error", err);
+        value.Set("error", err);
     }
 
-    Value v(env, value);
-    v.SetNamedProperty("filename", std::string(alert->filename()));
-    v.SetNamedProperty("op", static_cast<uint32_t>(alert->op));
+    value.Set("filename", Napi::String::New(env, alert->filename()));
+    value.Set("op", Napi::Number::New(env, static_cast<uint32_t>(alert->op)));
 
     return value;
 }
 
-napi_value Alert::MetadataFailedAlert(napi_env env, lt::metadata_failed_alert* alert)
+Napi::Object Alert::MetadataFailedAlert(Napi::Env env, lt::metadata_failed_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     if (alert->error)
     {
-        napi_value message;
-        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
 
-        napi_value val;
-        napi_create_int32(env, alert->error.value(), &val);
-
-        napi_value err;
-        napi_create_object(env, &err);
-        napi_set_named_property(env, err, "message", message);
-        napi_set_named_property(env, err, "value", val);
-
-        napi_set_named_property(env, value, "error", err);
+        value.Set("error", err);
     }
 
     return value;
 }
 
-napi_value Alert::AddTorrentAlert(napi_env env, lt::add_torrent_alert* alert)
+Napi::Object Alert::AddTorrentAlert(Napi::Env env, lt::add_torrent_alert* alert)
 {
-    napi_value value = TorrentAlert(env, alert);
+    auto value = TorrentAlert(env, alert);
 
     if (alert->error)
     {
-        napi_value message;
-        napi_create_string_utf8(env, alert->error.message().c_str(), NAPI_AUTO_LENGTH, &message);
+        auto err = Napi::Object::New(env);
+        err.Set("message", Napi::String::New(env, alert->error.message()));
+        err.Set("value", Napi::Number::New(env, alert->error.value()));
 
-        napi_value val;
-        napi_create_int32(env, alert->error.value(), &val);
-
-        napi_value err;
-        napi_create_object(env, &err);
-        napi_set_named_property(env, err, "message", message);
-        napi_set_named_property(env, err, "value", val);
-
-        napi_set_named_property(env, value, "error", err);
+        value.Set("error", err);
     }
 
-    // TODO: params
+    Napi::Value arg = Napi::External<lt::add_torrent_params>::New(env, &alert->params);
+    Napi::Object inst = AddTorrentParams::NewInstance(arg);
+
+    value.Set("params", inst);
 
     return value;
+}
+
+Napi::Object Alert::StateUpdateAlert(Napi::Env env, lt::state_update_alert* alert)
+{
+    auto val = AlertBase(env, alert);
+    auto arr = Napi::Array::New(env, alert->status.size());
+
+    for (size_t i = 0; i < alert->status.size(); i++)
+    {
+        auto arg = Napi::External<lt::torrent_status>::New(env, &alert->status.at(i));
+        arr.Set(i, TorrentStatus::NewInstance(arg));
+    }
+
+    val.Set("status", arr);
+
+    return val;
+}
+
+Napi::Object Alert::SessionStatsAlert(Napi::Env env, lt::session_stats_alert* alert)
+{
+    auto val = AlertBase(env, alert);
+    auto cnt = alert->counters();
+    auto arr = Napi::Array::New(env, cnt.size());
+
+    for (size_t i = 0; i < cnt.size(); i++)
+    {
+        arr.Set(i, Napi::Number::New(env, cnt[i]));
+    }
+
+    val.Set("counters", arr);
+
+    return val;
 }

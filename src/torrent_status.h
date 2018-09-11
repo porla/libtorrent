@@ -1,94 +1,87 @@
 #ifndef PORLA_LIBTORRENT_TORRENTSTATUS_H
 #define PORLA_LIBTORRENT_TORRENTSTATUS_H
 
-#include <memory>
-#include <node_api.h>
-
-// Seems unpossible to forward declare this
 #include <libtorrent/torrent_status.hpp>
+#include <memory>
+#include <napi.h>
 
 namespace porla
 {
-    class TorrentStatus
+    class TorrentStatus : public Napi::ObjectWrap<TorrentStatus>
     {
     public:
-        static napi_status Init(napi_env env, napi_value exports);
-        static napi_value New(napi_env env, napi_callback_info callback_info);
+        static Napi::Object Init(Napi::Env env, Napi::Object exports);
+        static Napi::Object NewInstance(Napi::Value arg);
 
-        static napi_ref constructor;
+        TorrentStatus(const Napi::CallbackInfo& info);
 
     private:
-        static void Destructor(napi_env env, void* native_obj, void* finalize_hint);
+        static Napi::FunctionReference constructor;
 
-        static napi_value Get_ActiveTime(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_AddedTime(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_AllTimeDownload(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_AllTimeUpload(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_AnnouncingToDht(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_AnnouncingToLsd(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_AnnouncingToTrackers(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_BlockSize(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_CompletedTime(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_ConnectCandidates(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_ConnectionsLimit(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_CurrentTracker(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_DistributedCopies(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_DownBandwidthQueue(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_DownloadPayloadRate(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_DownloadRate(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_Errc(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_ErrorFile(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_FinishedDuration(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_Flags(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_Handle(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_HasIncoming(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_HasMetadata(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_InfoHash(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_IsFinished(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_IsSeeding(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_LastDownload(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_LastSeenComplete(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_LastUpload(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_ListPeers(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_ListSeeds(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_MovingStorage(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_Name(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_NeedSaveResume(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_NextAnnounce(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_NumComplete(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_NumConnections(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_NumIncomplete(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_NumPeers(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_NumPieces(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_NumSeeds(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_NumUploads(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_Progress(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_QueuePosition(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_SavePath(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_SeedRank(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_SeedingDuration(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_State(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_StorageMode(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_TorrentFile(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_Total(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_TotalDone(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_TotalDownload(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_TotalFailedBytes(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_TotalPayloadDownload(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_TotalPayloadUpload(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_TotalRedundantBytes(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_TotalUpload(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_TotalWanted(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_TotalWantedDone(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_UpBandwidthQueue(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_UploadPayloadRate(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_UploadRate(napi_env env, napi_callback_info cbinfo);
-        static napi_value Get_UploadsLimit(napi_env env, napi_callback_info cbinfo);
-
-        TorrentStatus(napi_env env, libtorrent::torrent_status const& ts);
-
-        napi_env env_;
-        napi_ref wrapper_;
+        Napi::Value Get_ActiveTime(const Napi::CallbackInfo& info);
+        Napi::Value Get_AddedTime(const Napi::CallbackInfo& info);
+        Napi::Value Get_AllTimeDownload(const Napi::CallbackInfo& info);
+        Napi::Value Get_AllTimeUpload(const Napi::CallbackInfo& info);
+        Napi::Value Get_AnnouncingToDht(const Napi::CallbackInfo& info);
+        Napi::Value Get_AnnouncingToLsd(const Napi::CallbackInfo& info);
+        Napi::Value Get_AnnouncingToTrackers(const Napi::CallbackInfo& info);
+        Napi::Value Get_BlockSize(const Napi::CallbackInfo& info);
+        Napi::Value Get_CompletedTime(const Napi::CallbackInfo& info);
+        Napi::Value Get_ConnectCandidates(const Napi::CallbackInfo& info);
+        Napi::Value Get_ConnectionsLimit(const Napi::CallbackInfo& info);
+        Napi::Value Get_CurrentTracker(const Napi::CallbackInfo& info);
+        Napi::Value Get_DistributedCopies(const Napi::CallbackInfo& info);
+        Napi::Value Get_DownBandwidthQueue(const Napi::CallbackInfo& info);
+        Napi::Value Get_DownloadPayloadRate(const Napi::CallbackInfo& info);
+        Napi::Value Get_DownloadRate(const Napi::CallbackInfo& info);
+        Napi::Value Get_Errc(const Napi::CallbackInfo& info);
+        Napi::Value Get_ErrorFile(const Napi::CallbackInfo& info);
+        Napi::Value Get_FinishedDuration(const Napi::CallbackInfo& info);
+        Napi::Value Get_Flags(const Napi::CallbackInfo& info);
+        Napi::Value Get_Handle(const Napi::CallbackInfo& info);
+        Napi::Value Get_HasIncoming(const Napi::CallbackInfo& info);
+        Napi::Value Get_HasMetadata(const Napi::CallbackInfo& info);
+        Napi::Value Get_InfoHash(const Napi::CallbackInfo& info);
+        Napi::Value Get_IsFinished(const Napi::CallbackInfo& info);
+        Napi::Value Get_IsSeeding(const Napi::CallbackInfo& info);
+        Napi::Value Get_LastDownload(const Napi::CallbackInfo& info);
+        Napi::Value Get_LastSeenComplete(const Napi::CallbackInfo& info);
+        Napi::Value Get_LastUpload(const Napi::CallbackInfo& info);
+        Napi::Value Get_ListPeers(const Napi::CallbackInfo& info);
+        Napi::Value Get_ListSeeds(const Napi::CallbackInfo& info);
+        Napi::Value Get_MovingStorage(const Napi::CallbackInfo& info);
+        Napi::Value Get_Name(const Napi::CallbackInfo& info);
+        Napi::Value Get_NeedSaveResume(const Napi::CallbackInfo& info);
+        Napi::Value Get_NextAnnounce(const Napi::CallbackInfo& info);
+        Napi::Value Get_NumComplete(const Napi::CallbackInfo& info);
+        Napi::Value Get_NumConnections(const Napi::CallbackInfo& info);
+        Napi::Value Get_NumIncomplete(const Napi::CallbackInfo& info);
+        Napi::Value Get_NumPeers(const Napi::CallbackInfo& info);
+        Napi::Value Get_NumPieces(const Napi::CallbackInfo& info);
+        Napi::Value Get_NumSeeds(const Napi::CallbackInfo& info);
+        Napi::Value Get_NumUploads(const Napi::CallbackInfo& info);
+        Napi::Value Get_Progress(const Napi::CallbackInfo& info);
+        Napi::Value Get_QueuePosition(const Napi::CallbackInfo& info);
+        Napi::Value Get_SavePath(const Napi::CallbackInfo& info);
+        Napi::Value Get_SeedRank(const Napi::CallbackInfo& info);
+        Napi::Value Get_SeedingDuration(const Napi::CallbackInfo& info);
+        Napi::Value Get_State(const Napi::CallbackInfo& info);
+        Napi::Value Get_StorageMode(const Napi::CallbackInfo& info);
+        Napi::Value Get_TorrentFile(const Napi::CallbackInfo& info);
+        Napi::Value Get_Total(const Napi::CallbackInfo& info);
+        Napi::Value Get_TotalDone(const Napi::CallbackInfo& info);
+        Napi::Value Get_TotalDownload(const Napi::CallbackInfo& info);
+        Napi::Value Get_TotalFailedBytes(const Napi::CallbackInfo& info);
+        Napi::Value Get_TotalPayloadDownload(const Napi::CallbackInfo& info);
+        Napi::Value Get_TotalPayloadUpload(const Napi::CallbackInfo& info);
+        Napi::Value Get_TotalRedundantBytes(const Napi::CallbackInfo& info);
+        Napi::Value Get_TotalUpload(const Napi::CallbackInfo& info);
+        Napi::Value Get_TotalWanted(const Napi::CallbackInfo& info);
+        Napi::Value Get_TotalWantedDone(const Napi::CallbackInfo& info);
+        Napi::Value Get_UpBandwidthQueue(const Napi::CallbackInfo& info);
+        Napi::Value Get_UploadPayloadRate(const Napi::CallbackInfo& info);
+        Napi::Value Get_UploadRate(const Napi::CallbackInfo& info);
+        Napi::Value Get_UploadsLimit(const Napi::CallbackInfo& info);
 
         std::unique_ptr<libtorrent::torrent_status> ts_;
     };

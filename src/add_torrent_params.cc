@@ -14,7 +14,8 @@ Napi::Object AddTorrentParams::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::HandleScope scope(env);
 
-    Napi::Function func = DefineClass(env, "AddTorrentParams", {
+    Napi::Function func = DefineClass(env, "AddTorrentParams",
+    {
         InstanceAccessor("save_path", &AddTorrentParams::Get_SavePath, &AddTorrentParams::Set_SavePath),
         InstanceAccessor("ti", &AddTorrentParams::Get_TorrentInfo, &AddTorrentParams::Set_TorrentInfo),
     });
@@ -35,7 +36,15 @@ Napi::Object AddTorrentParams::NewInstance(Napi::Value arg)
 AddTorrentParams::AddTorrentParams(const Napi::CallbackInfo& info)
     : Napi::ObjectWrap<AddTorrentParams>(info)
 {
-    p_ = std::make_unique<lt::add_torrent_params>();
+    if (info.Length() > 0)
+    {
+        auto val = info[0].As<Napi::External<lt::add_torrent_params>>();
+        p_ = std::make_unique<lt::add_torrent_params>(*val.Data());
+    }
+    else
+    {
+        p_ = std::make_unique<lt::add_torrent_params>();
+    }
 }
 
 libtorrent::add_torrent_params& AddTorrentParams::Wrapped()

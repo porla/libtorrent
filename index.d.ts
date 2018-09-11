@@ -322,14 +322,82 @@ export declare class torrent_info {
 }
 
 export declare class torrent_handle {
+    is_valid(): boolean;
+    info_hash(): string;
+    pause(): void;
+    resume(): void;
     status(): torrent_status;
 }
 
-export declare class torrent_status {
-    get active_time(): number;
-    get added_time(): number;
-    get all_time_download(): number;
-    get all_time_upload(): number;
+export declare interface error {
+    message: string;
+    value: number;
+}
+
+export declare interface torrent_status {
+    added_time: number;
+    all_time_download: number;
+    all_time_upload: number;
+    announcing_to_dht: boolean;
+    announcing_to_lsd: boolean;
+    announcing_to_trackers: boolean;
+    block_size: number;
+    completed_time: number;
+    connect_candidates: number;
+    connections_limit: number;
+    current_tracker: string;
+    distributed_copies: number;
+    down_bandwidth_queue: number;
+    download_payload_rate: number;
+    download_rate: number;
+    errc: error;
+    error_file: number;
+    finished_duration: number;
+    flags: number;
+    handle: torrent_handle;
+    has_incoming: boolean;
+    has_metadata: boolean;
+    info_hash: string;
+    is_finished: boolean;
+    is_seeding: boolean;
+    last_download: number;
+    last_seen_complete: number;
+    last_upload: number;
+    list_peers: number;
+    list_seeds: number;
+    moving_storage: boolean;
+    name: string;
+    need_save_resume: boolean;
+    next_announce: number;
+    num_complete: number;
+    num_connections: number;
+    num_incomplete: number;
+    num_peers: number;
+    num_pieces: number;
+    num_seeds: number;
+    num_uploads: number;
+    progress: number;
+    queue_position: number;
+    save_path: string;
+    seed_rank: number;
+    seeding_duration: number;
+    state: number;
+    storage_mode: number;
+    torrent_file?: torrent_info;
+    total: number;
+    total_done: number;
+    total_download: number;
+    total_failed_bytes: number;
+    total_payload_download: number;
+    total_payload_upload: number;
+    total_redundant_bytes: number;
+    total_upload: number;
+    total_wanted: number;
+    total_wanted_done: number;
+    up_bandwidth_queue: number;
+    upload_payload_rate: number;
+    upload_rate: number;
+    uploads_limit: number;
 }
 
 export declare class session {
@@ -342,8 +410,15 @@ export declare class session {
     wait_for_alert(timeout: number, callback: (err: Error, result: boolean) => void): void;
 }
 
+export declare interface stats_metric {
+    name: string;
+    type: number;
+    value_index: number;
+}
+
 export declare function bencode(obj: Object): any; // TODO: Buffer
 export declare function generate_fingerprint(name: string, major: number, minor?: number, rev?: number, tag?: number): string;
 export declare function read_resume_data(params: add_torrent_params) : Object;
+export declare function session_stats_metrics(): stats_metric[];
 export declare function write_resume_data(params: add_torrent_params) : Object;
 export declare function write_resume_data_buf(params: add_torrent_params);

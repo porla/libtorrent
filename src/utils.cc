@@ -5,6 +5,7 @@
 #include <libtorrent/fingerprint.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
+#include <libtorrent/session_stats.hpp>
 #include <libtorrent/write_resume_data.hpp>
 #include <vector>
 
@@ -69,6 +70,7 @@ napi_status Utils::Init(napi_env env, napi_value exports)
         PORLA_VALUE_DESCRIPTOR("download_priority", download_priority),
         PORLA_VALUE_DESCRIPTOR("alert", alert),
         PORLA_METHOD_DESCRIPTOR("read_resume_data", ReadResumeData),
+        PORLA_METHOD_DESCRIPTOR("session_stats_metrics", SessionStatsMetrics),
         PORLA_METHOD_DESCRIPTOR("write_resume_data", WriteResumeData),
         PORLA_METHOD_DESCRIPTOR("write_resume_data_buf", WriteResumeDataBuf)
     };
@@ -189,6 +191,25 @@ napi_value Utils::ReadResumeData(napi_env env, napi_callback_info cbinfo)
 
     auto arg = Napi::External<lt::add_torrent_params>::New(env, &params);
     return AddTorrentParams::NewInstance(arg);
+}
+
+napi_value Utils::SessionStatsMetrics(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Dummy>(env, cbinfo);
+    auto metrics = lt::session_stats_metrics();
+    auto res = Napi::Array::New(env, metrics.size());
+
+    for (size_t i = 0; i < metrics.size(); i++)
+    {
+        auto mtr = Napi::Object::New(env);
+        mtr.Set("name", Napi::String::New(env, metrics.at(i).name));
+        mtr.Set("type", Napi::Number::New(env, static_cast<int32_t>(metrics.at(i).type)));
+        mtr.Set("value_index", Napi::Number::New(env, metrics.at(i).value_index));
+
+        res.Set(i, mtr);
+    }
+
+    return res;
 }
 
 napi_value Utils::WriteResumeData(napi_env env, napi_callback_info cbinfo)
