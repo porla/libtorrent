@@ -80,9 +80,9 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod("status", &TorrentHandle::Status),
         InstanceMethod("torrent_file", &TorrentHandle::TorrentFile),
         /*PORLA_METHOD_DESCRIPTOR("trackers", Trackers),
-        PORLA_METHOD_DESCRIPTOR("unset_flags", UnsetFlags),
-        PORLA_METHOD_DESCRIPTOR("upload_limit", UploadLimit),
-        PORLA_METHOD_DESCRIPTOR("url_seeds", UrlSeeds)*/
+        PORLA_METHOD_DESCRIPTOR("unset_flags", UnsetFlags),*/
+        InstanceMethod("upload_limit", &TorrentHandle::UploadLimit),
+        // PORLA_METHOD_DESCRIPTOR("url_seeds", UrlSeeds)*/
     });
 
     constructor = Napi::Persistent(func);
@@ -902,4 +902,9 @@ Napi::Value TorrentHandle::TorrentFile(const Napi::CallbackInfo& info)
     auto ti = th_->torrent_file();
     auto arg = Napi::External<std::shared_ptr<const lt::torrent_info>>::New(info.Env(), &ti);
     return TorrentInfo::NewInstance(arg);
+}
+
+Napi::Value TorrentHandle::UploadLimit(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), th_->upload_limit());
 }
