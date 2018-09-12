@@ -69,10 +69,10 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod("save_resume_data", &TorrentHandle::SaveResumeData),
         InstanceMethod("scrape_tracker", &TorrentHandle::ScrapeTracker),
         InstanceMethod("set_download_limit", &TorrentHandle::SetDownloadLimit),
-        /*InstanceMethod("set_flags", SetFlags),
-        InstanceMethod("set_max_connections", SetMaxConnections),
-        InstanceMethod("set_max_uploads", SetMaxUploads),
-        InstanceMethod("set_metadata", SetMetadata),
+        // InstanceMethod("set_flags", SetFlags),
+        InstanceMethod("set_max_connections", &TorrentHandle::SetMaxConnections),
+        InstanceMethod("set_max_uploads", &TorrentHandle::SetMaxUploads),
+        /*InstanceMethod("set_metadata", SetMetadata),
         InstanceMethod("set_piece_deadline", SetPieceDeadline),
         InstanceMethod("set_ssl_certificate", SetSslCertificate),
         InstanceMethod("set_ssl_certificate_buffer", SetSslCertificateBuffer),
@@ -785,6 +785,32 @@ Napi::Value TorrentHandle::SetDownloadLimit(const Napi::CallbackInfo& info)
     }
 
     th_->set_download_limit(info[0].As<Napi::Number>().Int32Value());
+
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::SetMaxConnections(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 1)
+    {
+        Napi::Error::New(info.Env(), "Expected 1 argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    th_->set_max_connections(info[0].As<Napi::Number>().Int32Value());
+
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::SetMaxUploads(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 1)
+    {
+        Napi::Error::New(info.Env(), "Expected 1 argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    th_->set_max_uploads(info[0].As<Napi::Number>().Int32Value());
 
     return info.Env().Undefined();
 }
