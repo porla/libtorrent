@@ -72,9 +72,9 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         // InstanceMethod("set_flags", SetFlags),
         InstanceMethod("set_max_connections", &TorrentHandle::SetMaxConnections),
         InstanceMethod("set_max_uploads", &TorrentHandle::SetMaxUploads),
-        /*InstanceMethod("set_metadata", SetMetadata),
-        InstanceMethod("set_piece_deadline", SetPieceDeadline),
-        InstanceMethod("set_ssl_certificate", SetSslCertificate),
+        // InstanceMethod("set_metadata", SetMetadata),
+        InstanceMethod("set_piece_deadline", &TorrentHandle::SetPieceDeadline),
+        /*InstanceMethod("set_ssl_certificate", SetSslCertificate),
         InstanceMethod("set_ssl_certificate_buffer", SetSslCertificateBuffer),
         InstanceMethod("set_upload_limit", SetUploadLimit),*/
         InstanceMethod("status", &TorrentHandle::Status),
@@ -811,6 +811,25 @@ Napi::Value TorrentHandle::SetMaxUploads(const Napi::CallbackInfo& info)
     }
 
     th_->set_max_uploads(info[0].As<Napi::Number>().Int32Value());
+
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::SetPieceDeadline(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 2)
+    {
+        Napi::Error::New(info.Env(), "Expected 1 argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    auto idx = info[0].As<Napi::Number>().Int64Value();
+    auto deadline = info[0].As<Napi::Number>().Int32Value();
+    // TODO flags
+
+    th_->set_piece_deadline(
+        static_cast<lt::piece_index_t>(idx),
+        deadline);
 
     return info.Env().Undefined();
 }
