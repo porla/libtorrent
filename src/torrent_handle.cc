@@ -63,7 +63,7 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod("remove_http_seed", &TorrentHandle::RemoveHttpSeed),
         InstanceMethod("remove_url_seed", &TorrentHandle::RemoveUrlSeed),
         InstanceMethod("rename_file", &TorrentHandle::RenameFile),
-        /*InstanceMethod("replace_trackers", &TorrentHandle::ReplaceTrackers),*/
+        InstanceMethod("replace_trackers", &TorrentHandle::ReplaceTrackers),
         InstanceMethod("reset_piece_deadline", &TorrentHandle::ResetPieceDeadline),
         InstanceMethod("resume", &TorrentHandle::Resume),
         InstanceMethod("save_resume_data", &TorrentHandle::SaveResumeData),
@@ -693,6 +693,45 @@ Napi::Value TorrentHandle::RenameFile(const Napi::CallbackInfo& info)
     auto name = info[1].As<Napi::String>().Utf8Value();
 
     th_->rename_file(idx, name);
+
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::ReplaceTrackers(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 1)
+    {
+        Napi::Error::New(info.Env(), "Expected 1 argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    auto input = info[0].As<Napi::Array>();
+    std::vector<lt::announce_entry> trackers;
+
+    for (uint32_t i = 0; i < input.Length(); i++)
+    {
+        auto val = input.Get(i);
+
+        if (val.IsString())
+        {
+            lt::announce_entry entry;
+            entry.url = val.As<Napi::String>().Utf8Value();
+
+            trackers.push_back(entry);
+        }
+        else if (val.IsObject())
+        {
+            auto obj = val.As<Napi::Object>();
+
+            lt::announce_entry entry;
+            entry.url = obj.Get("url").As<Napi::String>().Utf8Value();
+            entry.tier = static_cast<uint8_t>(obj.Get("tier").As<Napi::Number>().Int32Value());
+
+            trackers.push_back(entry);
+        }
+    }
+
+    th_->replace_trackers(trackers);
 
     return info.Env().Undefined();
 }
