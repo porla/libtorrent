@@ -68,8 +68,8 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod("resume", &TorrentHandle::Resume),
         InstanceMethod("save_resume_data", &TorrentHandle::SaveResumeData),
         InstanceMethod("scrape_tracker", &TorrentHandle::ScrapeTracker),
-        /*InstanceMethod("set_download_limit", SetDownloadLimit),
-        InstanceMethod("set_flags", SetFlags),
+        InstanceMethod("set_download_limit", &TorrentHandle::SetDownloadLimit),
+        /*InstanceMethod("set_flags", SetFlags),
         InstanceMethod("set_max_connections", SetMaxConnections),
         InstanceMethod("set_max_uploads", SetMaxUploads),
         InstanceMethod("set_metadata", SetMetadata),
@@ -773,6 +773,19 @@ Napi::Value TorrentHandle::ScrapeTracker(const Napi::CallbackInfo& info)
     }
 
     th_->scrape_tracker(idx);
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::SetDownloadLimit(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 1)
+    {
+        Napi::Error::New(info.Env(), "Expected 1 argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    th_->set_download_limit(info[0].As<Napi::Number>().Int32Value());
+
     return info.Env().Undefined();
 }
 
