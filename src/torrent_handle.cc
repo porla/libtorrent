@@ -75,8 +75,8 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         // InstanceMethod("set_metadata", SetMetadata),
         InstanceMethod("set_piece_deadline", &TorrentHandle::SetPieceDeadline),
         InstanceMethod("set_ssl_certificate", &TorrentHandle::SetSslCertificate),
-        /*InstanceMethod("set_ssl_certificate_buffer", SetSslCertificateBuffer),
-        InstanceMethod("set_upload_limit", SetUploadLimit),*/
+        InstanceMethod("set_ssl_certificate_buffer", &TorrentHandle::SetSslCertificateBuffer),
+        InstanceMethod("set_upload_limit", &TorrentHandle::SetUploadLimit),
         InstanceMethod("status", &TorrentHandle::Status),
         InstanceMethod("torrent_file", &TorrentHandle::TorrentFile),
         /*PORLA_METHOD_DESCRIPTOR("trackers", Trackers),
@@ -855,6 +855,37 @@ Napi::Value TorrentHandle::SetSslCertificate(const Napi::CallbackInfo& info)
         obj.Get("private_key").As<Napi::String>().Utf8Value(),
         obj.Get("dh_params").As<Napi::String>().Utf8Value(),
         passphrase);
+
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::SetSslCertificateBuffer(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 1)
+    {
+        Napi::Error::New(info.Env(), "Expected 1 argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    auto obj = info[0].As<Napi::Object>();
+
+    th_->set_ssl_certificate_buffer(
+        obj.Get("certificate").As<Napi::String>().Utf8Value(),
+        obj.Get("private_key").As<Napi::String>().Utf8Value(),
+        obj.Get("dh_params").As<Napi::String>().Utf8Value());
+
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::SetUploadLimit(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 1)
+    {
+        Napi::Error::New(info.Env(), "Expected 1 argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    th_->set_upload_limit(info[0].As<Napi::Number>().Int32Value());
 
     return info.Env().Undefined();
 }
