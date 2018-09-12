@@ -74,8 +74,8 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod("set_max_uploads", &TorrentHandle::SetMaxUploads),
         // InstanceMethod("set_metadata", SetMetadata),
         InstanceMethod("set_piece_deadline", &TorrentHandle::SetPieceDeadline),
-        /*InstanceMethod("set_ssl_certificate", SetSslCertificate),
-        InstanceMethod("set_ssl_certificate_buffer", SetSslCertificateBuffer),
+        InstanceMethod("set_ssl_certificate", &TorrentHandle::SetSslCertificate),
+        /*InstanceMethod("set_ssl_certificate_buffer", SetSslCertificateBuffer),
         InstanceMethod("set_upload_limit", SetUploadLimit),*/
         InstanceMethod("status", &TorrentHandle::Status),
         InstanceMethod("torrent_file", &TorrentHandle::TorrentFile),
@@ -819,7 +819,7 @@ Napi::Value TorrentHandle::SetPieceDeadline(const Napi::CallbackInfo& info)
 {
     if (info.Length() < 2)
     {
-        Napi::Error::New(info.Env(), "Expected 1 argument").ThrowAsJavaScriptException();
+        Napi::Error::New(info.Env(), "Expected 2 arguments").ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
 
@@ -830,6 +830,31 @@ Napi::Value TorrentHandle::SetPieceDeadline(const Napi::CallbackInfo& info)
     th_->set_piece_deadline(
         static_cast<lt::piece_index_t>(idx),
         deadline);
+
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::SetSslCertificate(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 1)
+    {
+        Napi::Error::New(info.Env(), "Expected 1 argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    auto obj = info[0].As<Napi::Object>();
+    std::string passphrase = "";
+
+    if (obj.HasOwnProperty("passphrase"))
+    {
+        passphrase = obj.Get("passphrase").As<Napi::String>().Utf8Value();
+    }
+
+    th_->set_ssl_certificate(
+        obj.Get("certificate").As<Napi::String>().Utf8Value(),
+        obj.Get("private_key").As<Napi::String>().Utf8Value(),
+        obj.Get("dh_params").As<Napi::String>().Utf8Value(),
+        passphrase);
 
     return info.Env().Undefined();
 }
