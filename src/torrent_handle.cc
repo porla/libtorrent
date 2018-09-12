@@ -62,9 +62,9 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod("read_piece", &TorrentHandle::ReadPiece),
         InstanceMethod("remove_http_seed", &TorrentHandle::RemoveHttpSeed),
         InstanceMethod("remove_url_seed", &TorrentHandle::RemoveUrlSeed),
-        /*InstanceMethod("rename_file", &TorrentHandle::RenameFile),
-        InstanceMethod("replace_trackers", &TorrentHandle::ReplaceTrackers),
-        InstanceMethod("reset_piece_deadline", &TorrentHandle::ResetPieceDeadline),*/
+        InstanceMethod("rename_file", &TorrentHandle::RenameFile),
+        /*InstanceMethod("replace_trackers", &TorrentHandle::ReplaceTrackers),*/
+        InstanceMethod("reset_piece_deadline", &TorrentHandle::ResetPieceDeadline),
         InstanceMethod("resume", &TorrentHandle::Resume),
         InstanceMethod("save_resume_data", &TorrentHandle::SaveResumeData),
         /*PORLA_METHOD_DESCRIPTOR("scrape_tracker", ScrapeTracker),
@@ -677,6 +677,36 @@ Napi::Value TorrentHandle::RemoveUrlSeed(const Napi::CallbackInfo& info)
     }
 
     th_->remove_url_seed(info[0].As<Napi::String>().Utf8Value());
+
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::RenameFile(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 2)
+    {
+        Napi::Error::New(info.Env(), "Expected 2 argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    auto idx = static_cast<lt::file_index_t>(info[0].As<Napi::Number>().Int64Value());
+    auto name = info[1].As<Napi::String>().Utf8Value();
+
+    th_->rename_file(idx, name);
+
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::ResetPieceDeadline(const Napi::CallbackInfo& info)
+{
+    if (info.Length() < 1)
+    {
+        Napi::Error::New(info.Env(), "Expected 1 argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    auto idx = static_cast<lt::piece_index_t>(info[0].As<Napi::Number>().Int64Value());
+    th_->reset_piece_deadline(idx);
 
     return info.Env().Undefined();
 }
