@@ -6,6 +6,10 @@
 #include "common.h"
 #include "torrent_info.h"
 
+#if !defined(WIN32) && __cplusplus <= 201103
+    #include "_aux/std_make_unique.h"
+#endif
+
 using porla::AddTorrentParams;
 
 Napi::FunctionReference AddTorrentParams::constructor;
