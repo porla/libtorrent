@@ -67,16 +67,16 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod("reset_piece_deadline", &TorrentHandle::ResetPieceDeadline),
         InstanceMethod("resume", &TorrentHandle::Resume),
         InstanceMethod("save_resume_data", &TorrentHandle::SaveResumeData),
-        /*PORLA_METHOD_DESCRIPTOR("scrape_tracker", ScrapeTracker),
-        PORLA_METHOD_DESCRIPTOR("set_download_limit", SetDownloadLimit),
-        PORLA_METHOD_DESCRIPTOR("set_flags", SetFlags),
-        PORLA_METHOD_DESCRIPTOR("set_max_connections", SetMaxConnections),
-        PORLA_METHOD_DESCRIPTOR("set_max_uploads", SetMaxUploads),
-        PORLA_METHOD_DESCRIPTOR("set_metadata", SetMetadata),
-        PORLA_METHOD_DESCRIPTOR("set_piece_deadline", SetPieceDeadline),
-        PORLA_METHOD_DESCRIPTOR("set_ssl_certificate", SetSslCertificate),
-        PORLA_METHOD_DESCRIPTOR("set_ssl_certificate_buffer", SetSslCertificateBuffer),
-        PORLA_METHOD_DESCRIPTOR("set_upload_limit", SetUploadLimit),*/
+        InstanceMethod("scrape_tracker", &TorrentHandle::ScrapeTracker),
+        /*InstanceMethod("set_download_limit", SetDownloadLimit),
+        InstanceMethod("set_flags", SetFlags),
+        InstanceMethod("set_max_connections", SetMaxConnections),
+        InstanceMethod("set_max_uploads", SetMaxUploads),
+        InstanceMethod("set_metadata", SetMetadata),
+        InstanceMethod("set_piece_deadline", SetPieceDeadline),
+        InstanceMethod("set_ssl_certificate", SetSslCertificate),
+        InstanceMethod("set_ssl_certificate_buffer", SetSslCertificateBuffer),
+        InstanceMethod("set_upload_limit", SetUploadLimit),*/
         InstanceMethod("status", &TorrentHandle::Status),
         InstanceMethod("torrent_file", &TorrentHandle::TorrentFile),
         /*PORLA_METHOD_DESCRIPTOR("trackers", Trackers),
@@ -760,6 +760,19 @@ Napi::Value TorrentHandle::SaveResumeData(const Napi::CallbackInfo& info)
 {
     // TODO: flags
     th_->save_resume_data();
+    return info.Env().Undefined();
+}
+
+Napi::Value TorrentHandle::ScrapeTracker(const Napi::CallbackInfo& info)
+{
+    int idx = -1;
+
+    if (info.Length() > 0)
+    {
+        idx = info[0].As<Napi::Number>().Int32Value();
+    }
+
+    th_->scrape_tracker(idx);
     return info.Env().Undefined();
 }
 
