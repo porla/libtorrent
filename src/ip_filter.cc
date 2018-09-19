@@ -97,8 +97,28 @@ napi_value IpFilter::AddRule(napi_env env, napi_callback_info cbinfo)
         return nullptr;
     }
 
-    auto first = boost::asio::ip::address::from_string(Value(env, info.args[0]).ToString());
-    auto last = boost::asio::ip::address::from_string(Value(env, info.args[1]).ToString());
+    boost::system::error_code ec;
+
+    auto first = boost::asio::ip::address::from_string(
+        Value(env, info.args[0]).ToString(),
+        ec);
+
+    if (ec)
+    {
+        napi_throw_error(env, nullptr, ec.message().c_str());
+        return nullptr;
+    }
+
+    auto last = boost::asio::ip::address::from_string(
+        Value(env, info.args[1]).ToString(),
+        ec);
+
+    if (ec)
+    {
+        napi_throw_error(env, nullptr, ec.message().c_str());
+        return nullptr;
+    }
+
     int32_t flags = Value(env, info.args[2]).ToInt32();
 
     info.wrap->ipf_->add_rule(first, last, flags);
