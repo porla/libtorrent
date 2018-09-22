@@ -74,6 +74,7 @@
                 "./src/common.cc",
                 "./src/create_torrent.cc",
                 "./src/entry.cc",
+                "./src/file_storage.cc",
                 "./src/ip_filter.cc",
                 "./src/porla-libtorrent.cc",
                 "./src/session.cc",

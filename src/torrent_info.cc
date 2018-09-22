@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "common.h"
+#include "file_storage.h"
 
 namespace lt = libtorrent;
 using porla::TorrentInfo;
@@ -24,9 +25,9 @@ Napi::Object TorrentInfo::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod("comment", &TorrentInfo::Comment),
         InstanceMethod("creation_date", &TorrentInfo::CreationDate),
         InstanceMethod("creator", &TorrentInfo::Creator),
-        /*InstanceMethod("files", &TorrentInfo::Files),
+        InstanceMethod("files", &TorrentInfo::Files),
         InstanceMethod("hash_for_piece", &TorrentInfo::HashForPiece),
-        InstanceMethod("http_seeds", &TorrentInfo::HttpSeeds),
+        /*InstanceMethod("http_seeds", &TorrentInfo::HttpSeeds),
         InstanceMethod("info", &TorrentInfo::Info),*/
         InstanceMethod("info_hash", &TorrentInfo::InfoHash),
         /*InstanceMethod("is_i2p", &TorrentInfo::IsI2P),
@@ -123,6 +124,24 @@ Napi::Value TorrentInfo::CreationDate(const Napi::CallbackInfo& info)
 Napi::Value TorrentInfo::Creator(const Napi::CallbackInfo& info)
 {
     return Napi::String::New(info.Env(), ti_->creator());
+}
+
+Napi::Value TorrentInfo::Files(const Napi::CallbackInfo& info)
+{
+    auto files = ti_->files();
+    auto arg = Napi::External<lt::file_storage>::New(info.Env(), &files);
+
+    return FileStorage::NewInstance(arg);
+}
+
+Napi::Value TorrentInfo::HashForPiece(const Napi::CallbackInfo& info)
+{
+    auto idx = static_cast<lt::piece_index_t>(info[0].As<Napi::Number>().Int64Value());
+    
+    std::stringstream ss;
+    ss << ti_->hash_for_piece(idx);
+
+    return Napi::String::New(info.Env(), ss.str());
 }
 
 Napi::Value TorrentInfo::InfoHash(const Napi::CallbackInfo& info)

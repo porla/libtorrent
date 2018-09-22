@@ -24,6 +24,8 @@ namespace porla
         Napi::Value Comment(const Napi::CallbackInfo& info);
         Napi::Value CreationDate(const Napi::CallbackInfo& info);
         Napi::Value Creator(const Napi::CallbackInfo& info);
+        Napi::Value Files(const Napi::CallbackInfo& info);
+        Napi::Value HashForPiece(const Napi::CallbackInfo& info);
         Napi::Value InfoHash(const Napi::CallbackInfo& info);
         Napi::Value Name(const Napi::CallbackInfo& info);
         Napi::Value NumFiles(const Napi::CallbackInfo& info);
