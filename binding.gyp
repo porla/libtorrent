@@ -20,7 +20,11 @@
             "target_name": "porla_libtorrent",
             "dependencies": [ "boost-system", "libtorrent-rasterbar" ],
             "cflags!": [ "-fno-exceptions" ],
-            "cflags_cc!": [ "-fno-exceptions" ],
+            "cflags_cc!":
+            [
+                "-fno-exceptions",
+                "-Wno-missing-field-initializers"
+            ],
             "include_dirs":
             [
                 "./vendor/boost-array/include",
@@ -173,14 +177,15 @@
                 "-Wall",
                 "-Wextra",
                 "-Wpedantic",
-                "-Wmisleading-indentation",
                 "-Wparentheses",
                 "-Wvla",
-                "-Wno-format-zero-length"
+                "-Wno-format-zero-length",
+                "-Wno-missing-field-initializers"
             ],
             "cflags_cc!": [ "-fno-exceptions" ],
             "cflags_cc":
             [
+                "-std=c++11",
                 "-fPIC",
                 "-Wc++11-compat"
             ],
