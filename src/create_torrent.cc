@@ -38,7 +38,8 @@ napi_status CreateTorrent::Init(napi_env env, napi_value exports)
 {
     std::vector<napi_property_descriptor> properties
     {
-        PORLA_METHOD_DESCRIPTOR("generate", Generate)
+        PORLA_METHOD_DESCRIPTOR("generate", Generate),
+        PORLA_METHOD_DESCRIPTOR("generate_buf", GenerateBuf)
     };
 
     napi_status status;
@@ -87,4 +88,15 @@ napi_value CreateTorrent::Generate(napi_env env, napi_callback_info cbinfo)
     auto info = UnwrapCallback<CreateTorrent>(env, cbinfo);
     auto entry = info.wrap->ct_->generate();
     return Entry::ToJson(env, entry);
+}
+
+napi_value CreateTorrent::GenerateBuf(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<CreateTorrent>(env, cbinfo);
+    auto entry = info.wrap->ct_->generate();
+
+    std::vector<char> buffer;
+    lt::bencode(std::back_inserter(buffer), entry);
+
+    return Napi::Buffer<char>::Copy(env, buffer.data(), buffer.size());
 }

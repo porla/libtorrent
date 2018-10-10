@@ -20,6 +20,7 @@ namespace porla
         static napi_value New(napi_env env, napi_callback_info callback_info);
 
         static napi_value Generate(napi_env env, napi_callback_info cbinfo);
+        static napi_value GenerateBuf(napi_env env, napi_callback_info cbinfo);
 
         CreateTorrent();
         CreateTorrent(libtorrent::torrent_info const& ti);
