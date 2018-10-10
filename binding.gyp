@@ -19,11 +19,18 @@
         {
             "target_name": "porla_libtorrent",
             "dependencies": [ "boost-system", "libtorrent-rasterbar" ],
-            "cflags!": [ "-fno-exceptions" ],
-            "cflags_cc!":
+            "cflags_cc!": [ "-fno-exceptions" ],
+            "cflags_cc":
             [
+                "-fPIC",
+                "-static-libstdc++",
                 "-std=c++11",
-                "-fno-exceptions",
+                "-Wall",
+                "-Wextra",
+                "-Wpedantic",
+                "-Wparentheses",
+                "-Wvla",
+                "-Wno-format-zero-length",
                 "-Wno-missing-field-initializers"
             ],
             "include_dirs":
@@ -172,9 +179,12 @@
             "target_name": "libtorrent-rasterbar",
             "type": "static_library",
             "dependencies": [ "boost-system" ],
-            "cflags!": [ "-fno-exceptions" ],
-            "cflags":
+            "cflags_cc!": [ "-fno-exceptions" ],
+            "cflags_cc":
             [
+                "-fPIC",
+                "-static-libstdc++",
+                "-std=c++11",
                 "-Wall",
                 "-Wextra",
                 "-Wpedantic",
@@ -182,12 +192,6 @@
                 "-Wvla",
                 "-Wno-format-zero-length",
                 "-Wno-missing-field-initializers"
-            ],
-            "cflags_cc!": [ "-fno-exceptions" ],
-            "cflags_cc":
-            [
-                "-std=c++11",
-                "-fPIC"
             ],
             "defines":
             [

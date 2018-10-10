@@ -38,7 +38,6 @@ napi_status Utils::Init(napi_env env, napi_value exports)
     Value a(env, alert);
     a.SetNamedProperty("all_categories", static_cast<uint32_t>(lt::alert::all_categories));
     a.SetNamedProperty("block_progress_notification", static_cast<uint32_t>(lt::alert::block_progress_notification));
-    a.SetNamedProperty("debug_notification", static_cast<uint32_t>(lt::alert::debug_notification));
     a.SetNamedProperty("dht_log_notification", static_cast<uint32_t>(lt::alert::dht_log_notification));
     a.SetNamedProperty("dht_notification", static_cast<uint32_t>(lt::alert::dht_notification));
     a.SetNamedProperty("dht_operation_notification", static_cast<uint32_t>(lt::alert::dht_operation_notification));
