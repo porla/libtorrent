@@ -22,6 +22,7 @@
             "cflags!": [ "-fno-exceptions" ],
             "cflags_cc!":
             [
+                "-std=c++11",
                 "-fno-exceptions",
                 "-Wno-missing-field-initializers"
             ],
@@ -186,8 +187,7 @@
             "cflags_cc":
             [
                 "-std=c++11",
-                "-fPIC",
-                "-Wc++11-compat"
+                "-fPIC"
             ],
             "defines":
             [
