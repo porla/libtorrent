@@ -1,24 +1,16 @@
 {
-    "conditions": [
-        [ 'OS=="win"', {
-            'conditions': [
-                ['target_arch=="x64"', {
-                    'variables': {
-                        'openssl_root%': 'C:/OpenSSL-Win64/lib/VC/static'
-                    },
-                }, {
-                    'variables': {
-                        'openssl_root%': 'C:/OpenSSL-Win32/lib/VC/static'
-                    },
-                }],
-            ]
-        }]
-    ],
-
     "targets": [
         {
             "target_name": "porla_libtorrent",
             "dependencies": [ "boost-system", "libtorrent-rasterbar" ],
+            "libraries": [ "-framework System", "-framework SystemConfiguration" ],
+            "xcode_settings":
+            {
+                "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+                "CLANG_CXX_LIBRARY": "libc++",
+                "MACOSX_DEPLOYMENT_TARGET": "10.9",
+                "OTHER_CPLUSPLUSFLAGS": [ "-std=c++11", "-stdlib=libc++" ],
+            },
             "cflags_cc!": [ "-fno-exceptions" ],
             "cflags_cc":
             [
@@ -102,32 +94,17 @@
                 "TORRENT_NO_DEPRECATE",
                 "TORRENT_USE_OPENSSL"
             ],
-            "conditions": [
-                [ 'OS=="win"', {
-                    'msvs_settings': {
-                        'VCCLCompilerTool': {
-                            "ExceptionHandling": 1,
-                            "RuntimeTypeInfo": 'true'
-                        }
-                    },
-                    "defines": [
-                        "_WIN32",
-                        "_WIN32_WINNT=0x0600",
-                        "WIN32",
-                        "WIN32_LEAN_AND_MEAN"
-                    ],
-                    "libraries": [
-                        '-l<(openssl_root)/libeay32MT.lib',
-                        '-l<(openssl_root)/ssleay32MT.lib',
-                        '-liphlpapi',
-                        '-llegacy_stdio_definitions'
-                    ]
-                }]
-            ]
         },
         {
             "target_name": "boost-system",
             "type": "static_library",
+            "xcode_settings":
+            {
+                "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+                "CLANG_CXX_LIBRARY": "libc++",
+                "MACOSX_DEPLOYMENT_TARGET": "10.9",
+                "OTHER_CPLUSPLUSFLAGS": [ "-std=c++11", "-stdlib=libc++" ],
+            },
             "defines":
             [
                 "BOOST_SYSTEM_STATIC_LINK=1"
@@ -158,26 +135,17 @@
             [
                 "./vendor/boost-system/src/error_code.cpp"
             ],
-             "conditions": [
-                [ 'OS=="win"', {
-                    'msvs_settings': {
-                        'VCCLCompilerTool': {
-                            "ExceptionHandling": 1,
-                            "RuntimeTypeInfo": 'true'
-                        }
-                    },
-                    "defines": [
-                        "_WIN32",
-                        "_WIN32_WINNT=0x0600",
-                        "WIN32",
-                        "WIN32_LEAN_AND_MEAN"
-                    ]
-                }]
-            ]
         },
         {
             "target_name": "libtorrent-rasterbar",
             "type": "static_library",
+            "xcode_settings":
+            {
+                "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+                "CLANG_CXX_LIBRARY": "libc++",
+                "MACOSX_DEPLOYMENT_TARGET": "10.9",
+                "OTHER_CPLUSPLUSFLAGS": [ "-std=c++11", "-stdlib=libc++" ],
+            },
             "dependencies": [ "boost-system" ],
             "cflags_cc!": [ "-fno-exceptions" ],
             "cflags_cc":
@@ -414,30 +382,6 @@
                 "./vendor/libtorrent/src/write_resume_data.cpp",
                 "./vendor/libtorrent/src/xml_parse.cpp"
             ],
-            "conditions": [
-                [ 'OS=="win"', {
-                    'msvs_settings': {
-                        'VCCLCompilerTool': {
-                            "DisableSpecificWarnings": [ "4373", "4503" ],
-                            "ExceptionHandling": 1,
-                            "RuntimeTypeInfo": 'true'
-                        }
-                    },
-                    "defines": [
-                        "_WIN32",
-                        "_WIN32_WINNT=0x0600",
-                        "WIN32",
-                        "WIN32_LEAN_AND_MEAN"
-                    ],
-                    "libraries": [
-                        '-l<(openssl_root)/libeay32MT.lib',
-                        '-l<(openssl_root)/ssleay32MT.lib',
-                        '-ladvapi32',
-                        '-liphlpapi',
-                        '-llegacy_stdio_definitions'
-                    ]
-                }]
-            ]
         }
     ]
 }
