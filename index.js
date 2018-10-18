@@ -1,4 +1,5 @@
-// Will load a compiled build if present or a prebuild.
-// If no build if found it will throw an exception
-var binding = require('node-gyp-build')(__dirname)
-module.exports = binding
+const {arch, platform} = require('os');
+const path = require('path');
+const prebuild = path.join(__dirname, 'prebuilds', `${platform()}-${arch()}`, 'node-napi.node');
+
+module.exports = require(prebuild);

@@ -4,18 +4,13 @@
   "description": "Rasterbar-libtorrent bindings for Node.js (>= 8.6).",
   "main": "index.js",
   "scripts": {
-    "build:linux": "node-gyp build && cp build/Release/porla_libtorrent.node prebuilds/linux-x64/node-napi.node",
-    "install": "node-gyp-build",
-    "prebuildify": "prebuildify --napi"
+    "build": "cmake-js compile"
   },
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",
   "devDependencies": {
-    "node-addon-api": "^1.4.0",
-    "node-gyp": "^3.8.0",
-    "prebuildify": "^2.7.0"
+    "cmake-js": "^4.0.1",
+    "node-addon-api": "^1.4.0"
   },
-  "dependencies": {
-    "node-gyp-build": "^3.4.0"
-  }
+  "dependencies": {}
 }
