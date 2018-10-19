@@ -177,7 +177,7 @@ target_compile_definitions(
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_I2P=1
     -DTORRENT_USE_LIBCRYPTO
-    -DTORRENT_USE_OPENSS
+    -DTORRENT_USE_OPENSSL
 )
 
 target_include_directories(
@@ -185,6 +185,7 @@ target_include_directories(
     PRIVATE
     "/usr/local/opt/openssl/include"
     ${BOOST_INCLUDE_DIRS}
+    ${OPENSSL_INCLUDE_DIR}
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include")
 
 target_link_libraries(

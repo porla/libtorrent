@@ -1,8 +1,10 @@
 project (porla_libtorrent)
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.11)
 
-# Set C++11
 set (CMAKE_CXX_STANDARD 11)
+set (OPENSSL_USE_STATIC_LIBS TRUE)
+
+find_package(OpenSSL)
 
 include("cmake/boost.cmake")
 include("cmake/libtorrent.cmake")
@@ -21,6 +23,7 @@ set_target_properties(
 target_compile_definitions(
     ${PROJECT_NAME}
     PRIVATE
+    -DBOOST_ALL_NO_LIB
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_OPENSSL
 )
@@ -38,11 +41,19 @@ target_link_libraries(
 
     # Link against static OpenSSL (for electron)
     # TODO: adjust for all platforms. OSX specific code here.
-    "/usr/local/opt/openssl/lib/libcrypto.a"
-    "/usr/local/opt/openssl/lib/libssl.a"
+
+    ${OPENSSL_CRYPTO_LIBRARY}
+    ${OPENSSL_SSL_LIBRARY}
+
+    # "/usr/local/opt/openssl/lib/libcrypto.a"
+    # "/usr/local/opt/openssl/lib/libssl.a"
 
     ${CMAKE_JS_LIB}
-    "-framework System"
-    "-framework SystemConfiguration"
+    # "-framework System"
+    # "-framework SystemConfiguration"
+
+    iphlpapi
+    legacy_stdio_definitions
+
     libtorrent-rasterbar
     boost-system)
