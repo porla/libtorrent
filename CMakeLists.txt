@@ -1,13 +1,20 @@
 project (porla_libtorrent)
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.10)
 
 if (APPLE)
+    set (OUTPUT_DIR "darwin-x64")
     set (PLATFORM_LIBS
         "/usr/local/opt/openssl/lib/libcrypto.a"
         "/usr/local/opt/openssl/lib/libssl.a"
         "-framework System"
         "-framework SystemConfiguration")
 elseif(UNIX)
+    set (OPENSSL_USE_STATIC_LIBS TRUE)
+    set (OUTPUT_DIR "linux-x64")
+    find_package(OpenSSL)
+    set (PLATFORM_LIBS
+        "${OPENSSL_CRYPTO_LIBRARY}"
+        "${OPENSSL_SSL_LIBRARY}")
 elseif(WIN32)
     set (OPENSSL_USE_STATIC_LIBS TRUE)
     find_package(OpenSSL)
@@ -32,7 +39,7 @@ set_target_properties(
     PREFIX ""
     SUFFIX ".node"
     OUTPUT_NAME "node-napi"
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/darwin-x64")
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/${OUTPUT_DIR}")
 
 target_compile_definitions(
     ${PROJECT_NAME}

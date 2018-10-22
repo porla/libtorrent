@@ -162,6 +162,8 @@ add_library(
     vendor/libtorrent/src/xml_parse
 )
 
+set_target_properties(libtorrent-rasterbar PROPERTIES COMPILE_FLAGS "-fPIC")
+
 target_compile_definitions(
     libtorrent-rasterbar
     PRIVATE

@@ -49,4 +49,6 @@ add_library(
     vendor/boost-system/src/error_code
 )
 
+set_target_properties(boost-system PROPERTIES COMPILE_FLAGS "-fPIC")
+
 target_include_directories(boost-system PRIVATE "${BOOST_INCLUDE_DIRS}")
