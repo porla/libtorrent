@@ -9,4 +9,3 @@ RUN npm install
 COPY . .
 
 RUN npm run prebuildify
-RUN cp prebuilds/linux-x64/node-napi.node /prebuilds-out/

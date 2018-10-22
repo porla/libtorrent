@@ -3,6 +3,7 @@
 #include <napi.h>
 
 #include <libtorrent/fingerprint.hpp>
+#include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/session_stats.hpp>
@@ -68,6 +69,7 @@ napi_status Utils::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("min_memory_usage", MinMemoryUsage),
         PORLA_VALUE_DESCRIPTOR("download_priority", download_priority),
         PORLA_VALUE_DESCRIPTOR("alert", alert),
+        PORLA_METHOD_DESCRIPTOR("parse_magnet_uri", ParseMagnetUri),
         PORLA_METHOD_DESCRIPTOR("read_resume_data", ReadResumeData),
         PORLA_METHOD_DESCRIPTOR("session_stats_metrics", SessionStatsMetrics),
         PORLA_METHOD_DESCRIPTOR("write_resume_data", WriteResumeData),
@@ -151,6 +153,23 @@ napi_value Utils::HighPerformanceSeed(napi_env env, napi_callback_info cbinfo)
 napi_value Utils::MinMemoryUsage(napi_env env, napi_callback_info cbinfo)
 {
     return SettingsPack::Objectify(env, lt::min_memory_usage());
+}
+
+napi_value Utils::ParseMagnetUri(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Dummy>(env, cbinfo);
+
+    if (info.args.size() != 1)
+    {
+        napi_throw_error(env, nullptr, "Expected 1 argument");
+        return nullptr;
+    }
+
+    Napi::Value v(env, info.args[0]);
+    auto params = lt::parse_magnet_uri(v.ToString().Utf8Value());
+    auto arg = Napi::External<lt::add_torrent_params>::New(env, &params);
+
+    return AddTorrentParams::NewInstance(arg);
 }
 
 napi_value Utils::ReadResumeData(napi_env env, napi_callback_info cbinfo)

@@ -16,10 +16,16 @@ namespace porla
         libtorrent::add_torrent_params& Wrapped();
 
     private:
+        Napi::Value Get_InfoHash(const Napi::CallbackInfo& info);
+        Napi::Value Get_Name(const Napi::CallbackInfo& info);
         Napi::Value Get_SavePath(const Napi::CallbackInfo& info);
         Napi::Value Get_TorrentInfo(const Napi::CallbackInfo& info);
+        Napi::Value Get_Trackers(const Napi::CallbackInfo& info);
+        void Set_InfoHash(const Napi::CallbackInfo& info, const Napi::Value& value);
+        void Set_Name(const Napi::CallbackInfo& info, const Napi::Value& value);
         void Set_SavePath(const Napi::CallbackInfo& info, const Napi::Value& value);
         void Set_TorrentInfo(const Napi::CallbackInfo& info, const Napi::Value& value);
+        void Set_Trackers(const Napi::CallbackInfo& info, const Napi::Value& value);
 
         static Napi::FunctionReference constructor;
 
