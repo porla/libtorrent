@@ -1,6 +1,10 @@
 project (porla_libtorrent)
 cmake_minimum_required(VERSION 3.10)
 
+set(Boost_USE_STATIC_LIBS ON)
+
+find_package(Boost REQUIRED COMPONENTS system)
+
 if (APPLE)
     set (OUTPUT_DIR "darwin-x64")
     set (PLATFORM_LIBS
@@ -17,17 +21,18 @@ elseif(UNIX)
         "${OPENSSL_SSL_LIBRARY}")
 elseif(WIN32)
     set (OPENSSL_USE_STATIC_LIBS TRUE)
+    set (OUTPUT_DIR "win32-x64")
     find_package(OpenSSL)
     set (PLATFORM_LIBS
         "${OPENSSL_CRYPTO_LIBRARY}"
         "${OPENSSL_SSL_LIBRARY}"
+        crypt32
         iphlpapi
         legacy_stdio_definitions)
 endif()
 
 set (CMAKE_CXX_STANDARD 11)
 
-include("cmake/boost.cmake")
 include("cmake/libtorrent.cmake")
 
 file(GLOB SOURCE_FILES "src/*")
@@ -39,7 +44,8 @@ set_target_properties(
     PREFIX ""
     SUFFIX ".node"
     OUTPUT_NAME "node-napi"
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/${OUTPUT_DIR}")
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/${OUTPUT_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/${OUTPUT_DIR}")
 
 target_compile_definitions(
     ${PROJECT_NAME}
@@ -53,7 +59,7 @@ target_include_directories(
     ${PROJECT_NAME}
     PRIVATE
     "${CMAKE_JS_INC}"
-    ${BOOST_INCLUDE_DIRS}
+    "${Boost_INCLUDE_DIRS}"
     "${CMAKE_SOURCE_DIR}/node_modules/node-addon-api"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include")
 
@@ -62,7 +68,7 @@ target_link_libraries(
 
     ${PLATFORM_LIBS}
 
+    ${Boost_LIBRARIES}
     ${CMAKE_JS_LIB}
 
-    libtorrent-rasterbar
-    boost-system)
+    libtorrent-rasterbar)

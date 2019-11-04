@@ -89,7 +89,7 @@ Napi::Value AddTorrentParams::Get_Trackers(const Napi::CallbackInfo& info)
 
     for (size_t i = 0; i < trackers.size(); i++)
     {
-        result.Set(i, Napi::String::New(info.Env(), trackers.at(i)));
+        result.Set(static_cast<uint32_t>(i), Napi::String::New(info.Env(), trackers.at(i)));
     }
 
     return result;
@@ -100,7 +100,7 @@ void AddTorrentParams::Set_InfoHash(const Napi::CallbackInfo& info, const Napi::
     std::stringstream ss(value.ToString().Utf8Value());
     lt::sha1_hash hash;
     ss >> hash;
-    p_->info_hash = hash;
+    p_->info_hash = lt::info_hash_t(hash);
 }
 
 void AddTorrentParams::Set_Name(const Napi::CallbackInfo& info, const Napi::Value& value)

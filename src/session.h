@@ -37,8 +37,6 @@ namespace porla
         static napi_value DhtPutItem(napi_env env, napi_callback_info callback_info);
         static napi_value DhtSampleInfohashes(napi_env env, napi_callback_info callback_info);
         static napi_value FindTorrent(napi_env env, napi_callback_info callback_info);
-        static napi_value GetCacheInfo(napi_env env, napi_callback_info callback_info);
-        static napi_value GetDhtSettings(napi_env env, napi_callback_info callback_info);
         static napi_value GetIpFilter(napi_env env, napi_callback_info callback_info);
         static napi_value GetPeerClass(napi_env env, napi_callback_info callback_info);
         static napi_value GetPeerClassFilter(napi_env env, napi_callback_info callback_info);
@@ -63,7 +61,6 @@ namespace porla
         static napi_value Resume(napi_env env, napi_callback_info callback_info);
         static napi_value SaveState(napi_env env, napi_callback_info callback_info);
         static napi_value SaveStateBuffer(napi_env env, napi_callback_info callback_info);
-        static napi_value SetDhtSettings(napi_env env, napi_callback_info callback_info);
         static napi_value SetIpFilter(napi_env env, napi_callback_info callback_info);
         static napi_value SetPeerClass(napi_env env, napi_callback_info callback_info);
         static napi_value SetPeerClassFilter(napi_env env, napi_callback_info callback_info);

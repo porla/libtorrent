@@ -52,8 +52,6 @@ napi_value SettingsPack::Objectify(napi_env env, libtorrent::settings_pack const
     SET_VALUE_PROPERTY_BOOL(sp, settings, ban_web_seeds);
     SET_VALUE_PROPERTY_BOOL(sp, settings, broadcast_lsd);
     SET_VALUE_PROPERTY_BOOL(sp, settings, close_redundant_connections);
-    SET_VALUE_PROPERTY_BOOL(sp, settings, coalesce_reads);
-    SET_VALUE_PROPERTY_BOOL(sp, settings, coalesce_writes);
     SET_VALUE_PROPERTY_BOOL(sp, settings, disable_hash_checks);
     SET_VALUE_PROPERTY_BOOL(sp, settings, dont_count_slow_torrents);
     SET_VALUE_PROPERTY_BOOL(sp, settings, enable_dht);
@@ -85,12 +83,10 @@ napi_value SettingsPack::Objectify(napi_env env, libtorrent::settings_pack const
     SET_VALUE_PROPERTY_BOOL(sp, settings, smooth_connects);
     SET_VALUE_PROPERTY_BOOL(sp, settings, strict_end_game_mode);
     SET_VALUE_PROPERTY_BOOL(sp, settings, strict_super_seeding);
-    SET_VALUE_PROPERTY_BOOL(sp, settings, support_merkle_torrents);
     SET_VALUE_PROPERTY_BOOL(sp, settings, support_share_mode);
     SET_VALUE_PROPERTY_BOOL(sp, settings, upnp_ignore_nonrouters);
     SET_VALUE_PROPERTY_BOOL(sp, settings, use_dht_as_fallback);
     SET_VALUE_PROPERTY_BOOL(sp, settings, use_parole_mode);
-    SET_VALUE_PROPERTY_BOOL(sp, settings, use_read_cache);
     SET_VALUE_PROPERTY_BOOL(sp, settings, volatile_read_cache);
 
     SET_VALUE_PROPERTY_INT32(sp, settings, active_checking);
@@ -100,7 +96,6 @@ napi_value SettingsPack::Objectify(napi_env env, libtorrent::settings_pack const
     SET_VALUE_PROPERTY_INT32(sp, settings, active_lsd_limit);
     SET_VALUE_PROPERTY_INT32(sp, settings, active_seeds);
     SET_VALUE_PROPERTY_INT32(sp, settings, active_tracker_limit);
-    SET_VALUE_PROPERTY_INT32(sp, settings, aio_max);
     SET_VALUE_PROPERTY_INT32(sp, settings, aio_threads);
     SET_VALUE_PROPERTY_INT32(sp, settings, alert_mask);
     SET_VALUE_PROPERTY_INT32(sp, settings, alert_queue_size);
@@ -110,9 +105,6 @@ napi_value SettingsPack::Objectify(napi_env env, libtorrent::settings_pack const
     SET_VALUE_PROPERTY_INT32(sp, settings, auto_manage_startup);
     SET_VALUE_PROPERTY_INT32(sp, settings, auto_scrape_interval);
     SET_VALUE_PROPERTY_INT32(sp, settings, auto_scrape_min_interval);
-    SET_VALUE_PROPERTY_INT32(sp, settings, cache_expiry);
-    SET_VALUE_PROPERTY_INT32(sp, settings, cache_size);
-    SET_VALUE_PROPERTY_INT32(sp, settings, cache_size_volatile);
     SET_VALUE_PROPERTY_INT32(sp, settings, checking_mem_usage);
     SET_VALUE_PROPERTY_INT32(sp, settings, choking_algorithm);
     SET_VALUE_PROPERTY_INT32(sp, settings, close_file_interval);
@@ -248,8 +240,6 @@ libtorrent::settings_pack SettingsPack::Parse(napi_env env, napi_value value)
     SET_SETTINGSPACK_BOOL(properties, sp, ban_web_seeds);
     SET_SETTINGSPACK_BOOL(properties, sp, broadcast_lsd);
     SET_SETTINGSPACK_BOOL(properties, sp, close_redundant_connections);
-    SET_SETTINGSPACK_BOOL(properties, sp, coalesce_reads);
-    SET_SETTINGSPACK_BOOL(properties, sp, coalesce_writes);
     SET_SETTINGSPACK_BOOL(properties, sp, disable_hash_checks);
     SET_SETTINGSPACK_BOOL(properties, sp, dont_count_slow_torrents);
     SET_SETTINGSPACK_BOOL(properties, sp, enable_dht);
@@ -281,12 +271,10 @@ libtorrent::settings_pack SettingsPack::Parse(napi_env env, napi_value value)
     SET_SETTINGSPACK_BOOL(properties, sp, smooth_connects);
     SET_SETTINGSPACK_BOOL(properties, sp, strict_end_game_mode);
     SET_SETTINGSPACK_BOOL(properties, sp, strict_super_seeding);
-    SET_SETTINGSPACK_BOOL(properties, sp, support_merkle_torrents);
     SET_SETTINGSPACK_BOOL(properties, sp, support_share_mode);
     SET_SETTINGSPACK_BOOL(properties, sp, upnp_ignore_nonrouters);
     SET_SETTINGSPACK_BOOL(properties, sp, use_dht_as_fallback);
     SET_SETTINGSPACK_BOOL(properties, sp, use_parole_mode);
-    SET_SETTINGSPACK_BOOL(properties, sp, use_read_cache);
     SET_SETTINGSPACK_BOOL(properties, sp, volatile_read_cache);
 
     SET_SETTINGSPACK_INT32(properties, sp, active_checking);
@@ -296,7 +284,6 @@ libtorrent::settings_pack SettingsPack::Parse(napi_env env, napi_value value)
     SET_SETTINGSPACK_INT32(properties, sp, active_lsd_limit);
     SET_SETTINGSPACK_INT32(properties, sp, active_seeds);
     SET_SETTINGSPACK_INT32(properties, sp, active_tracker_limit);
-    SET_SETTINGSPACK_INT32(properties, sp, aio_max);
     SET_SETTINGSPACK_INT32(properties, sp, aio_threads);
     SET_SETTINGSPACK_INT32(properties, sp, alert_mask);
     SET_SETTINGSPACK_INT32(properties, sp, alert_queue_size);
@@ -306,9 +293,6 @@ libtorrent::settings_pack SettingsPack::Parse(napi_env env, napi_value value)
     SET_SETTINGSPACK_INT32(properties, sp, auto_manage_startup);
     SET_SETTINGSPACK_INT32(properties, sp, auto_scrape_interval);
     SET_SETTINGSPACK_INT32(properties, sp, auto_scrape_min_interval);
-    SET_SETTINGSPACK_INT32(properties, sp, cache_expiry);
-    SET_SETTINGSPACK_INT32(properties, sp, cache_size);
-    SET_SETTINGSPACK_INT32(properties, sp, cache_size_volatile);
     SET_SETTINGSPACK_INT32(properties, sp, checking_mem_usage);
     SET_SETTINGSPACK_INT32(properties, sp, choking_algorithm);
     SET_SETTINGSPACK_INT32(properties, sp, close_file_interval);

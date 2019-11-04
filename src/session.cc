@@ -84,8 +84,6 @@ napi_status Session::Init(napi_env env, napi_value exports)
         //TODO PORLA_METHOD_DESCRIPTOR("dht_put_item", DhtPutItem),
         //TODO PORLA_METHOD_DESCRIPTOR("dht_sample_infohashes", DhtSampleInfohashes),
         PORLA_METHOD_DESCRIPTOR("find_torrent", FindTorrent),
-        PORLA_METHOD_DESCRIPTOR("get_cache_info", GetCacheInfo),
-        PORLA_METHOD_DESCRIPTOR("get_dht_settings", GetDhtSettings),
         PORLA_METHOD_DESCRIPTOR("get_ip_filter", GetIpFilter),
         PORLA_METHOD_DESCRIPTOR("get_peer_class", GetPeerClass),
         PORLA_METHOD_DESCRIPTOR("get_peer_class_filter", GetPeerClassFilter),
@@ -110,7 +108,6 @@ napi_status Session::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("resume", Resume),
         PORLA_METHOD_DESCRIPTOR("save_state", SaveState),
         PORLA_METHOD_DESCRIPTOR("save_state_buf", SaveStateBuffer),
-        PORLA_METHOD_DESCRIPTOR("set_dht_settings", SetDhtSettings),
         PORLA_METHOD_DESCRIPTOR("set_ip_filter", SetIpFilter),
         PORLA_METHOD_DESCRIPTOR("set_peer_class", SetPeerClass),
         PORLA_METHOD_DESCRIPTOR("set_peer_class_filter", SetPeerClassFilter),
@@ -461,97 +458,6 @@ napi_value Session::FindTorrent(napi_env env, napi_callback_info cbinfo)
     return TorrentHandle::NewInstance(arg);
 }
 
-napi_value Session::GetCacheInfo(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<Session>(env, cbinfo);
-
-    libtorrent::torrent_handle th;
-    int flags = 0;
-
-    if (info.args.size() > 0)
-    {
-        Value v(env, info.args[0]);
-        th = v.Unwrap<TorrentHandle>()->Wrapped();
-    }
-
-    if (info.args.size() > 1)
-    {
-        Value v(env, info.args[1]);
-        flags = v.ToInt32();
-    }
-
-    libtorrent::cache_status cache;
-    info.wrap->session_->get_cache_info(&cache, th, flags);
-
-    napi_value obj;
-    napi_value pieces;
-    napi_create_object(env, &obj);
-    napi_create_array_with_length(env, cache.pieces.size(), &pieces);
-    napi_set_named_property(env, obj, "pieces", pieces);
-
-    for (size_t i = 0; i < cache.pieces.size(); i++)
-    {
-        napi_value p;
-        napi_create_object(env, &p);
-        napi_set_element(env, pieces, i, p);
-
-        napi_value blocks;
-        napi_create_array_with_length(env, cache.pieces.at(i).blocks.size(), &blocks);
-
-        for (size_t j = 0; j < cache.pieces.at(i).blocks.size(); j++)
-        {
-            napi_value b;
-            napi_get_boolean(env, cache.pieces.at(i).blocks.at(j), &b);
-            napi_set_element(env, blocks, j, b);
-        }
-
-        napi_set_named_property(env, p, "blocks", blocks);
-
-        Value piece(env, p);
-        piece.SetNamedProperty("kind", cache.pieces.at(i).kind);
-        piece.SetNamedProperty("last_use", cache.pieces.at(i).last_use.time_since_epoch().count());
-        piece.SetNamedProperty("need_readback", cache.pieces.at(i).need_readback);
-        piece.SetNamedProperty("next_to_hash", cache.pieces.at(i).next_to_hash);
-        piece.SetNamedProperty("piece", static_cast<int32_t>(cache.pieces.at(i).piece));
-    }
-
-    return obj;
-}
-
-napi_value Session::GetDhtSettings(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<Session>(env, cbinfo);
-    auto settings = info.wrap->session_->get_dht_settings();
-
-    napi_value obj;
-    napi_create_object(env, &obj);
-
-    Value v(env, obj);
-    v.SetNamedProperty("aggressive_lookups", settings.aggressive_lookups);
-    v.SetNamedProperty("block_ratelimit", settings.block_ratelimit);
-    v.SetNamedProperty("block_timeout", settings.block_timeout);
-    v.SetNamedProperty("enforce_node_id", settings.enforce_node_id);
-    v.SetNamedProperty("extended_routing_table", settings.extended_routing_table);
-    v.SetNamedProperty("ignore_dark_internet", settings.ignore_dark_internet);
-    v.SetNamedProperty("item_lifetime", settings.item_lifetime);
-    v.SetNamedProperty("max_dht_items", settings.max_dht_items);
-    v.SetNamedProperty("max_fail_count", settings.max_fail_count);
-    v.SetNamedProperty("max_infohashes_sample_count", settings.max_infohashes_sample_count);
-    v.SetNamedProperty("max_peers", settings.max_peers);
-    v.SetNamedProperty("max_peers_reply", settings.max_peers_reply);
-    v.SetNamedProperty("max_torrent_search_reply", settings.max_torrent_search_reply);
-    v.SetNamedProperty("max_torrents", settings.max_torrents);
-    v.SetNamedProperty("privacy_lookups", settings.privacy_lookups);
-    v.SetNamedProperty("read_only", settings.read_only);
-    v.SetNamedProperty("restrict_routing_ips", settings.restrict_routing_ips);
-    v.SetNamedProperty("restrict_search_ips", settings.restrict_search_ips);
-    v.SetNamedProperty("sample_infohashes_interval", settings.sample_infohashes_interval);
-    v.SetNamedProperty("search_branching", settings.search_branching);
-    v.SetNamedProperty("upload_rate_limit", settings.upload_rate_limit);
-
-    return obj;
-}
-
 napi_value Session::GetIpFilter(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<Session>(env, cbinfo);
@@ -735,9 +641,8 @@ napi_value Session::LoadState(napi_env env, napi_callback_info cbinfo)
         std::vector<char> buf;
         libtorrent::bencode(std::back_inserter(buf), e);
 
-        libtorrent::bdecode_node node;
         libtorrent::error_code ec;
-        libtorrent::bdecode(buf, ec);
+        libtorrent::bdecode_node node = libtorrent::bdecode(buf, ec);
 
         if (ec)
         {
@@ -855,32 +760,6 @@ napi_value Session::SaveStateBuffer(napi_env env, napi_callback_info cbinfo)
     lt::bencode(std::back_inserter(buffer), e);
 
     return Napi::Buffer<char>::Copy(env, buffer.data(), buffer.size());
-}
-
-napi_value Session::SetDhtSettings(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<Session>(env, cbinfo);
-
-    if (info.args.size() != 1)
-    {
-        napi_throw_error(env, nullptr, "Expected 1 argument");
-        return nullptr;
-    }
-
-    Value v(env, info.args[0]);
-
-    libtorrent::dht::dht_settings dht;
-
-    if (v.HasNamedProperty("aggressive_lookups"))
-    {
-        dht.aggressive_lookups = v.GetNamedProperty("aggressive_lookups").ToBool();
-    }
-
-    // TODO: all dht settings
-
-    info.wrap->session_->set_dht_settings(dht);
-
-    return nullptr;
 }
 
 napi_value Session::SetIpFilter(napi_env env, napi_callback_info cbinfo)

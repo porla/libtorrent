@@ -309,7 +309,7 @@ Napi::Object Alert::DhtReplyAlert(Napi::Env env, lt::dht_reply_alert* alert)
 Napi::Object Alert::TrackerAnnounceAlert(Napi::Env env, lt::tracker_announce_alert* alert)
 {
     auto value = TrackerAlert(env, alert);
-    value.Set("event", Napi::Number::New(env, alert->event));
+    value.Set("event", Napi::Number::New(env, static_cast<std::uint8_t>(alert->event)));
     return value;
 }
 
