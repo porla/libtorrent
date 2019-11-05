@@ -31,7 +31,7 @@ elseif(WIN32)
         legacy_stdio_definitions)
 endif()
 
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 14)
 
 include("cmake/libtorrent.cmake")
 
