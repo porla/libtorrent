@@ -1,10 +1,8 @@
 #include "ip_filter.h"
 
-#include "common.h"
+#include <boost/asio/ip/address.hpp>
 
-#if !defined(WIN32) && __cplusplus <= 201103
-    #include "_aux/std_make_unique.h"
-#endif
+#include "common.h"
 
 using porla::IpFilter;
 
@@ -78,7 +76,7 @@ napi_value IpFilter::Access(napi_env env, napi_callback_info cbinfo)
 
     Value addr(env, info.args[0]);
 
-    auto parsed = boost::asio::ip::address::from_string(addr.ToString());
+    auto parsed = boost::asio::ip::make_address(addr.ToString());
     auto access = info.wrap->ipf_->access(parsed);
 
     napi_value ret;
@@ -99,7 +97,7 @@ napi_value IpFilter::AddRule(napi_env env, napi_callback_info cbinfo)
 
     boost::system::error_code ec;
 
-    auto first = boost::asio::ip::address::from_string(
+    auto first = boost::asio::ip::make_address(
         Value(env, info.args[0]).ToString(),
         ec);
 
@@ -109,7 +107,7 @@ napi_value IpFilter::AddRule(napi_env env, napi_callback_info cbinfo)
         return nullptr;
     }
 
-    auto last = boost::asio::ip::address::from_string(
+    auto last = boost::asio::ip::make_address(
         Value(env, info.args[1]).ToString(),
         ec);
 

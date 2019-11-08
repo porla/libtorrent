@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include <boost/asio/ip/address.hpp>
 #include <libtorrent/announce_entry.hpp>
 #include <libtorrent/disk_interface.hpp>
 #include <libtorrent/torrent_handle.hpp>
@@ -9,10 +10,6 @@
 
 #include "torrent_info.h"
 #include "torrent_status.h"
-
-#if !defined(WIN32) && __cplusplus <= 201103
-    #include "_aux/std_make_unique.h"
-#endif
 
 using porla::TorrentHandle;
 
@@ -201,7 +198,7 @@ Napi::Value TorrentHandle::ConnectPeer(const Napi::CallbackInfo& info)
         return info.Env().Undefined();
     }
 
-    auto address = boost::asio::ip::address::from_string(info[0].As<Napi::String>().Utf8Value());
+    auto address = boost::asio::ip::make_address(info[0].As<Napi::String>().Utf8Value());
     auto endpoint = boost::asio::ip::tcp::endpoint(address, info[0].As<Napi::Number>().Int32Value());
 
     th_->connect_peer(endpoint);

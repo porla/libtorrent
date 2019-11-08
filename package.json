@@ -3,8 +3,10 @@
   "version": "0.22.0",
   "description": "Rasterbar-libtorrent bindings for Node.js (>= 8.6).",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
-    "build": "cmake-js compile"
+    "build": "cmake-js --CDCMAKE_BUILD_TYPE=Release --CDBUILD_SHARED_LIBS=off --CDdeprecated-functions=off build",
+    "clean": "cmake-js clean"
   },
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",

@@ -1,7 +1,9 @@
-project (porla_libtorrent)
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
+
+project(porla_libtorrent)
 
 set(Boost_USE_STATIC_LIBS ON)
+set(CMAKE_CXX_STANDARD 14)
 
 find_package(Boost REQUIRED COMPONENTS system)
 
@@ -31,44 +33,51 @@ elseif(WIN32)
         legacy_stdio_definitions)
 endif()
 
-set (CMAKE_CXX_STANDARD 14)
 
-include("cmake/libtorrent.cmake")
+# libtorrent -----------------------------------------------------------------
+add_subdirectory(vendor/libtorrent)
+
+set_target_properties(
+    "torrent-rasterbar"
+    PROPERTIES
+        COMPILE_FLAGS "-fPIC")
+# ----------------------------------------------------------------------------
 
 file(GLOB SOURCE_FILES "src/*")
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+
+add_library(
+    ${PROJECT_NAME}
+    SHARED
+    ${SOURCE_FILES})
 
 set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES
-    PREFIX ""
-    SUFFIX ".node"
-    OUTPUT_NAME "node-napi"
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/${OUTPUT_DIR}"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/${OUTPUT_DIR}")
+        PREFIX                           ""
+        SUFFIX                           ".node"
+        OUTPUT_NAME                      "node-napi"
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/${OUTPUT_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/${OUTPUT_DIR}")
 
 target_compile_definitions(
     ${PROJECT_NAME}
     PRIVATE
-    -DBOOST_ALL_NO_LIB
     -DTORRENT_NO_DEPRECATE
-    -DTORRENT_USE_OPENSSL
-)
+    -DTORRENT_USE_LIBCRYPTO
+    -DTORRENT_USE_OPENSSL)
 
 target_include_directories(
     ${PROJECT_NAME}
     PRIVATE
     "${CMAKE_JS_INC}"
-    "${Boost_INCLUDE_DIRS}"
-    "${CMAKE_SOURCE_DIR}/node_modules/node-addon-api"
-    "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include")
+    ${Boost_INCLUDE_DIRS}
+    "${CMAKE_SOURCE_DIR}/node_modules/node-addon-api")
 
 target_link_libraries(
     ${PROJECT_NAME}
 
     ${PLATFORM_LIBS}
 
-    ${Boost_LIBRARIES}
     ${CMAKE_JS_LIB}
 
-    libtorrent-rasterbar)
+    "torrent-rasterbar")
