@@ -4,6 +4,12 @@ project(porla_libtorrent)
 
 set(CMAKE_CXX_STANDARD 14)
 
+# if we run OSX, set the OPENSSL_ROOT_DIR to the one where homebrew installed
+# openssl, otherwise CMake will throw an err.
+if(APPLE)
+    set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
+endif()
+
 # libtorrent -----------------------------------------------------------------
 add_subdirectory(vendor/libtorrent)
 
@@ -18,8 +24,6 @@ endif()
 if(APPLE)
     set(OUTPUT_DIR "darwin-x64")
     set(PLATFORM_LIBS
-        "/usr/local/opt/openssl/lib/libcrypto.a"
-        "/usr/local/opt/openssl/lib/libssl.a"
         "-framework System"
         "-framework SystemConfiguration")
 elseif(UNIX)
