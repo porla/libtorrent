@@ -4,12 +4,9 @@
 
 #include <libtorrent/torrent_handle.hpp>
 
+#include "info_hash.h"
 #include "torrent_info.h"
 #include "torrent_handle.h"
-
-#if !defined(WIN32) && __cplusplus <= 201103
-    #include "_aux/std_make_unique.h"
-#endif
 
 using porla::TorrentStatus;
 
@@ -113,12 +110,16 @@ Napi::Value TorrentStatus::Get_AddedTime(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentStatus::Get_AllTimeDownload(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->all_time_download);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->all_time_download, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_AllTimeUpload(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->all_time_upload);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->all_time_upload, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_AnnouncingToDht(const Napi::CallbackInfo& info)
@@ -227,9 +228,7 @@ Napi::Value TorrentStatus::Get_HasMetadata(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentStatus::Get_InfoHash(const Napi::CallbackInfo& info)
 {
-    std::stringstream ss;
-    ss << ts_->info_hash;
-    return Napi::String::New(info.Env(), ss.str());
+    return InfoHash::ToString(info.Env(), ts_->info_hash);
 }
 
 Napi::Value TorrentStatus::Get_IsFinished(const Napi::CallbackInfo& info)
@@ -284,7 +283,9 @@ Napi::Value TorrentStatus::Get_NeedSaveResume(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentStatus::Get_NextAnnounce(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), lt::total_seconds(ts_->next_announce));
+    napi_value result;
+    napi_create_int64(info.Env(), lt::total_seconds(ts_->next_announce), &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_NumComplete(const Napi::CallbackInfo& info)
@@ -370,52 +371,72 @@ Napi::Value TorrentStatus::Get_TorrentFile(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentStatus::Get_Total(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->total);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->total, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_TotalDone(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->total_done);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->total_done, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_TotalDownload(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->total_download);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->total_download, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_TotalFailedBytes(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->total_failed_bytes);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->total_failed_bytes, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_TotalPayloadDownload(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->total_payload_download);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->total_payload_download, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_TotalPayloadUpload(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->total_payload_upload);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->total_payload_upload, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_TotalRedundantBytes(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->total_redundant_bytes);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->total_redundant_bytes, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_TotalUpload(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->total_upload);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->total_upload, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_TotalWanted(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->total_wanted);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->total_wanted, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_TotalWantedDone(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ts_->total_wanted_done);
+    napi_value result;
+    napi_create_int64(info.Env(), ts_->total_wanted_done, &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentStatus::Get_UpBandwidthQueue(const Napi::CallbackInfo& info)

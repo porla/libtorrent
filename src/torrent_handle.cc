@@ -8,6 +8,7 @@
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/torrent_status.hpp>
 
+#include "info_hash.h"
 #include "torrent_info.h"
 #include "torrent_status.h"
 
@@ -217,10 +218,9 @@ Napi::Value TorrentHandle::FilePriority(const Napi::CallbackInfo& info)
     {
         case 1:
         {
-            auto idx = static_cast<int64_t>(info[0].As<Napi::Number>().Int32Value());
-            auto prio = th_->file_priority(static_cast<lt::file_index_t>(idx));
+            auto idx = lt::file_index_t{ info[0].As<Napi::Number>().Int32Value() };
+            auto prio = th_->file_priority(idx);
             return Napi::Number::New(info.Env(), static_cast<uint8_t>(prio));
-            break;
         }
 
         case 2:
@@ -458,7 +458,7 @@ Napi::Value TorrentHandle::HavePiece(const Napi::CallbackInfo& info)
         return info.Env().Undefined();
     }
 
-    auto idx = static_cast<libtorrent::piece_index_t>(info[0].As<Napi::Number>().Int64Value());
+    auto idx = static_cast<libtorrent::piece_index_t>(info[0].As<Napi::Number>().Int32Value());
     return Napi::Boolean::New(info.Env(), th_->have_piece(idx));
 }
 
@@ -469,9 +469,7 @@ Napi::Value TorrentHandle::Id(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentHandle::InfoHash(const Napi::CallbackInfo& info)
 {
-    std::stringstream ss;
-    ss << th_->info_hash();
-    return Napi::String::New(info.Env(), ss.str());
+    return InfoHash::ToString(info.Env(), th_->info_hash());
 }
 
 Napi::Value TorrentHandle::IsValid(const Napi::CallbackInfo& info)
@@ -690,7 +688,7 @@ Napi::Value TorrentHandle::RenameFile(const Napi::CallbackInfo& info)
         return info.Env().Undefined();
     }
 
-    auto idx = static_cast<lt::file_index_t>(info[0].As<Napi::Number>().Int64Value());
+    auto idx = static_cast<lt::file_index_t>(info[0].As<Napi::Number>().Int32Value());
     auto name = info[1].As<Napi::String>().Utf8Value();
 
     th_->rename_file(idx, name);
@@ -745,7 +743,7 @@ Napi::Value TorrentHandle::ResetPieceDeadline(const Napi::CallbackInfo& info)
         return info.Env().Undefined();
     }
 
-    auto idx = static_cast<lt::piece_index_t>(info[0].As<Napi::Number>().Int64Value());
+    auto idx = static_cast<lt::piece_index_t>(info[0].As<Napi::Number>().Int32Value());
     th_->reset_piece_deadline(idx);
 
     return info.Env().Undefined();
@@ -824,12 +822,12 @@ Napi::Value TorrentHandle::SetPieceDeadline(const Napi::CallbackInfo& info)
         return info.Env().Undefined();
     }
 
-    auto idx = info[0].As<Napi::Number>().Int64Value();
+    auto idx = info[0].As<Napi::Number>().Int32Value();
     auto deadline = info[0].As<Napi::Number>().Int32Value();
     // TODO flags
 
     th_->set_piece_deadline(
-        static_cast<lt::piece_index_t>(idx),
+        lt::piece_index_t{idx},
         deadline);
 
     return info.Env().Undefined();

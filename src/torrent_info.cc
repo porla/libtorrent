@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "file_storage.h"
+#include "info_hash.h"
 
 namespace lt = libtorrent;
 using porla::TorrentInfo;
@@ -97,7 +98,8 @@ TorrentInfo::TorrentInfo(const Napi::CallbackInfo& info)
     else if (info[0].IsBuffer())
     {
         auto buf = info[0].As<Napi::Buffer<char>>();
-        ti_ = std::make_shared<lt::torrent_info>(buf.Data(), buf.Length(), ec);
+        libtorrent::span<const char> s(buf.Data(), buf.Length());
+        ti_ = std::make_shared<lt::torrent_info>(s, ec, libtorrent::from_span);
     }
 
     if (ec)
@@ -118,7 +120,9 @@ Napi::Value TorrentInfo::Comment(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentInfo::CreationDate(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ti_->creation_date());
+    napi_value result;
+    napi_create_int64(info.Env(), ti_->creation_date(), &result);
+    return Napi::Value(info.Env(), result);
 }
 
 Napi::Value TorrentInfo::Creator(const Napi::CallbackInfo& info)
@@ -136,7 +140,7 @@ Napi::Value TorrentInfo::Files(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentInfo::HashForPiece(const Napi::CallbackInfo& info)
 {
-    auto idx = static_cast<lt::piece_index_t>(info[0].As<Napi::Number>().Int64Value());
+    auto idx = static_cast<lt::piece_index_t>(info[0].As<Napi::Number>().Int32Value());
     
     std::stringstream ss;
     ss << ti_->hash_for_piece(idx);
@@ -146,10 +150,7 @@ Napi::Value TorrentInfo::HashForPiece(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentInfo::InfoHash(const Napi::CallbackInfo& info)
 {
-    std::stringstream ss;
-    ss << ti_->info_hash();
-
-    return Napi::String::New(info.Env(), ss.str());
+    return InfoHash::ToString(info.Env(), ti_->info_hash());
 }
 
 Napi::Value TorrentInfo::Name(const Napi::CallbackInfo& info)
@@ -203,5 +204,7 @@ Napi::Value TorrentInfo::SslCert(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentInfo::TotalSize(const Napi::CallbackInfo& info)
 {
-    return Napi::Number::New(info.Env(), ti_->total_size());
+    napi_value result;
+    napi_create_int64(info.Env(), ti_->total_size(), &result);
+    return Napi::Value(info.Env(), result);
 }

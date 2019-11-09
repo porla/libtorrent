@@ -4,11 +4,8 @@
 #include <libtorrent/torrent_info.hpp>
 
 #include "common.h"
+#include "info_hash.h"
 #include "torrent_info.h"
-
-#if !defined(WIN32) && __cplusplus <= 201103
-    #include "_aux/std_make_unique.h"
-#endif
 
 using porla::AddTorrentParams;
 
@@ -61,9 +58,7 @@ libtorrent::add_torrent_params& AddTorrentParams::Wrapped()
 
 Napi::Value AddTorrentParams::Get_InfoHash(const Napi::CallbackInfo& info)
 {
-    std::stringstream ss;
-    ss << p_->info_hash;
-    return Napi::String::New(info.Env(), ss.str());
+    return InfoHash::ToString(info.Env(), p_->info_hash);
 }
 
 Napi::Value AddTorrentParams::Get_Name(const Napi::CallbackInfo& info)
@@ -124,7 +119,7 @@ void AddTorrentParams::Set_Trackers(const Napi::CallbackInfo& info, const Napi::
     auto trackers = value.As<Napi::Array>();
     std::vector<std::string> t;
 
-    for (size_t i = 0; i < trackers.Length(); i++)
+    for (uint32_t i = 0; i < trackers.Length(); i++)
     {
         t.push_back(trackers.Get(i).ToString().Utf8Value());
     }

@@ -1,6 +1,7 @@
 #include "alert.h"
 
 #include "add_torrent_params.h"
+#include "info_hash.h"
 #include "torrent_handle.h"
 #include "torrent_status.h"
 
@@ -110,10 +111,13 @@ Napi::Value Alert::ToJson(Napi::Env env, libtorrent::alert* alert)
 
 Napi::Object Alert::AlertBase(Napi::Env env, libtorrent::alert* alert)
 {
+    napi_value ts;
+    napi_create_int64(env, alert->timestamp().time_since_epoch().count(), &ts);
+
     auto value = Napi::Object::New(env);
     value.Set("category", Napi::Number::New(env, static_cast<uint32_t>(alert->category())));
     value.Set("message", Napi::String::New(env, alert->message()));
-    value.Set("timestamp", Napi::Number::New(env, alert->timestamp().time_since_epoch().count()));
+    value.Set("timestamp", Napi::Value(env, ts));
     value.Set("type", Napi::Number::New(env, alert->type()));
     value.Set("what", Napi::String::New(env, alert->what()));
 
@@ -159,12 +163,7 @@ Napi::Object Alert::TrackerAlert(Napi::Env env, libtorrent::tracker_alert* alert
 Napi::Object Alert::TorrentRemovedAlert(Napi::Env env, libtorrent::torrent_removed_alert* alert)
 {
     auto value = TorrentAlert(env, alert);
-
-    std::stringstream ss;
-    ss << alert->info_hash;
-
-    value.Set("info_hash", Napi::String::New(env, ss.str()));
-
+    value.Set("info_hash", InfoHash::ToString(env, alert->info_hash));
     return value;
 }
 
@@ -395,7 +394,7 @@ Napi::Object Alert::PieceFinishedAlert(Napi::Env env, lt::piece_finished_alert* 
 Napi::Object Alert::RequestDroppedAlert(Napi::Env env, lt::request_dropped_alert* alert)
 {
     auto value = TorrentAlert(env, alert);
-    value.Set("block_index", Napi::Number::New(env, static_cast<int64_t>(alert->block_index)));
+    value.Set("block_index", Napi::Number::New(env, alert->block_index));
     value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
@@ -403,7 +402,7 @@ Napi::Object Alert::RequestDroppedAlert(Napi::Env env, lt::request_dropped_alert
 Napi::Object Alert::BlockTimeoutAlert(Napi::Env env, lt::block_timeout_alert* alert)
 {
     auto value = TorrentAlert(env, alert);
-    value.Set("block_index", Napi::Number::New(env, static_cast<int64_t>(alert->block_index)));
+    value.Set("block_index", Napi::Number::New(env, alert->block_index));
     value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
@@ -411,7 +410,7 @@ Napi::Object Alert::BlockTimeoutAlert(Napi::Env env, lt::block_timeout_alert* al
 Napi::Object Alert::BlockFinishedAlert(Napi::Env env, lt::block_finished_alert* alert)
 {
     auto value = TorrentAlert(env, alert);
-    value.Set("block_index", Napi::Number::New(env, static_cast<int64_t>(alert->block_index)));
+    value.Set("block_index", Napi::Number::New(env, alert->block_index));
     value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
@@ -419,7 +418,7 @@ Napi::Object Alert::BlockFinishedAlert(Napi::Env env, lt::block_finished_alert* 
 Napi::Object Alert::BlockDownloadingAlert(Napi::Env env, lt::block_downloading_alert* alert)
 {
     auto value = TorrentAlert(env, alert);
-    value.Set("block_index", Napi::Number::New(env, static_cast<int64_t>(alert->block_index)));
+    value.Set("block_index", Napi::Number::New(env, alert->block_index));
     value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
@@ -427,7 +426,7 @@ Napi::Object Alert::BlockDownloadingAlert(Napi::Env env, lt::block_downloading_a
 Napi::Object Alert::UnwantedBlockAlert(Napi::Env env, lt::unwanted_block_alert* alert)
 {
     auto value = TorrentAlert(env, alert);
-    value.Set("block_index", Napi::Number::New(env, static_cast<int64_t>(alert->block_index)));
+    value.Set("block_index", Napi::Number::New(env, alert->block_index));
     value.Set("piece_index", Napi::Number::New(env, static_cast<int32_t>(alert->piece_index)));
     return value;
 }
@@ -461,12 +460,7 @@ Napi::Object Alert::StorageMovedFailedAlert(Napi::Env env, lt::storage_moved_fai
 Napi::Object Alert::TorrentDeletedAlert(Napi::Env env, lt::torrent_deleted_alert* alert)
 {
     auto value = TorrentAlert(env, alert);
-
-    std::stringstream ss;
-    ss << alert->info_hash;
-
-    value.Set("info_hash", Napi::String::New(env, ss.str()));
-
+    value.Set("info_hash", InfoHash::ToString(env, alert->info_hash));
     return value;
 }
 
@@ -483,10 +477,7 @@ Napi::Object Alert::TorrentDeleteFailedAlert(Napi::Env env, lt::torrent_delete_f
         value.Set("error", err);
     }
 
-    std::stringstream ss;
-    ss << alert->info_hash;
-
-    value.Set("info_hash", Napi::String::New(env, ss.str()));
+    value.Set("info_hash", InfoHash::ToString(env, alert->info_hash));
 
     return value;
 }
@@ -602,7 +593,7 @@ Napi::Object Alert::StateUpdateAlert(Napi::Env env, lt::state_update_alert* aler
     for (size_t i = 0; i < alert->status.size(); i++)
     {
         auto arg = Napi::External<lt::torrent_status>::New(env, &alert->status.at(i));
-        arr.Set(i, TorrentStatus::NewInstance(arg));
+        arr.Set(static_cast<uint32_t>(i), TorrentStatus::NewInstance(arg));
     }
 
     val.Set("status", arr);
@@ -616,9 +607,12 @@ Napi::Object Alert::SessionStatsAlert(Napi::Env env, lt::session_stats_alert* al
     auto cnt = alert->counters();
     auto arr = Napi::Array::New(env, cnt.size());
 
-    for (size_t i = 0; i < cnt.size(); i++)
+    for (size_t i = 0; i < static_cast<size_t>(cnt.size()); i++)
     {
-        arr.Set(i, Napi::Number::New(env, cnt[i]));
+        napi_value num;
+        napi_create_int64(env, cnt[i], &num);
+
+        arr.Set(static_cast<uint32_t>(i), Napi::Value(env, num));
     }
 
     val.Set("counters", arr);
