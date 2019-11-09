@@ -24,6 +24,13 @@ if(APPLE)
         "-framework SystemConfiguration")
 elseif(UNIX)
     set(OUTPUT_DIR "linux-x64")
+
+    # hack to detect r-pi
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l")
+        set(OUTPUT_DIR "linux-arm")
+        set(PLATFORM_LIBS
+            atomic)
+    endif()
 elseif(WIN32)
     set(OUTPUT_DIR "win32-x64")
 
