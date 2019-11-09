@@ -2,10 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(porla_libtorrent)
 
-set(Boost_USE_STATIC_LIBS ON)
 set(CMAKE_CXX_STANDARD 14)
-
-find_package(Boost REQUIRED COMPONENTS system)
 
 # libtorrent -----------------------------------------------------------------
 add_subdirectory(vendor/libtorrent)
@@ -26,12 +23,7 @@ if(APPLE)
         "-framework System"
         "-framework SystemConfiguration")
 elseif(UNIX)
-    set(OPENSSL_USE_STATIC_LIBS TRUE)
     set(OUTPUT_DIR "linux-x64")
-    find_package(OpenSSL)
-    set(PLATFORM_LIBS
-        "${OPENSSL_CRYPTO_LIBRARY}"
-        "${OPENSSL_SSL_LIBRARY}")
 elseif(WIN32)
     set(OUTPUT_DIR "win32-x64")
 
