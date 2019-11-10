@@ -67,8 +67,12 @@ Napi::Value FileStorage::FileName(const Napi::CallbackInfo& info)
 
 Napi::Value FileStorage::FileOffset(const Napi::CallbackInfo& info)
 {
-    auto idx = static_cast<lt::file_index_t>(info[0].As<Napi::Number>().Uint32Value());
-    return Napi::Number::New(info.Env(), fs_->file_offset(idx));
+    auto idx = lt::file_index_t{ info[0].As<Napi::Number>().Int32Value() };
+
+    napi_value res;
+    napi_create_int64(info.Env(), fs_->file_offset(idx), &res);
+
+    return Napi::Value(info.Env(), res);
 }
 
 Napi::Value FileStorage::FilePath(const Napi::CallbackInfo& info)
@@ -87,6 +91,10 @@ Napi::Value FileStorage::FilePathHash(const Napi::CallbackInfo& info)
 
 Napi::Value FileStorage::FileSize(const Napi::CallbackInfo& info)
 {
-    auto idx = static_cast<lt::file_index_t>(info[0].As<Napi::Number>().Uint32Value());
-    return Napi::Number::New(info.Env(), fs_->file_size(idx));
+    auto idx = lt::file_index_t{ info[0].As<Napi::Number>().Int32Value() };
+
+    napi_value res;
+    napi_create_int64(info.Env(), fs_->file_size(idx), &res);
+
+    return Napi::Value(info.Env(), res);
 }

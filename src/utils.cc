@@ -6,6 +6,7 @@
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
+#include <libtorrent/session_handle.hpp>
 #include <libtorrent/session_stats.hpp>
 #include <libtorrent/write_resume_data.hpp>
 #include <vector>
@@ -31,6 +32,14 @@ napi_status Utils::Init(napi_env env, napi_value exports)
     v.SetNamedProperty("default_priority", static_cast<uint8_t>(lt::default_priority));
     v.SetNamedProperty("low_priority", static_cast<uint8_t>(lt::low_priority));
     v.SetNamedProperty("top_priority", static_cast<uint8_t>(lt::top_priority));
+
+    // Save state flags
+    napi_value save_state_flags;
+    napi_create_object(env, &save_state_flags);
+
+    Value ssf(env, save_state_flags);
+    ssf.SetNamedProperty("save_dht_state", static_cast<uint32_t>(lt::session::save_dht_state));
+    ssf.SetNamedProperty("save_settings", static_cast<uint32_t>(lt::session::save_settings));
 
     // Alert mask
     napi_value alert;
@@ -70,6 +79,7 @@ napi_status Utils::Init(napi_env env, napi_value exports)
         PORLA_VALUE_DESCRIPTOR("download_priority", download_priority),
         PORLA_VALUE_DESCRIPTOR("alert", alert),
         PORLA_METHOD_DESCRIPTOR("parse_magnet_uri", ParseMagnetUri),
+        PORLA_VALUE_DESCRIPTOR("save_state_flags", save_state_flags),
         PORLA_METHOD_DESCRIPTOR("read_resume_data", ReadResumeData),
         PORLA_METHOD_DESCRIPTOR("session_stats_metrics", SessionStatsMetrics),
         PORLA_METHOD_DESCRIPTOR("write_resume_data", WriteResumeData),

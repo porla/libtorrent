@@ -246,9 +246,12 @@ Napi::Value TorrentHandle::FileProgress(const Napi::CallbackInfo& info)
 
     auto arr = Napi::Array::New(info.Env(), progress.size());
 
-    for (size_t i = 0; i < progress.size(); i++)
+    for (uint32_t i = 0; i < arr.Length(); i++)
     {
-        arr.Set(i, Napi::Number::New(info.Env(), progress.at(i)));
+        napi_value val;
+        napi_create_int64(info.Env(), progress.at(i), &val);
+
+        arr.Set(i, Napi::Value(info.Env(), val));
     }
 
     return arr;
@@ -259,13 +262,16 @@ Napi::Value TorrentHandle::FileStatus(const Napi::CallbackInfo& info)
     auto state = th_->file_status();
     auto arr = Napi::Array::New(info.Env(), state.size());
 
-    for (size_t i = 0; i < state.size(); i++)
+    for (uint32_t i = 0; i < arr.Length(); i++)
     {
         const libtorrent::open_file_state& s = state.at(i);
 
+        napi_value last_use;
+        napi_create_int64(info.Env(), lt::time_point_cast<lt::milliseconds>(s.last_use).time_since_epoch().count(), &last_use);
+
         auto obj = Napi::Object::New(info.Env());
         obj.Set("file_index", Napi::Number::New(info.Env(), static_cast<int32_t>(s.file_index)));
-        obj.Set("last_use", Napi::Number::New(info.Env(), lt::time_point_cast<lt::milliseconds>(s.last_use).time_since_epoch().count()));
+        obj.Set("last_use", Napi::Value(info.Env(), last_use));
         obj.Set("open_mode", Napi::Number::New(info.Env(), static_cast<uint8_t>(s.open_mode)));
 
         arr.Set(i, obj);
@@ -324,7 +330,7 @@ Napi::Value TorrentHandle::GetDownloadQueue(const Napi::CallbackInfo& info)
 
     auto arr = Napi::Array::New(info.Env(), ppi.size());
 
-    for (size_t i = 0; i < ppi.size(); i++)
+    for (uint32_t i = 0; i < arr.Length(); i++)
     {
         auto& item = ppi.at(i);
 
@@ -348,7 +354,7 @@ Napi::Value TorrentHandle::GetFilePriorities(const Napi::CallbackInfo& info)
     auto prios = th_->get_file_priorities();
     auto arr = Napi::Array::New(info.Env(), prios.size());
 
-    for (size_t i = 0; i < prios.size(); i++)
+    for (uint32_t i = 0; i < arr.Length(); i++)
     {
         arr.Set(i, Napi::Number::New(info.Env(), static_cast<uint8_t>(prios.at(i))));
     }
@@ -363,9 +369,12 @@ Napi::Value TorrentHandle::GetPeerInfo(const Napi::CallbackInfo& info)
 
     auto arr = Napi::Array::New(info.Env(), pi.size());
 
-    for (size_t i = 0; i < pi.size(); i++)
+    for (uint32_t i = 0; i < arr.Length(); i++)
     {
         auto& p = pi.at(i);
+
+        napi_value download_queue_time;
+        napi_create_int64(info.Env(), lt::total_seconds(p.download_queue_time), &download_queue_time);
 
         auto obj = Napi::Object::New(info.Env());
         obj.Set("busy_request", Napi::Number::New(info.Env(), p.busy_requests));
@@ -373,7 +382,7 @@ Napi::Value TorrentHandle::GetPeerInfo(const Napi::CallbackInfo& info)
         obj.Set("connection_type", Napi::Number::New(info.Env(), p.connection_type));
         obj.Set("down_speed", Napi::Number::New(info.Env(), p.down_speed));
         obj.Set("download_queue_length", Napi::Number::New(info.Env(), p.download_queue_length));
-        obj.Set("download_queue_time", Napi::Number::New(info.Env(), lt::total_seconds(p.download_queue_time)));
+        obj.Set("download_queue_time", Napi::Value(info.Env(), download_queue_time));
         obj.Set("download_rate_peak", Napi::Number::New(info.Env(), p.download_rate_peak));
         obj.Set("downloading_block_index", Napi::Number::New(info.Env(), p.downloading_block_index));
         obj.Set("downloading_piece_index", Napi::Number::New(info.Env(), static_cast<int32_t>(p.downloading_piece_index)));
@@ -387,9 +396,16 @@ Napi::Value TorrentHandle::GetPeerInfo(const Napi::CallbackInfo& info)
         ip.Set(uint32_t(0), Napi::String::New(info.Env(), p.ip.address().to_string()));
         ip.Set(uint32_t(1), Napi::Number::New(info.Env(), p.ip.port()));
 
+        napi_value last_active;
+        napi_create_int64(info.Env(), lt::total_seconds(p.last_active), &last_active);
+
+        napi_value last_request;
+        napi_create_int64(info.Env(), lt::total_seconds(p.last_request), &last_request);
+
+
         obj.Set("ip", ip);
-        obj.Set("last_active", Napi::Number::New(info.Env(), lt::total_seconds(p.last_active)));
-        obj.Set("last_request", Napi::Number::New(info.Env(), lt::total_seconds(p.last_request)));
+        obj.Set("last_active", Napi::Value(info.Env(), last_active));
+        obj.Set("last_request", Napi::Value(info.Env(), last_request));
 
         auto local_endpoint = Napi::Array::New(info.Env(), 2);
         local_endpoint.Set(uint32_t(0), Napi::String::New(info.Env(), p.local_endpoint.address().to_string()));
@@ -422,8 +438,15 @@ Napi::Value TorrentHandle::GetPeerInfo(const Napi::CallbackInfo& info)
         obj.Set("source", Napi::Number::New(info.Env(), static_cast<uint8_t>(p.source)));
         obj.Set("target_dl_queue_length", Napi::Number::New(info.Env(), p.target_dl_queue_length));
         obj.Set("timed_out_requests", Napi::Number::New(info.Env(), p.timed_out_requests));
-        obj.Set("total_download", Napi::Number::New(info.Env(), p.total_download));
-        obj.Set("total_upload", Napi::Number::New(info.Env(), p.total_upload));
+
+        napi_value total_download;
+        napi_create_int64(info.Env(), p.total_download, &total_download);
+
+        napi_value total_upload;
+        napi_create_int64(info.Env(), p.total_upload, &total_upload);
+
+        obj.Set("total_download", Napi::Value(info.Env(), total_download));
+        obj.Set("total_upload", Napi::Value(info.Env(), total_upload));
         obj.Set("up_speed", Napi::Number::New(info.Env(), p.up_speed));
         obj.Set("upload_queue_length", Napi::Number::New(info.Env(), p.upload_queue_length));
         obj.Set("upload_rate_peak", Napi::Number::New(info.Env(), p.upload_rate_peak));
@@ -442,7 +465,7 @@ Napi::Value TorrentHandle::GetPiecePriorities(const Napi::CallbackInfo& info)
     auto prios = th_->get_piece_priorities();
     auto arr = Napi::Array::New(info.Env(), prios.size());
 
-    for (size_t i = 0; i < prios.size(); i++)
+    for (uint32_t i = 0; i < arr.Length(); i++)
     {
         arr.Set(i, Napi::Number::New(info.Env(), static_cast<uint8_t>(prios.at(i))));
     }
@@ -520,7 +543,7 @@ Napi::Value TorrentHandle::PieceAvailability(const Napi::CallbackInfo& info)
 
     auto arr = Napi::Array::New(info.Env(), avail.size());
 
-    for (size_t i = 0; i < avail.size(); i++)
+    for (uint32_t i = 0; i < arr.Length(); i++)
     {
         arr.Set(i, Napi::Number::New(info.Env(), avail.at(i)));
     }

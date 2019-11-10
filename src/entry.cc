@@ -81,8 +81,9 @@ napi_value Entry::ToJson(napi_env env, libtorrent::entry const& entry)
 
     case libtorrent::entry::data_type::int_t:
     {
-        auto integer = entry.integer();
-        return Napi::Number::New(env, integer);
+        napi_value integer;
+        napi_create_int64(env, entry.integer(), &integer);
+        return Napi::Value(env, integer);
     }
 
     case libtorrent::entry::data_type::list_t:
@@ -90,7 +91,7 @@ napi_value Entry::ToJson(napi_env env, libtorrent::entry const& entry)
         auto list = entry.list();
         auto result = Napi::Array::New(env, list.size());
 
-        for (size_t i = 0; i < list.size(); i++)
+        for (uint32_t i = 0; i < result.Length(); i++)
         {
             result.Set(i, ToJson(env, list.at(i)));
         }
@@ -106,7 +107,8 @@ napi_value Entry::ToJson(napi_env env, libtorrent::entry const& entry)
 
     case libtorrent::entry::data_type::string_t:
     {
-        return Napi::String::New(env, entry.string());
+        std::string const& s = entry.string();
+        return Napi::String::New(env, s.c_str(), s.size());
     }
 
     case libtorrent::entry::data_type::undefined_t:

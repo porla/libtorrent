@@ -201,7 +201,10 @@ napi_value Session::AddPortMapping(napi_env env, napi_callback_info cbinfo)
     napi_value arr;
     napi_create_array_with_length(env, res.size(), &arr);
 
-    for (size_t i = 0; i < res.size(); i++)
+    uint32_t len;
+    napi_get_array_length(env, arr, &len);
+
+    for (uint32_t i = 0; i < len; i++)
     {
         napi_value mapping;
         napi_create_int32(env, static_cast<int32_t>(res.at(i)), &mapping);
@@ -608,11 +611,18 @@ napi_value Session::LoadState(napi_env env, napi_callback_info cbinfo)
 
     if (info.args.size() != 1)
     {
-        napi_throw_error(env, nullptr, "Expected 1 argument");
+        napi_throw_error(env, nullptr, "Expected at least 1 argument");
         return nullptr;
     }
 
     Napi::Value v(env, info.args[0]);
+    libtorrent::save_state_flags_t flags = libtorrent::save_state_flags_t::all();
+
+    if (info.args.size() > 1)
+    {
+        Napi::Value flg(env, info.args[1]);
+        flags = libtorrent::save_state_flags_t{ v.ToNumber().Uint32Value() };
+    }
 
     if (v.IsBuffer())
     {
@@ -628,7 +638,7 @@ napi_value Session::LoadState(napi_env env, napi_callback_info cbinfo)
             return nullptr;
         }
 
-        info.wrap->session_->load_state(node);
+        info.wrap->session_->load_state(node, flags);
     }
     else
     {
@@ -646,7 +656,7 @@ napi_value Session::LoadState(napi_env env, napi_callback_info cbinfo)
             return nullptr;
         }
 
-        info.wrap->session_->load_state(node);
+        info.wrap->session_->load_state(node, flags);
     }
 
     return nullptr;
@@ -738,9 +748,17 @@ napi_value Session::Resume(napi_env env, napi_callback_info cbinfo)
 napi_value Session::SaveState(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<Session>(env, cbinfo);
-    //TODO: flags
+
+    libtorrent::save_state_flags_t flags = libtorrent::save_state_flags_t::all();
+
+    if (info.args.size() > 0)
+    {
+        Napi::Value v(env, info.args[0]);
+        flags = libtorrent::save_state_flags_t{ v.ToNumber().Uint32Value() };
+    }
+
     libtorrent::entry e;
-    info.wrap->session_->save_state(e);
+    info.wrap->session_->save_state(e, flags);
 
     return Entry::ToJson(env, e);
 }
@@ -748,9 +766,17 @@ napi_value Session::SaveState(napi_env env, napi_callback_info cbinfo)
 napi_value Session::SaveStateBuffer(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<Session>(env, cbinfo);
-    //TODO: flags
+    
+    libtorrent::save_state_flags_t flags = libtorrent::save_state_flags_t::all();
+
+    if (info.args.size() > 0)
+    {
+        Napi::Value v(env, info.args[0]);
+        flags = libtorrent::save_state_flags_t{ v.ToNumber().Uint32Value() };
+    }
+
     libtorrent::entry e;
-    info.wrap->session_->save_state(e);
+    info.wrap->session_->save_state(e, flags);
 
     std::vector<char> buffer;
     lt::bencode(std::back_inserter(buffer), e);
