@@ -58,7 +58,7 @@ libtorrent::add_torrent_params& AddTorrentParams::Wrapped()
 
 Napi::Value AddTorrentParams::Get_InfoHash(const Napi::CallbackInfo& info)
 {
-    return InfoHash::ToString(info.Env(), p_->info_hash);
+    return InfoHash::ToString(info.Env(), p_->info_hashes);
 }
 
 Napi::Value AddTorrentParams::Get_Name(const Napi::CallbackInfo& info)
@@ -95,7 +95,7 @@ void AddTorrentParams::Set_InfoHash(const Napi::CallbackInfo& info, const Napi::
     std::stringstream ss(value.ToString().Utf8Value());
     lt::sha1_hash hash;
     ss >> hash;
-    p_->info_hash = lt::info_hash_t(hash);
+    p_->info_hashes = lt::info_hash_t(hash);
 }
 
 void AddTorrentParams::Set_Name(const Napi::CallbackInfo& info, const Napi::Value& value)

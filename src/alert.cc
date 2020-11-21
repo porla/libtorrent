@@ -163,7 +163,7 @@ Napi::Object Alert::TrackerAlert(Napi::Env env, libtorrent::tracker_alert* alert
 Napi::Object Alert::TorrentRemovedAlert(Napi::Env env, libtorrent::torrent_removed_alert* alert)
 {
     auto value = TorrentAlert(env, alert);
-    value.Set("info_hash", InfoHash::ToString(env, alert->info_hash));
+    value.Set("info_hash", InfoHash::ToString(env, alert->info_hashes));
     return value;
 }
 
@@ -344,7 +344,7 @@ Napi::Object Alert::PeerErrorAlert(Napi::Env env, lt::peer_error_alert* alert)
 Napi::Object Alert::PeerConnectAlert(Napi::Env env, lt::peer_connect_alert* alert)
 {
     auto value = PeerAlert(env, alert);
-    value.Set("socket_type", Napi::Number::New(env, alert->socket_type));
+    value.Set("socket_type", Napi::Number::New(env, static_cast<uint8_t>(alert->socket_type)));
     return value;
 }
 
@@ -353,7 +353,7 @@ Napi::Object Alert::PeerDisconnectedAlert(Napi::Env env, lt::peer_disconnected_a
     auto value = PeerAlert(env, alert);
     value.Set("op", Napi::Number::New(env, static_cast<uint8_t>(alert->op)));
     value.Set("reason", Napi::Number::New(env, static_cast<uint32_t>(alert->reason)));
-    value.Set("socket_type", Napi::Number::New(env, alert->socket_type));
+    value.Set("socket_type", Napi::Number::New(env, static_cast<uint8_t>(alert->socket_type)));
 
     if (alert->error)
     {
@@ -460,7 +460,7 @@ Napi::Object Alert::StorageMovedFailedAlert(Napi::Env env, lt::storage_moved_fai
 Napi::Object Alert::TorrentDeletedAlert(Napi::Env env, lt::torrent_deleted_alert* alert)
 {
     auto value = TorrentAlert(env, alert);
-    value.Set("info_hash", InfoHash::ToString(env, alert->info_hash));
+    value.Set("info_hash", InfoHash::ToString(env, alert->info_hashes));
     return value;
 }
 
@@ -477,7 +477,7 @@ Napi::Object Alert::TorrentDeleteFailedAlert(Napi::Env env, lt::torrent_delete_f
         value.Set("error", err);
     }
 
-    value.Set("info_hash", InfoHash::ToString(env, alert->info_hash));
+    value.Set("info_hash", InfoHash::ToString(env, alert->info_hashes));
 
     return value;
 }

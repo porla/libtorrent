@@ -379,7 +379,7 @@ Napi::Value TorrentHandle::GetPeerInfo(const Napi::CallbackInfo& info)
         auto obj = Napi::Object::New(info.Env());
         obj.Set("busy_request", Napi::Number::New(info.Env(), p.busy_requests));
         obj.Set("client", Napi::String::New(info.Env(), p.client));
-        obj.Set("connection_type", Napi::Number::New(info.Env(), p.connection_type));
+        obj.Set("connection_type", Napi::Number::New(info.Env(), static_cast<uint8_t>(p.connection_type)));
         obj.Set("down_speed", Napi::Number::New(info.Env(), p.down_speed));
         obj.Set("download_queue_length", Napi::Number::New(info.Env(), p.download_queue_length));
         obj.Set("download_queue_time", Napi::Value(info.Env(), download_queue_time));
@@ -388,7 +388,6 @@ Napi::Value TorrentHandle::GetPeerInfo(const Napi::CallbackInfo& info)
         obj.Set("downloading_piece_index", Napi::Number::New(info.Env(), static_cast<int32_t>(p.downloading_piece_index)));
         obj.Set("downloading_progress", Napi::Number::New(info.Env(), p.downloading_progress));
         obj.Set("downloading_total", Napi::Number::New(info.Env(), p.downloading_total));
-        obj.Set("estimated_reciprocation_rate", Napi::Number::New(info.Env(), p.estimated_reciprocation_rate));
         obj.Set("failcount", Napi::Number::New(info.Env(), p.failcount));
         obj.Set("flags", Napi::Number::New(info.Env(), static_cast<uint32_t>(p.flags)));
 
@@ -492,7 +491,7 @@ Napi::Value TorrentHandle::Id(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentHandle::InfoHash(const Napi::CallbackInfo& info)
 {
-    return InfoHash::ToString(info.Env(), th_->info_hash());
+    return InfoHash::ToString(info.Env(), th_->info_hashes());
 }
 
 Napi::Value TorrentHandle::IsValid(const Napi::CallbackInfo& info)

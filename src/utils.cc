@@ -48,6 +48,7 @@ napi_status Utils::Init(napi_env env, napi_value exports)
     Value a(env, alert);
     a.SetNamedProperty("all_categories", static_cast<uint32_t>(lt::alert::all_categories));
     a.SetNamedProperty("block_progress_notification", static_cast<uint32_t>(lt::alert::block_progress_notification));
+    a.SetNamedProperty("connect_notification", static_cast<uint32_t>(lt::alert::connect_notification));
     a.SetNamedProperty("dht_log_notification", static_cast<uint32_t>(lt::alert::dht_log_notification));
     a.SetNamedProperty("dht_notification", static_cast<uint32_t>(lt::alert::dht_notification));
     a.SetNamedProperty("dht_operation_notification", static_cast<uint32_t>(lt::alert::dht_operation_notification));
@@ -63,7 +64,6 @@ napi_status Utils::Init(napi_env env, napi_value exports)
     a.SetNamedProperty("port_mapping_log_notification", static_cast<uint32_t>(lt::alert::port_mapping_log_notification));
     a.SetNamedProperty("port_mapping_notification", static_cast<uint32_t>(lt::alert::port_mapping_notification));
     a.SetNamedProperty("session_log_notification", static_cast<uint32_t>(lt::alert::session_log_notification));
-    a.SetNamedProperty("stats_notification", static_cast<uint32_t>(lt::alert::stats_notification));
     a.SetNamedProperty("status_notification", static_cast<uint32_t>(lt::alert::status_notification));
     a.SetNamedProperty("storage_notification", static_cast<uint32_t>(lt::alert::storage_notification));
     a.SetNamedProperty("torrent_log_notification", static_cast<uint32_t>(lt::alert::torrent_log_notification));

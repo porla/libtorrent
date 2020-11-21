@@ -150,7 +150,7 @@ Napi::Value TorrentInfo::HashForPiece(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentInfo::InfoHash(const Napi::CallbackInfo& info)
 {
-    return InfoHash::ToString(info.Env(), ti_->info_hash());
+    return InfoHash::ToString(info.Env(), ti_->info_hashes());
 }
 
 Napi::Value TorrentInfo::Name(const Napi::CallbackInfo& info)

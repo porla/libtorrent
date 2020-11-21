@@ -228,7 +228,7 @@ Napi::Value TorrentStatus::Get_HasMetadata(const Napi::CallbackInfo& info)
 
 Napi::Value TorrentStatus::Get_InfoHash(const Napi::CallbackInfo& info)
 {
-    return InfoHash::ToString(info.Env(), ts_->info_hash);
+    return InfoHash::ToString(info.Env(), ts_->info_hashes);
 }
 
 Napi::Value TorrentStatus::Get_IsFinished(const Napi::CallbackInfo& info)
