@@ -7,6 +7,7 @@
 #include "ip_filter.h"
 #include "session.h"
 #include "session_params.h"
+#include "settings_pack.h"
 #include "torrent_info.h"
 #include "torrent_handle.h"
 #include "torrent_status.h"
@@ -26,6 +27,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     porla::IpFilter::Init(env, exports);
     porla::Session::Init(env, exports);
     porla::SessionParams::Init(env, exports);
+    porla::SettingsPack::Init(env, exports);
     porla::TorrentInfo::Init(env, exports);
     porla::TorrentHandle::Init(env, exports);
     porla::TorrentStatus::Init(env, exports);

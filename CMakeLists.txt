@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(porla_libtorrent)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
@@ -13,6 +14,8 @@ endif()
 
 # libtorrent -----------------------------------------------------------------
 add_subdirectory(vendor/libtorrent)
+
+
 # ----------------------------------------------------------------------------
 
 if(APPLE)

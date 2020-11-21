@@ -143,15 +143,6 @@ napi_value Session::New(napi_env env, napi_callback_info cbinfo)
 
     if (info.args.size() > 0)
     {
-        napi_valuetype type;
-        napi_typeof(env, info.args[0], &type);
-
-        if (type != napi_valuetype::napi_object)
-        {
-            napi_throw_error(env, nullptr, "Expected an Object.");
-            return nullptr;
-        }
-
         Value v(env, info.args[0]);
         params = v.Unwrap<SessionParams>()->Wrapped();
     }
@@ -254,8 +245,10 @@ napi_value Session::ApplySettings(napi_env env, napi_callback_info cbinfo)
         return nullptr;
     }
 
-    auto settings = SettingsPack::Parse(env, info.args[0]);
-    info.wrap->session_->apply_settings(settings);
+    Value v(env, info.args[0]);
+    auto settings = v.Unwrap<SettingsPack>();
+
+    info.wrap->session_->apply_settings(settings->Wrapped());
 
     return nullptr;
 }
@@ -516,7 +509,8 @@ napi_value Session::GetSettings(napi_env env, napi_callback_info cbinfo)
     auto info = UnwrapCallback<Session>(env, cbinfo);
     auto settings = info.wrap->session_->get_settings();
 
-    return SettingsPack::Objectify(env, settings);
+    auto arg = Napi::External<lt::settings_pack>::New(env, &settings);
+    return SettingsPack::NewInstance(arg);
 }
 
 napi_value Session::GetTorrentStatus(napi_env env, napi_callback_info cbinfo)

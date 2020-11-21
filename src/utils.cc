@@ -160,12 +160,16 @@ napi_value Utils::GenerateFingerprint(napi_env env, napi_callback_info cbinfo)
 
 napi_value Utils::HighPerformanceSeed(napi_env env, napi_callback_info cbinfo)
 {
-    return SettingsPack::Objectify(env, lt::high_performance_seed());
+    lt::settings_pack sp = lt::high_performance_seed();
+    auto arg = Napi::External<libtorrent::settings_pack>::New(env, &sp);
+    return SettingsPack::NewInstance(arg);
 }
 
 napi_value Utils::MinMemoryUsage(napi_env env, napi_callback_info cbinfo)
 {
-    return SettingsPack::Objectify(env, lt::min_memory_usage());
+    lt::settings_pack sp = lt::min_memory_usage();
+    auto arg = Napi::External<libtorrent::settings_pack>::New(env, &sp);
+    return SettingsPack::NewInstance(arg);
 }
 
 napi_value Utils::ParseMagnetUri(napi_env env, napi_callback_info cbinfo)

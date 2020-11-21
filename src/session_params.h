@@ -18,6 +18,8 @@ namespace porla
     private:
         static Napi::FunctionReference constructor;
 
+        Napi::Value Get_Settings(const Napi::CallbackInfo& info);
+
         std::unique_ptr<libtorrent::session_params> p_;
     };
 }

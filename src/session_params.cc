@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "info_hash.h"
+#include "settings_pack.h"
 
 using porla::SessionParams;
 
@@ -15,6 +16,8 @@ Napi::Object SessionParams::Init(Napi::Env env, Napi::Object exports)
 
     Napi::Function func = DefineClass(env, "SessionParams",
     {
+        InstanceAccessor("settings", &SessionParams::Get_Settings, nullptr),
+
         /*InstanceAccessor("info_hash", &AddTorrentParams::Get_InfoHash, &AddTorrentParams::Set_InfoHash),
         InstanceAccessor("name", &AddTorrentParams::Get_Name, &AddTorrentParams::Set_Name),
         InstanceAccessor("save_path", &AddTorrentParams::Get_SavePath, &AddTorrentParams::Set_SavePath),
@@ -53,3 +56,10 @@ libtorrent::session_params& SessionParams::Wrapped()
 {
     return *p_.get();
 }
+
+Napi::Value SessionParams::Get_Settings(const Napi::CallbackInfo& info)
+{
+    auto arg = Napi::External<libtorrent::settings_pack>::New(info.Env(), &p_->settings);
+    return SettingsPack::NewInstance(arg);
+}
+
