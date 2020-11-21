@@ -2,12 +2,12 @@
 #define PORLA_LIBTORRENT_SESSION_H
 
 #include <memory>
+#include <libtorrent/fwd.hpp>
 #include <node_api.h>
 
 namespace libtorrent
 {
     class session;
-    struct settings_pack;
 }
 
 namespace porla
@@ -49,7 +49,6 @@ namespace porla
         static napi_value IsPaused(napi_env env, napi_callback_info callback_info);
         static napi_value IsValid(napi_env env, napi_callback_info callback_info);
         static napi_value ListenPort(napi_env env, napi_callback_info callback_info);
-        static napi_value LoadState(napi_env env, napi_callback_info callback_info);
         static napi_value Pause(napi_env env, napi_callback_info callback_info);
         static napi_value PopAlerts(napi_env env, napi_callback_info callback_info);
         static napi_value PostDhtStats(napi_env env, napi_callback_info callback_info);
@@ -59,8 +58,7 @@ namespace porla
         static napi_value RemoveTorrent(napi_env env, napi_callback_info callback_info);
         static napi_value ReopenNetworkSockets(napi_env env, napi_callback_info callback_info);
         static napi_value Resume(napi_env env, napi_callback_info callback_info);
-        static napi_value SaveState(napi_env env, napi_callback_info callback_info);
-        static napi_value SaveStateBuffer(napi_env env, napi_callback_info callback_info);
+        static napi_value SessionState(napi_env env, napi_callback_info callback_info);
         static napi_value SetIpFilter(napi_env env, napi_callback_info callback_info);
         static napi_value SetPeerClass(napi_env env, napi_callback_info callback_info);
         static napi_value SetPeerClassFilter(napi_env env, napi_callback_info callback_info);
@@ -74,7 +72,7 @@ namespace porla
 
         static napi_ref constructor;
 
-        Session(napi_env env, libtorrent::settings_pack& settings);
+        Session(napi_env env, libtorrent::session_params& params);
 
         napi_env env_;
         napi_ref wrapper_;

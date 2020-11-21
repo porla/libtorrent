@@ -5,6 +5,7 @@
 #include <libtorrent/entry.hpp>
 #include <libtorrent/ip_filter.hpp>
 #include <libtorrent/session.hpp>
+#include <libtorrent/session_params.hpp>
 #include <libtorrent/torrent_info.hpp>
 
 #include <napi.h>
@@ -14,6 +15,7 @@
 #include "common.h"
 #include "entry.h"
 #include "ip_filter.h"
+#include "session_params.h"
 #include "settings_pack.h"
 #include "torrent_info.h"
 #include "torrent_handle.h"
@@ -48,11 +50,11 @@ napi_status LOG(napi_env env, const char* msg)
     return LOG(env, val);
 }
 
-Session::Session(napi_env env, libtorrent::settings_pack& settings)
+Session::Session(napi_env env, libtorrent::session_params& params)
     : env_(env),
     wrapper_(nullptr)
 {
-    session_ = std::make_unique<libtorrent::session>(settings);
+    session_ = std::make_unique<libtorrent::session>(params);
 }
 
 void Session::Destructor(napi_env env, void* native_obj, void* finalize_hint)
@@ -92,7 +94,6 @@ napi_status Session::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("is_paused", IsPaused),
         PORLA_METHOD_DESCRIPTOR("is_valid", IsValid),
         PORLA_METHOD_DESCRIPTOR("listen_port", ListenPort),
-        PORLA_METHOD_DESCRIPTOR("load_state", LoadState),
         PORLA_METHOD_DESCRIPTOR("pause", Pause),
         PORLA_METHOD_DESCRIPTOR("pop_alerts", PopAlerts),
         PORLA_METHOD_DESCRIPTOR("post_dht_stats", PostDhtStats),
@@ -102,8 +103,7 @@ napi_status Session::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("remove_torrent", RemoveTorrent),
         PORLA_METHOD_DESCRIPTOR("reopen_network_sockets", ReopenNetworkSockets),
         PORLA_METHOD_DESCRIPTOR("resume", Resume),
-        PORLA_METHOD_DESCRIPTOR("save_state", SaveState),
-        PORLA_METHOD_DESCRIPTOR("save_state_buf", SaveStateBuffer),
+        PORLA_METHOD_DESCRIPTOR("session_state", SessionState),
         PORLA_METHOD_DESCRIPTOR("set_ip_filter", SetIpFilter),
         PORLA_METHOD_DESCRIPTOR("set_peer_class", SetPeerClass),
         PORLA_METHOD_DESCRIPTOR("set_peer_class_filter", SetPeerClassFilter),
@@ -139,7 +139,7 @@ napi_value Session::New(napi_env env, napi_callback_info cbinfo)
         napi_throw_error(env, nullptr, "Not a construct (new) call");
     }
 
-    libtorrent::settings_pack settings;
+    libtorrent::session_params params;
 
     if (info.args.size() > 0)
     {
@@ -152,10 +152,11 @@ napi_value Session::New(napi_env env, napi_callback_info cbinfo)
             return nullptr;
         }
 
-        settings = SettingsPack::Parse(env, info.args[0]);
+        Value v(env, info.args[0]);
+        params = v.Unwrap<SessionParams>()->Wrapped();
     }
 
-    Session* obj = new Session(env, settings);
+    Session* obj = new Session(env, params);
     napi_wrap(env, info.this_arg, obj, Session::Destructor, nullptr, &obj->wrapper_);
 
     return info.this_arg;
@@ -605,63 +606,6 @@ napi_value Session::ListenPort(napi_env env, napi_callback_info cbinfo)
     return res;
 }
 
-napi_value Session::LoadState(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<Session>(env, cbinfo);
-
-    if (info.args.size() != 1)
-    {
-        napi_throw_error(env, nullptr, "Expected at least 1 argument");
-        return nullptr;
-    }
-
-    Napi::Value v(env, info.args[0]);
-    libtorrent::save_state_flags_t flags = libtorrent::save_state_flags_t::all();
-
-    if (info.args.size() > 1)
-    {
-        Napi::Value flg(env, info.args[1]);
-        flags = libtorrent::save_state_flags_t{ v.ToNumber().Uint32Value() };
-    }
-
-    if (v.IsBuffer())
-    {
-        auto buf = v.As<Napi::Buffer<char>>();
-        std::vector<char> b(buf.Data(), buf.Data() + buf.Length());
-
-        lt::error_code ec;
-        lt::bdecode_node node = lt::bdecode(b, ec);
-
-        if (ec)
-        {
-            napi_throw_error(env, nullptr, ec.message().c_str());
-            return nullptr;
-        }
-
-        info.wrap->session_->load_state(node, flags);
-    }
-    else
-    {
-        libtorrent::entry e = Entry::FromJson(env, info.args[0]);
-
-        std::vector<char> buf;
-        libtorrent::bencode(std::back_inserter(buf), e);
-
-        libtorrent::error_code ec;
-        libtorrent::bdecode_node node = libtorrent::bdecode(buf, ec);
-
-        if (ec)
-        {
-            napi_throw_error(env, nullptr, ec.message().c_str());
-            return nullptr;
-        }
-
-        info.wrap->session_->load_state(node, flags);
-    }
-
-    return nullptr;
-}
-
 napi_value Session::Pause(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<Session>(env, cbinfo);
@@ -737,51 +681,20 @@ napi_value Session::ReopenNetworkSockets(napi_env env, napi_callback_info cbinfo
     return nullptr;
 }
 
+napi_value Session::SessionState(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Session>(env, cbinfo);
+    auto state = info.wrap->session_->session_state();
+    auto arg = Napi::External<lt::session_params>::New(env, &state);
+    return SessionParams::NewInstance(arg);
+}
+
 napi_value Session::Resume(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<Session>(env, cbinfo);
     //TODO: flags
     info.wrap->session_->resume();
     return nullptr;
-}
-
-napi_value Session::SaveState(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<Session>(env, cbinfo);
-
-    libtorrent::save_state_flags_t flags = libtorrent::save_state_flags_t::all();
-
-    if (info.args.size() > 0)
-    {
-        Napi::Value v(env, info.args[0]);
-        flags = libtorrent::save_state_flags_t{ v.ToNumber().Uint32Value() };
-    }
-
-    libtorrent::entry e;
-    info.wrap->session_->save_state(e, flags);
-
-    return Entry::ToJson(env, e);
-}
-
-napi_value Session::SaveStateBuffer(napi_env env, napi_callback_info cbinfo)
-{
-    auto info = UnwrapCallback<Session>(env, cbinfo);
-    
-    libtorrent::save_state_flags_t flags = libtorrent::save_state_flags_t::all();
-
-    if (info.args.size() > 0)
-    {
-        Napi::Value v(env, info.args[0]);
-        flags = libtorrent::save_state_flags_t{ v.ToNumber().Uint32Value() };
-    }
-
-    libtorrent::entry e;
-    info.wrap->session_->save_state(e, flags);
-
-    std::vector<char> buffer;
-    lt::bencode(std::back_inserter(buffer), e);
-
-    return Napi::Buffer<char>::Copy(env, buffer.data(), buffer.size());
 }
 
 napi_value Session::SetIpFilter(napi_env env, napi_callback_info cbinfo)

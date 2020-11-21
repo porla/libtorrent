@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 
 project(porla_libtorrent)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 # if we run OSX, set the OPENSSL_ROOT_DIR to the one where homebrew installed
 # openssl, otherwise CMake will throw an err.
@@ -12,13 +13,6 @@ endif()
 
 # libtorrent -----------------------------------------------------------------
 add_subdirectory(vendor/libtorrent)
-
-if(UNIX)
-    set_target_properties(
-        "torrent-rasterbar"
-        PROPERTIES
-            COMPILE_FLAGS "-fPIC")
-endif()
 # ----------------------------------------------------------------------------
 
 if(APPLE)

@@ -3,12 +3,13 @@ const fs = require('fs');
 
 let torrents = {};
 
+const sp = new lt.session_params();
+sp.settings.set_int('alert_mask', lt.alert.all_categories);
+sp.settings.set_bool('enable_dht', true);
+sp.settings.set_str('peer_fingerprint', lt.generate_fingerprint('XX', 1, 1));
+
 // Construct a session. Hold on to this.
-const session = new lt.session({
-    alert_mask: lt.alert.all_categories,
-    enable_dht: true,
-    peer_fingerprint: lt.generate_fingerprint("XX", 1, 1)
-});
+const session = new lt.session(sp);
 
 function alertHandler(err, result) {
     if (result) {

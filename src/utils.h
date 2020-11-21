@@ -20,6 +20,7 @@ namespace porla
         static napi_value SessionStatsMetrics(napi_env env, napi_callback_info cbinfo);
         static napi_value WriteResumeData(napi_env env, napi_callback_info cbinfo);
         static napi_value WriteResumeDataBuf(napi_env env, napi_callback_info cbinfo);
+        static napi_value WriteSessionParamsBuf(napi_env env, napi_callback_info cbinfo);
     };
 }
 
