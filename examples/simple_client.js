@@ -8,8 +8,6 @@ sp.settings.set_int('alert_mask', lt.alert.all_categories);
 sp.settings.set_bool('enable_dht', true);
 sp.settings.set_str('peer_fingerprint', lt.generate_fingerprint('XX', 1, 1));
 
-console.log(sp.settings.get_bool('enable_dht'));
-
 // Construct a session. Hold on to this.
 const session = new lt.session(sp);
 

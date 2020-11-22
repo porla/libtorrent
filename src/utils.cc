@@ -162,14 +162,14 @@ napi_value Utils::HighPerformanceSeed(napi_env env, napi_callback_info cbinfo)
 {
     lt::settings_pack sp = lt::high_performance_seed();
     auto arg = Napi::External<libtorrent::settings_pack>::New(env, &sp);
-    return SettingsPack::NewInstance(arg);
+    return SettingsPack::NewInstance(env, arg);
 }
 
 napi_value Utils::MinMemoryUsage(napi_env env, napi_callback_info cbinfo)
 {
     lt::settings_pack sp = lt::min_memory_usage();
     auto arg = Napi::External<libtorrent::settings_pack>::New(env, &sp);
-    return SettingsPack::NewInstance(arg);
+    return SettingsPack::NewInstance(env, arg);
 }
 
 napi_value Utils::ParseMagnetUri(napi_env env, napi_callback_info cbinfo)

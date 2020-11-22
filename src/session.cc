@@ -509,8 +509,12 @@ napi_value Session::GetSettings(napi_env env, napi_callback_info cbinfo)
     auto info = UnwrapCallback<Session>(env, cbinfo);
     auto settings = info.wrap->session_->get_settings();
 
-    auto arg = Napi::External<lt::settings_pack>::New(env, &settings);
-    return SettingsPack::NewInstance(arg);
+    SettingsPackData data;
+    data.owned = false;
+    data.pack = &settings;
+
+    auto arg = Napi::External<SettingsPackData>::New(env, &data);
+    return SettingsPack::NewInstance(env, arg);
 }
 
 napi_value Session::GetTorrentStatus(napi_env env, napi_callback_info cbinfo)

@@ -16,7 +16,7 @@ Napi::Object SessionParams::Init(Napi::Env env, Napi::Object exports)
 
     Napi::Function func = DefineClass(env, "SessionParams",
     {
-        InstanceAccessor("settings", &SessionParams::Get_Settings, nullptr),
+        InstanceAccessor("settings", &SessionParams::Get_Settings, &SessionParams::Set_Settings),
 
         /*InstanceAccessor("info_hash", &AddTorrentParams::Get_InfoHash, &AddTorrentParams::Set_InfoHash),
         InstanceAccessor("name", &AddTorrentParams::Get_Name, &AddTorrentParams::Set_Name),
@@ -59,7 +59,16 @@ libtorrent::session_params& SessionParams::Wrapped()
 
 Napi::Value SessionParams::Get_Settings(const Napi::CallbackInfo& info)
 {
-    auto arg = Napi::External<libtorrent::settings_pack>::New(info.Env(), &p_->settings);
-    return SettingsPack::NewInstance(arg);
+    SettingsPackData data;
+    data.owned = true;
+    data.pack = &p_->settings;
+
+    auto arg = Napi::External<SettingsPackData>::New(info.Env(), &data);
+    return SettingsPack::NewInstance(info.Env(), arg);
 }
 
+void SessionParams::Set_Settings(const Napi::CallbackInfo& info, const Napi::Value& value)
+{
+    SettingsPack* sp = Napi::ObjectWrap<SettingsPack>::Unwrap(value.As<Napi::Object>());
+    p_->settings = sp->Wrapped();
+}
