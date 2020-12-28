@@ -11,8 +11,7 @@
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",
   "devDependencies": {
-    "cmake-js": "^6.0.0",
-    "node-addon-api": "^3.0.2"
-  },
-  "dependencies": {}
+    "cmake-js": "^6.1.0",
+    "node-addon-api": "^3.1.0"
+  }
 }
