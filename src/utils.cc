@@ -83,6 +83,7 @@ napi_status Utils::Init(napi_env env, napi_value exports)
         PORLA_METHOD_DESCRIPTOR("parse_magnet_uri", ParseMagnetUri),
         PORLA_VALUE_DESCRIPTOR("save_state_flags", save_state_flags),
         PORLA_METHOD_DESCRIPTOR("read_resume_data", ReadResumeData),
+        PORLA_METHOD_DESCRIPTOR("read_session_params", ReadSessionParams),
         PORLA_METHOD_DESCRIPTOR("session_stats_metrics", SessionStatsMetrics),
         PORLA_METHOD_DESCRIPTOR("write_resume_data", WriteResumeData),
         PORLA_METHOD_DESCRIPTOR("write_resume_data_buf", WriteResumeDataBuf),
@@ -228,6 +229,47 @@ napi_value Utils::ReadResumeData(napi_env env, napi_callback_info cbinfo)
     return AddTorrentParams::NewInstance(arg);
 }
 
+napi_value Utils::ReadSessionParams(napi_env env, napi_callback_info cbinfo)
+{
+    auto info = UnwrapCallback<Dummy>(env, cbinfo);
+
+    if (info.args.size() < 1)
+    {
+        napi_throw_error(env, nullptr, "Expected  at least 1 argument");
+        return nullptr;
+    }
+
+    auto flags = lt::save_state_flags_t::all();
+
+    if (info.args.size() > 1)
+    {
+        Napi::Value flg(env, info.args[1]);
+        flags = static_cast<lt::save_state_flags_t>(flg.As<Napi::Number>().Uint32Value());
+    }
+
+    lt::session_params params;
+    lt::error_code ec;
+
+    Napi::Value v(env, info.args[0]);
+
+    if (v.IsBuffer())
+    {
+        auto b = v.As<Napi::Buffer<char>>();
+        std::vector<char> buf(b.Data(), b.Data() + b.Length());
+        params = lt::read_session_params(buf, flags);
+    }
+    else
+    {
+        auto entry = Entry::FromJson(env, info.args[0]);
+        std::vector<char> buf;
+        lt::bencode(std::back_inserter(buf), entry);
+        params = lt::read_session_params(buf, flags);
+    }
+
+    auto arg = Napi::External<lt::session_params>::New(env, &params);
+    return SessionParams::NewInstance(arg);
+}
+
 napi_value Utils::SessionStatsMetrics(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<Dummy>(env, cbinfo);
@@ -291,15 +333,23 @@ napi_value Utils::WriteSessionParamsBuf(napi_env env, napi_callback_info cbinfo)
 {
     auto info = UnwrapCallback<Dummy>(env, cbinfo);
 
-    if (info.args.size() != 1)
+    if (info.args.size() < 1)
     {
-        napi_throw_error(env, nullptr, "Expected 1 argument");
+        napi_throw_error(env, nullptr, "Expected at least 1 argument");
         return nullptr;
+    }
+
+    auto flags = lt::save_state_flags_t::all();
+
+    if (info.args.size() > 1)
+    {
+        Napi::Value flg(env, info.args[1]);
+        flags = static_cast<lt::save_state_flags_t>(flg.As<Napi::Number>().Uint32Value());
     }
 
     Value v(env, info.args[0]);
     auto params = v.Unwrap<SessionParams>();
-    auto buf = lt::write_session_params_buf(params->Wrapped());
+    auto buf = lt::write_session_params_buf(params->Wrapped(), flags);
 
     napi_value val;
     char* data;

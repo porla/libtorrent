@@ -17,6 +17,7 @@ namespace porla
         static napi_value MinMemoryUsage(napi_env env, napi_callback_info cbinfo);
         static napi_value ParseMagnetUri(napi_env env, napi_callback_info cbinfo);
         static napi_value ReadResumeData(napi_env env, napi_callback_info cbinfo);
+        static napi_value ReadSessionParams(napi_env env, napi_callback_info cbinfo);
         static napi_value SessionStatsMetrics(napi_env env, napi_callback_info cbinfo);
         static napi_value WriteResumeData(napi_env env, napi_callback_info cbinfo);
         static napi_value WriteResumeDataBuf(napi_env env, napi_callback_info cbinfo);
