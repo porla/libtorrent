@@ -6,12 +6,14 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "cmake-js --CDCMAKE_BUILD_TYPE=Release --CDBUILD_SHARED_LIBS=off --CDdeprecated-functions=off --CDBoost_USE_STATIC_LIBS=on --CDOPENSSL_USE_STATIC_LIBS=TRUE build",
-    "clean": "cmake-js clean"
+    "clean": "cmake-js clean",
+    "test": "mocha"
   },
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",
   "devDependencies": {
     "cmake-js": "^6.1.0",
+    "mocha": "^8.2.1",
     "node-addon-api": "^3.1.0"
   }
 }
