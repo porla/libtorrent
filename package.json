@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "build": "cmake-js --CDCMAKE_BUILD_TYPE=Release --CDBUILD_SHARED_LIBS=off --CDdeprecated-functions=off --CDBoost_USE_STATIC_LIBS=on --CDOPENSSL_USE_STATIC_LIBS=TRUE build",
+    "build": "cmake-js -G Ninja --CDCMAKE_BUILD_TYPE=Release --CDBUILD_SHARED_LIBS=off --CDdeprecated-functions=off --CDBoost_USE_STATIC_LIBS=on --CDOPENSSL_USE_STATIC_LIBS=TRUE build",
     "clean": "cmake-js clean",
     "test": "mocha"
   },
