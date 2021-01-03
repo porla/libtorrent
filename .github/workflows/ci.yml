@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-10.15, ubuntu-18.04, windows-2019 ]
+        os: [ macos-10.15, ubuntu-20.04, windows-2019 ]
 
     steps:
       - uses: actions/checkout@v2
@@ -18,9 +18,9 @@ jobs:
         run: |
           git submodule update --init --recursive
 
-      - name: Setup environment (Ubuntu 18.04)
+      - name: Setup environment (Ubuntu 20.04)
         run: sudo apt-get install libboost-all-dev libssl-dev ninja-build
-        if: matrix.os == 'ubuntu-18.04'
+        if: matrix.os == 'ubuntu-20.04'
 
       - name: Setup environment (macOS 10.15)
         run: brew install boost openssl ninja
