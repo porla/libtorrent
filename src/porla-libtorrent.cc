@@ -13,12 +13,6 @@
 #include "torrent_status.h"
 #include "utils.h"
 
-#ifdef WIN32
-// TODO: Ugly hack
-FILE _iob[] = { *stdin, *stdout, *stderr }; 
-extern "C" FILE * __cdecl __iob_func(void) { return _iob; }
-#endif
-
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
     porla::AddTorrentParams::Init(env, exports);
     porla::BDecode::Init(env, exports);
