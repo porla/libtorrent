@@ -1,0 +1,35 @@
+name: CI
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-20.04 ]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Git
+        run: |
+          git submodule update --init --recursive
+
+      - name: Setup environment
+        run: sudo apt-get install libboost-all-dev libssl-dev ninja-build
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: porla-${{ matrix.os }}-CI-bindings
+          path: |
+            prebuilds/**/node-napi.node
