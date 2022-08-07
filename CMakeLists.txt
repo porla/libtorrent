@@ -17,7 +17,11 @@ find_package(LibtorrentRasterbar CONFIG REQUIRED)
 add_library(
     ${PROJECT_NAME}
     SHARED
-    src/porla-libtorrent.cpp)
+    src/porla-libtorrent.cpp
+    src/session.cpp
+    src/session.hpp
+    src/torrentstatus.cpp
+    src/torrentstatus.hpp)
 
 set_target_properties(
     ${PROJECT_NAME}
