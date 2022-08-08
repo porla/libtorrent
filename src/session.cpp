@@ -1,31 +1,30 @@
 #include "session.hpp"
 
-#include <libtorrent/alert_types.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/read_resume_data.hpp>
 
 #include "addtorrentparams.hpp"
 #include "alert.hpp"
-#include "torrentstatus.hpp"
+#include "sessionparams.hpp"
 
 namespace lt = libtorrent;
 
 Napi::Object Session::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func = DefineClass(env, "Session", {
-        InstanceMethod<&Session::AddDhtNode>("add_dht_node", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Session::AddDhtNode>("add_dht_node"),
         InstanceMethod<&Session::AddTorrent>("add_torrent"),
         InstanceMethod<&Session::IsDhtRunning>("is_dht_running"),
         InstanceMethod<&Session::IsListening>("is_listening"),
         InstanceMethod<&Session::IsPaused>("is_paused"),
         InstanceMethod<&Session::IsValid>("is_valid"),
         InstanceMethod<&Session::ListenPort>("listen_port"),
-        InstanceMethod<&Session::LoadTorrent>("loadTorrent", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-        InstanceMethod<&Session::Pause>("pause", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Session::Pause>("pause"),
         InstanceMethod<&Session::PostDhtStats>("post_dht_stats"),
         InstanceMethod<&Session::PostSessionStats>("post_session_stats"),
         InstanceMethod<&Session::PostTorrentUpdates>("post_torrent_updates"),
-        InstanceMethod<&Session::Resume>("resume", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Session::Resume>("resume"),
+        InstanceMethod<&Session::SessionState>("session_state"),
         InstanceMethod<&Session::SslListenPort>("ssl_listen_port"),
     });
 
@@ -145,21 +144,6 @@ Napi::Value Session::LoadTorrent(const Napi::CallbackInfo& info)
     return info.Env().Undefined();
 }
 
-/*Napi::Value Session::On(const Napi::CallbackInfo& info)
-{
-    auto event = info[0].ToString();
-
-    if (m_callbacks.find(event) == m_callbacks.end())
-    {
-        m_callbacks.insert({ event, std::vector<Napi::FunctionReference>() });
-    }
-
-    m_callbacks.at(event).push_back(
-        Napi::Persistent(info[1].As<Napi::Function>()));
-
-    return info.Env().Undefined();
-}*/
-
 Napi::Value Session::Pause(const Napi::CallbackInfo& info)
 {
     m_session->pause();
@@ -188,6 +172,12 @@ Napi::Value Session::Resume(const Napi::CallbackInfo& info)
 {
     m_session->resume();
     return info.Env().Undefined();
+}
+
+Napi::Value Session::SessionState(const Napi::CallbackInfo& info)
+{
+    // TODO: flags
+    return SessionParams::New(info.Env(), m_session->session_state());
 }
 
 Napi::Value Session::SslListenPort(const Napi::CallbackInfo &info)

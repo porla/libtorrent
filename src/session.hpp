@@ -32,6 +32,7 @@ private:
     Napi::Value PostSessionStats(const Napi::CallbackInfo& info);
     Napi::Value PostTorrentUpdates(const Napi::CallbackInfo& info);
     Napi::Value Resume(const Napi::CallbackInfo& info);
+    Napi::Value SessionState(const Napi::CallbackInfo& info);
     Napi::Value SslListenPort(const Napi::CallbackInfo& info);
 
     Napi::Value AlertNotify(const Napi::CallbackInfo& info);

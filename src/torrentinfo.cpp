@@ -42,6 +42,4 @@ TorrentInfo::TorrentInfo(const Napi::CallbackInfo &info)
     }
 }
 
-TorrentInfo::~TorrentInfo()
-{
-}
+TorrentInfo::~TorrentInfo() = default;

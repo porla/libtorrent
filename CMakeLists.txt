@@ -26,6 +26,8 @@ add_library(
     src/porla-libtorrent.cpp
     src/session.cpp
     src/session.hpp
+    src/sessionparams.cpp
+    src/sessionparams.hpp
     src/torrenthandle.cpp
     src/torrenthandle.hpp
     src/torrentinfo.cpp
