@@ -2,6 +2,8 @@
 
 #include <libtorrent/torrent_status.hpp>
 
+#include "infohash.hpp"
+
 namespace lt = libtorrent;
 
 Napi::FunctionReference* TorrentStatus::m_ctor = nullptr;
@@ -9,8 +11,14 @@ Napi::FunctionReference* TorrentStatus::m_ctor = nullptr;
 Napi::Object TorrentStatus::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func = DefineClass(env, "TorrentStatus", {
-        InstanceMethod<&TorrentStatus::InfoHash>("info_hash", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-        InstanceMethod<&TorrentStatus::Name>("name", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceAccessor<&TorrentStatus::GetBlockSize>("block_size"),
+        InstanceAccessor<&TorrentStatus::GetCurrentTracker>("current_tracker"),
+        InstanceAccessor<&TorrentStatus::GetDownloadPayloadRate>("download_payload_rate"),
+        InstanceAccessor<&TorrentStatus::GetDownloadRate>("download_rate"),
+        InstanceAccessor<&TorrentStatus::GetInfoHashes>("info_hashes"),
+        InstanceAccessor<&TorrentStatus::GetName>("name"),
+        InstanceAccessor<&TorrentStatus::GetProgress>("progress"),
+        InstanceAccessor<&TorrentStatus::GetSavePath>("save_path"),
     });
 
     m_ctor = new Napi::FunctionReference();
@@ -43,30 +51,42 @@ TorrentStatus::TorrentStatus(const Napi::CallbackInfo &info)
 
 TorrentStatus::~TorrentStatus() = default;
 
-Napi::Value TorrentStatus::InfoHash(const Napi::CallbackInfo &info)
+Napi::Value TorrentStatus::GetBlockSize(const Napi::CallbackInfo &info)
 {
-    auto hash = Napi::Array::New(info.Env(), 2);
-    hash.Set(uint32_t(0), info.Env().Null());
-    hash.Set(uint32_t(1), info.Env().Null());
-
-    if (m_status->info_hashes.has_v1())
-    {
-        std::stringstream ss;
-        ss << m_status->info_hashes.v1;
-        hash.Set(uint32_t(0), Napi::String::New(info.Env(), ss.str()));
-    }
-
-    if (m_status->info_hashes.has_v2())
-    {
-        std::stringstream ss;
-        ss << m_status->info_hashes.v2;
-        hash.Set(uint32_t(1), Napi::String::New(info.Env(), ss.str()));
-    }
-
-    return hash;
+    return Napi::Number::New(info.Env(), m_status->block_size);
 }
 
-Napi::Value TorrentStatus::Name(const Napi::CallbackInfo &info)
+Napi::Value TorrentStatus::GetCurrentTracker(const Napi::CallbackInfo &info)
+{
+    return Napi::String::New(info.Env(), m_status->current_tracker);
+}
+
+Napi::Value TorrentStatus::GetDownloadPayloadRate(const Napi::CallbackInfo &info)
+{
+    return Napi::Number::New(info.Env(), m_status->download_payload_rate);
+}
+
+Napi::Value TorrentStatus::GetDownloadRate(const Napi::CallbackInfo &info)
+{
+    return Napi::Number::New(info.Env(), m_status->download_rate);
+}
+
+Napi::Value TorrentStatus::GetInfoHashes(const Napi::CallbackInfo &info)
+{
+    return InfoHash::New(info.Env(), m_status->info_hashes);
+}
+
+Napi::Value TorrentStatus::GetName(const Napi::CallbackInfo &info)
 {
     return Napi::String::New(info.Env(), m_status->name);
+}
+
+Napi::Value TorrentStatus::GetProgress(const Napi::CallbackInfo &info)
+{
+    return Napi::Number::New(info.Env(), m_status->progress);
+}
+
+Napi::Value TorrentStatus::GetSavePath(const Napi::CallbackInfo &info)
+{
+    return Napi::String::New(info.Env(), m_status->save_path);
 }

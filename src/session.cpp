@@ -4,6 +4,8 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/read_resume_data.hpp>
 
+#include "addtorrentparams.hpp"
+#include "alert.hpp"
 #include "torrentstatus.hpp"
 
 namespace lt = libtorrent;
@@ -11,8 +13,20 @@ namespace lt = libtorrent;
 Napi::Object Session::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func = DefineClass(env, "Session", {
+        InstanceMethod<&Session::AddDhtNode>("add_dht_node", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Session::AddTorrent>("add_torrent"),
+        InstanceMethod<&Session::IsDhtRunning>("is_dht_running"),
+        InstanceMethod<&Session::IsListening>("is_listening"),
+        InstanceMethod<&Session::IsPaused>("is_paused"),
+        InstanceMethod<&Session::IsValid>("is_valid"),
+        InstanceMethod<&Session::ListenPort>("listen_port"),
         InstanceMethod<&Session::LoadTorrent>("loadTorrent", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-        InstanceMethod<&Session::On>("on", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Session::Pause>("pause", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Session::PostDhtStats>("post_dht_stats"),
+        InstanceMethod<&Session::PostSessionStats>("post_session_stats"),
+        InstanceMethod<&Session::PostTorrentUpdates>("post_torrent_updates"),
+        InstanceMethod<&Session::Resume>("resume", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&Session::SslListenPort>("ssl_listen_port"),
     });
 
     auto* constructor = new Napi::FunctionReference();
@@ -34,166 +48,9 @@ Session::Session(const Napi::CallbackInfo& info)
             info.Env(),
             [&](const Napi::CallbackInfo& info)
             {
-                std::vector<lt::alert*> alerts;
-                m_session->pop_alerts(&alerts);
-
-                for (const auto alert : alerts)
-                {
-                    switch (alert->type())
-                    {
-                        case lt::add_torrent_alert::alert_type:
-                        {
-                            auto *ata = lt::alert_cast<lt::add_torrent_alert>(alert);
-
-                            if (ata->error)
-                            {
-                                Emit("torrents:added", {
-                                    Napi::String::New(info.Env(), ata->error.message()),
-                                    info.Env().Undefined()
-                                });
-
-                                continue;
-                            }
-
-                            lt::torrent_status ts = ata->handle.status();
-                            m_torrents.insert({ts.info_hashes, ts});
-
-                            Emit("torrents:added", {
-                                info.Env().Undefined(),
-                                TorrentStatus::New(info.Env(), ts)
-                            });
-
-                            break;
-                        }
-                        case lt::listen_failed_alert::alert_type:
-                        {
-                            // TODO(events) emit error event
-                            break;
-                        }
-                        case lt::metadata_received_alert::alert_type:
-                        {
-                            auto *mra = lt::alert_cast<lt::metadata_received_alert>(alert);
-
-                            // TODO(events) emit event and let JS code call save resume data
-
-                            mra->handle.save_resume_data(
-                                    lt::torrent_handle::flush_disk_cache
-                                    | lt::torrent_handle::save_info_dict
-                                    | lt::torrent_handle::only_if_modified);
-
-                            break;
-                        }
-                        case lt::storage_moved_alert::alert_type:
-                        {
-                            auto *sma = lt::alert_cast<lt::storage_moved_alert>(alert);
-
-                            m_torrents.at(sma->handle.info_hashes()) = sma->handle.status();
-
-                            // TODO(events) emit event and let JS code call save resume data
-
-                            sma->handle.save_resume_data(
-                                    lt::torrent_handle::flush_disk_cache
-                                    | lt::torrent_handle::save_info_dict
-                                    | lt::torrent_handle::only_if_modified);
-
-                            break;
-                        }
-                        case lt::storage_moved_failed_alert::alert_type:
-                        {
-                            auto *smfa = lt::alert_cast<lt::storage_moved_failed_alert>(alert);
-
-                            // TODO(events) emit event
-
-                            break;
-                        }
-                        case lt::save_resume_data_alert::alert_type:
-                        {
-                            auto *a = lt::alert_cast<lt::save_resume_data_alert>(alert);
-
-                            /*AddTorrentParams::Update(
-                                    m_db,
-                                    a->params,
-                                    static_cast<int>(a->handle.status().queue_position));
-
-                            BOOST_LOG_TRIVIAL(info) << "Resume data saved for " << a->params.name;*/
-                            // TODO(events)
-
-                            break;
-                        }
-                        case lt::session_stats_alert::alert_type:
-                        {
-                            auto *ssa = lt::alert_cast<lt::session_stats_alert>(alert);
-                            auto counters = ssa->counters();
-
-                            /*m_metrics.clear();
-
-                            for (auto const &stats: m_stats) {
-                                m_metrics.insert({stats.name, counters[stats.value_index]});
-                            }
-
-                            m_sessionStats(m_metrics);*/
-
-                            // TODO(events)
-
-                            break;
-                        }
-                        case lt::state_update_alert::alert_type:
-                        {
-                            auto *sua = lt::alert_cast<lt::state_update_alert>(alert);
-
-                            /*std::vector<std::shared_ptr<ITorrentHandle>> torrents;
-
-                            for (auto const &status: sua->status) {
-                                m_torrents.at(status.info_hashes) = status;
-
-                                torrents.push_back(
-                                        std::make_shared<TorrentHandle>(
-                                                status,
-                                                GetOrCreateLabelsMap(status.info_hashes)));
-                            }
-
-                            if (!sua->status.empty()) {
-                                m_stateUpdate(torrents);
-                            }*/
-
-                            // TODO(events)
-
-                            break;
-                        }
-                        case lt::torrent_paused_alert::alert_type:
-                        {
-                            auto *tpa = lt::alert_cast<lt::torrent_paused_alert>(alert);
-                            // TODO(events)
-                            break;
-                        }
-                        case lt::torrent_removed_alert::alert_type:
-                        {
-                            auto *tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
-
-                            m_torrents.erase(tra->info_hashes);
-
-                            /*AddTorrentParams::Remove(m_db, tra->info_hashes);
-
-                            m_torrentRemoved(tra->info_hashes);
-
-                            BOOST_LOG_TRIVIAL(info) << "Torrent " << tra->torrent_name() << " removed";*/
-
-                            // TODO(events)
-
-                            break;
-                        }
-                        case lt::torrent_resumed_alert::alert_type:
-                        {
-                            auto *tra = lt::alert_cast<lt::torrent_resumed_alert>(alert);
-                            // TODO(events)
-                            break;
-                        }
-                    }
-                }
-
-                return info.Env().Undefined();
+                return AlertNotify(info);
             },
-            "handleAlerts"),
+            "alert_notify"),
         "Session",
         0,
         1,
@@ -207,17 +64,64 @@ Session::Session(const Napi::CallbackInfo& info)
         [&]()
         {
             m_tsfn.BlockingCall(
-                [](Napi::Env env, Napi::Function cb)
+                [&](Napi::Env env, Napi::Function cb)
                 {
-                    cb.Call({});
+                    if (this->Value().Type() == napi_undefined)
+                    {
+                        printf("Session is undefined - did GC collect?\n");
+                        return;
+                    }
+
+                    cb.Call(this->Value(), {});
                 });
         });
 }
 
 Session::~Session()
 {
-    m_session->set_alert_notify([](){});
+    m_session->set_alert_notify([]{});
     m_tsfn.Release();
+}
+
+Napi::Value Session::AddDhtNode(const Napi::CallbackInfo &info)
+{
+    m_session->add_dht_node({ info[0].ToString(), info[0].ToNumber() });
+    return info.Env().Undefined();
+}
+
+Napi::Value Session::AddTorrent(const Napi::CallbackInfo &info)
+{
+    m_session->async_add_torrent(
+        AddTorrentParams::Unwrap(
+            info.Env(),
+            info[0].ToObject()));
+
+    return info.Env().Undefined();
+}
+
+Napi::Value Session::IsDhtRunning(const Napi::CallbackInfo &info)
+{
+    return Napi::Boolean::New(info.Env(), m_session->is_dht_running());
+}
+
+Napi::Value Session::IsListening(const Napi::CallbackInfo &info)
+{
+    return Napi::Boolean::New(info.Env(), m_session->is_listening());
+}
+
+Napi::Value Session::IsPaused(const Napi::CallbackInfo &info)
+{
+    return Napi::Boolean::New(info.Env(), m_session->is_paused());
+}
+
+Napi::Value Session::IsValid(const Napi::CallbackInfo &info)
+{
+    return Napi::Boolean::New(info.Env(), m_session->is_valid());
+}
+
+Napi::Value Session::ListenPort(const Napi::CallbackInfo& info)
+{
+    return Napi::Number::New(info.Env(), m_session->listen_port());
 }
 
 Napi::Value Session::LoadTorrent(const Napi::CallbackInfo& info)
@@ -241,7 +145,7 @@ Napi::Value Session::LoadTorrent(const Napi::CallbackInfo& info)
     return info.Env().Undefined();
 }
 
-Napi::Value Session::On(const Napi::CallbackInfo& info)
+/*Napi::Value Session::On(const Napi::CallbackInfo& info)
 {
     auto event = info[0].ToString();
 
@@ -254,15 +158,60 @@ Napi::Value Session::On(const Napi::CallbackInfo& info)
         Napi::Persistent(info[1].As<Napi::Function>()));
 
     return info.Env().Undefined();
+}*/
+
+Napi::Value Session::Pause(const Napi::CallbackInfo& info)
+{
+    m_session->pause();
+    return info.Env().Undefined();
 }
 
-void Session::Emit(const std::string &event, const std::initializer_list<napi_value> &args)
+Napi::Value Session::PostDhtStats(const Napi::CallbackInfo &info)
 {
-    if (m_callbacks.find(event) != m_callbacks.end())
+    m_session->post_dht_stats();
+    return info.Env().Undefined();
+}
+
+Napi::Value Session::PostSessionStats(const Napi::CallbackInfo &info)
+{
+    m_session->post_session_stats();
+    return info.Env().Undefined();
+}
+
+Napi::Value Session::PostTorrentUpdates(const Napi::CallbackInfo& info)
+{
+    m_session->post_torrent_updates();
+    return info.Env().Undefined();
+}
+
+Napi::Value Session::Resume(const Napi::CallbackInfo& info)
+{
+    m_session->resume();
+    return info.Env().Undefined();
+}
+
+Napi::Value Session::SslListenPort(const Napi::CallbackInfo &info)
+{
+    return Napi::Number::New(info.Env(), m_session->ssl_listen_port());
+}
+
+Napi::Value Session::AlertNotify(const Napi::CallbackInfo& info)
+{
+    std::vector<lt::alert*> alerts;
+    m_session->pop_alerts(&alerts);
+
+    for (const auto alert : alerts)
     {
-        for (auto const& ref : m_callbacks.at(event))
-        {
-            ref.Call(args);
-        }
+        auto self = info.This().As<Napi::Object>();
+        auto emit = self.Get("emit").As<Napi::Function>();
+
+        emit.Call(
+            info.This(),
+            {
+                Napi::String::New(info.Env(), alert->what()),
+                AlertWrap::Wrap(info.Env(), alert)
+            });
     }
+
+    return info.Env().Undefined();
 }

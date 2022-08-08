@@ -1,5 +1,7 @@
+.idea/
 .vscode/
 build*
+cmake-*
 lib/
 node_modules/
 prebuilds/

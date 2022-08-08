@@ -15,8 +15,14 @@ public:
     ~TorrentStatus() override;
 
 private:
-    Napi::Value InfoHash(const Napi::CallbackInfo& info);
-    Napi::Value Name(const Napi::CallbackInfo& info);
+    Napi::Value GetBlockSize(const Napi::CallbackInfo& info);
+    Napi::Value GetCurrentTracker(const Napi::CallbackInfo& info);
+    Napi::Value GetDownloadPayloadRate(const Napi::CallbackInfo& info);
+    Napi::Value GetDownloadRate(const Napi::CallbackInfo& info);
+    Napi::Value GetInfoHashes(const Napi::CallbackInfo& info);
+    Napi::Value GetName(const Napi::CallbackInfo& info);
+    Napi::Value GetProgress(const Napi::CallbackInfo& info);
+    Napi::Value GetSavePath(const Napi::CallbackInfo& info);
 
     std::unique_ptr<libtorrent::torrent_status> m_status;
 
