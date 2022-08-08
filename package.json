@@ -4,10 +4,12 @@
   "description": "Rasterbar-libtorrent bindings for Node.js (>= 8.6).",
   "main": "index.js",
   "types": "index.d.ts",
+  "bin": {
+    "prebuild-verify": "./bin/verify.js"
+  },
   "scripts": {
-    "build": "cmake-js build --CDVCPKG_BUILD_TYPE=Release",
-    "clean": "cmake-js clean",
-    "configure": "cmake-js configure --CDVCPKG_BUILD_TYPE=Release"
+    "install": "pkg-prebuilds-verify ./binding-options.js || cmake-js compile --target porla_libtorrent",
+    "rebuild": "cmake-js rebuild --target porla_libtorrent"
   },
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",
@@ -15,5 +17,7 @@
     "cmake-js": "^6.3.2",
     "node-addon-api": "^5.0.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "pkg-prebuilds": "~0.1.0"
+  }
 }

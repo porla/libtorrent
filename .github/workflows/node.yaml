@@ -20,39 +20,30 @@ jobs:
           - os: macos-11
             arch: arm64
             is-native: false
-          - os: macos-10.15
-            arch: x64
-            is-native: true
 
           # linux
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             arch: x64
             is-native: true
 
-          # linux-libc
-          - os: ubuntu-latest
-            arch: arm64
-            is-native: false
-            docker-arch: linux/arm64
-            docker-image: node:16-buster
-          - os: ubuntu-latest
-            arch: arm
-            is-native: false
-            docker-arch: linux/arm/v7
-            docker-image: node:16-buster
-
           # linux-musl
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             arch: x64
             is-native: false
             docker-arch: linux/amd64
-            docker-image: node:16-alpine
+            docker-image: node:16-alpine3.16
             libc: musl
 
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y linux-headers-$(uname -r)
 
       - name: Use Node.js 16.x
         uses: actions/setup-node@v1
@@ -63,9 +54,9 @@ jobs:
         if: ${{ !matrix.docker-arch }}
         shell: bash
         run: |
-          npm i
-          npm run configure
-          npm run build --arch=${{ matrix.arch }}
+          yarn
+          yarn rebuild --arch=${{ matrix.arch }}
+          yarn pkg-prebuilds-copy --source build/Release/$BINDING_NAME.node --name=$BINDING_NAME --strip  --napi_version=$NAPI_VERSION --arch=${{ matrix.arch }}
         env:
           npm_config_build_from_source: true
 
@@ -84,16 +75,19 @@ jobs:
             if command -v apt-get &> /dev/null
             then
               apt-get update
-              apt-get install -y cmake
+              apt-get install -y build-essential cmake curl ninja-build zip unzip tar
             elif command -v apk &> /dev/null
             then
               apk update
-              apk add cmake make g++ gcc
+              apk add --no-cache build-base cmake ninja zip unzip curl perl linux-headers pkgconfig git
+              export VCPKG_FORCE_SYSTEM_BINARIES=1
             fi
+
             cd /work
-            npm i
-            npm run configure
-            npm run build
+
+            yarn
+            yarn pkg-prebuilds-copy --source build/Release/$BINDING_NAME.node --name=$BINDING_NAME --strip --napi_version=$NAPI_VERSION --arch=${{ matrix.arch }} --libc=${{ matrix.libc }}
+
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -101,3 +95,24 @@ jobs:
           name: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.libc }}-prebuilds
           path: prebuilds
           retention-days: 1
+
+  bundle:
+    name: Bundle prebuilds
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          path: tmp
+
+      - name: Display structure of downloaded files
+        run: |
+          mkdir prebuilds
+          mv tmp/*/* prebuilds/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: all-prebuilds
+          path: prebuilds
+          retention-days: 7

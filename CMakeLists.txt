@@ -39,10 +39,7 @@ set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES
         PREFIX                           ""
-        SUFFIX                           ".node"
-        OUTPUT_NAME                      "node-napi"
-        LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/${OUTPUT_DIR}"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/prebuilds/${OUTPUT_DIR}")
+        SUFFIX                           ".node")
 
 target_include_directories(
     ${PROJECT_NAME}
