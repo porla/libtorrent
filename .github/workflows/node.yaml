@@ -34,19 +34,19 @@ jobs:
             arch: arm64
             is-native: false
             docker-arch: linux/arm64
-            docker-image: node:14-buster
+            docker-image: node:16-buster
           - os: ubuntu-latest
             arch: arm
             is-native: false
             docker-arch: linux/arm/v7
-            docker-image: node:14-buster
+            docker-image: node:16-buster
 
           # linux-musl
           - os: ubuntu-latest
             arch: x64
             is-native: false
             docker-arch: linux/amd64
-            docker-image: node:14-alpine
+            docker-image: node:16-alpine
             libc: musl
 
     steps:
@@ -54,10 +54,10 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Use Node.js 18.x
+      - name: Use Node.js 16.x
         uses: actions/setup-node@v1
         with:
-          node-version: 18.x
+          node-version: 16.x
 
       - name: Rebuild
         if: ${{ !matrix.docker-arch }}
@@ -92,6 +92,8 @@ jobs:
             fi
             cd /work
             npm i
+            npm run configure
+            npm run build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3

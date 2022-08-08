@@ -5,9 +5,9 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "build": "cmake-js build",
+    "build": "cmake-js build --CDVCPKG_BUILD_TYPE=Release",
     "clean": "cmake-js clean",
-    "configure": "cmake-js configure"
+    "configure": "cmake-js configure --CDVCPKG_BUILD_TYPE=Release"
   },
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",
