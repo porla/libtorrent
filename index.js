@@ -1,5 +1,10 @@
-const {arch, platform} = require('os');
-const path = require('path');
-const prebuild = path.join(__dirname, 'prebuilds', `${platform()}-${arch()}`, 'node-napi.node');
+const {EventEmitter} = require("events");
 
-module.exports = require(prebuild);
+const binding = require("pkg-prebuilds")(
+  __dirname,
+  require("./binding-options")
+);
+
+Object.setPrototypeOf(binding.Session.prototype, EventEmitter.prototype);
+
+module.exports = binding;

@@ -12,6 +12,8 @@ public:
     explicit TorrentHandle(const Napi::CallbackInfo& info);
     ~TorrentHandle() override;
 
+    explicit operator libtorrent::torrent_handle();
+
 private:
     Napi::Value Id(const Napi::CallbackInfo& info);
     Napi::Value InfoHashes(const Napi::CallbackInfo& info);

@@ -10,6 +10,8 @@ Napi::Object SessionParams::Init(Napi::Env env, Napi::Object exports)
     m_ctor = new Napi::FunctionReference();
     *m_ctor = Napi::Persistent(func);
 
+    exports.Set("SessionParams", func);
+
     env.SetInstanceData<Napi::FunctionReference>(m_ctor);
 
     return exports;

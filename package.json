@@ -4,10 +4,8 @@
   "description": "Rasterbar-libtorrent bindings for Node.js (>= 8.6).",
   "main": "index.js",
   "types": "index.d.ts",
-  "bin": {
-    "prebuild-verify": "./bin/verify.js"
-  },
   "scripts": {
+    "build": "cmake-js build --target porla_libtorrent",
     "install": "pkg-prebuilds-verify ./binding-options.js || cmake-js compile --target porla_libtorrent",
     "rebuild": "cmake-js rebuild --target porla_libtorrent"
   },

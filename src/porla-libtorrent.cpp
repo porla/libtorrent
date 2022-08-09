@@ -9,9 +9,15 @@
 #include "infohash.hpp"
 #include "session.hpp"
 #include "sessionparams.hpp"
+#include "settingspack.hpp"
 #include "torrenthandle.hpp"
 #include "torrentinfo.hpp"
 #include "torrentstatus.hpp"
+
+static Napi::Value DefaultSettings(const Napi::CallbackInfo& info)
+{
+    return SettingsPack::Wrap(info.Env(), lt::default_settings());
+}
 
 static Napi::Value ReadResumeData(const Napi::CallbackInfo& info)
 {
@@ -22,7 +28,7 @@ static Napi::Value ReadResumeData(const Napi::CallbackInfo& info)
 
     auto buf = info[0].As<Napi::Buffer<char>>();
 
-    return AddTorrentParams::Wrap(
+    return AddTorrentParams::New(
         info.Env(),
         lt::read_resume_data(
             lt::span<const char>(
@@ -49,8 +55,8 @@ static Napi::Value ReadSessionParams(const Napi::CallbackInfo& info)
 
 static Napi::Value WriteResumeDataBuf(const Napi::CallbackInfo& info)
 {
-    auto pm = AddTorrentParams::Unwrap(info.Env(), info[0].ToObject());
-    auto buf = lt::write_resume_data_buf(pm);
+    auto params = Napi::ObjectWrap<AddTorrentParams>::Unwrap(info[0].ToObject());
+    auto buf = lt::write_resume_data_buf(static_cast<lt::add_torrent_params>(*params));
     return Napi::Buffer<char>::Copy(info.Env(), buf.data(), buf.size());
 }
 
@@ -64,12 +70,17 @@ static Napi::Value WriteSessionParamsBuf(const Napi::CallbackInfo& info)
 
 static Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
+    AddTorrentParams::Init(env, exports);
     InfoHash::Init(env, exports);
     Session::Init(env, exports);
     SessionParams::Init(env, exports);
     TorrentHandle::Init(env, exports);
     TorrentInfo::Init(env, exports);
     TorrentStatus::Init(env, exports);
+
+    exports.Set(
+        "default_settings",
+        Napi::Function::New(env, &DefaultSettings));
 
     exports.Set(
         "read_resume_data",

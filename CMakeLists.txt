@@ -21,6 +21,8 @@ add_library(
     src/addtorrentparams.hpp
     src/alert.cpp
     src/alert.hpp
+    src/errorcode.cpp
+    src/errorcode.hpp
     src/infohash.cpp
     src/infohash.hpp
     src/porla-libtorrent.cpp
@@ -28,6 +30,8 @@ add_library(
     src/session.hpp
     src/sessionparams.cpp
     src/sessionparams.hpp
+    src/settingspack.cpp
+    src/settingspack.hpp
     src/torrenthandle.cpp
     src/torrenthandle.hpp
     src/torrentinfo.cpp
@@ -38,8 +42,8 @@ add_library(
 set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES
-        PREFIX                           ""
-        SUFFIX                           ".node")
+        PREFIX ""
+        SUFFIX ".node")
 
 target_include_directories(
     ${PROJECT_NAME}

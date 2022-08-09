@@ -56,6 +56,11 @@ TorrentHandle::TorrentHandle(const Napi::CallbackInfo &info)
 
 TorrentHandle::~TorrentHandle() = default;
 
+TorrentHandle::operator libtorrent::torrent_handle()
+{
+    return *m_handle;
+}
+
 Napi::Value TorrentHandle::Id(const Napi::CallbackInfo &info)
 {
     return Napi::Number::New(info.Env(), m_handle->id());

@@ -6,6 +6,7 @@
 #include "addtorrentparams.hpp"
 #include "alert.hpp"
 #include "sessionparams.hpp"
+#include "torrenthandle.hpp"
 
 namespace lt = libtorrent;
 
@@ -23,6 +24,7 @@ Napi::Object Session::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&Session::PostDhtStats>("post_dht_stats"),
         InstanceMethod<&Session::PostSessionStats>("post_session_stats"),
         InstanceMethod<&Session::PostTorrentUpdates>("post_torrent_updates"),
+        InstanceMethod<&Session::RemoveTorrent>("remove_torrent"),
         InstanceMethod<&Session::Resume>("resume"),
         InstanceMethod<&Session::SessionState>("session_state"),
         InstanceMethod<&Session::SslListenPort>("ssl_listen_port"),
@@ -90,10 +92,11 @@ Napi::Value Session::AddDhtNode(const Napi::CallbackInfo &info)
 
 Napi::Value Session::AddTorrent(const Napi::CallbackInfo &info)
 {
+    auto obj = info[0].ToObject();
+    auto params = AddTorrentParams::Unwrap(obj);
+
     m_session->async_add_torrent(
-        AddTorrentParams::Unwrap(
-            info.Env(),
-            info[0].ToObject()));
+        static_cast<lt::add_torrent_params>(*params));
 
     return info.Env().Undefined();
 }
@@ -123,27 +126,6 @@ Napi::Value Session::ListenPort(const Napi::CallbackInfo& info)
     return Napi::Number::New(info.Env(), m_session->listen_port());
 }
 
-Napi::Value Session::LoadTorrent(const Napi::CallbackInfo& info)
-{
-    auto buf = info[0].As<Napi::Uint8Array>();
-    auto* data = reinterpret_cast<const char*>(buf.Data());
-
-    lt::error_code ec;
-    lt::add_torrent_params p = lt::read_resume_data(
-        lt::span(data, static_cast<long>(buf.ByteLength())),
-        ec);
-
-    if (ec)
-    {
-        Napi::TypeError::New(info.Env(), ec.message());
-        return info.Env().Undefined();
-    }
-
-    m_session->async_add_torrent(p);
-
-    return info.Env().Undefined();
-}
-
 Napi::Value Session::Pause(const Napi::CallbackInfo& info)
 {
     m_session->pause();
@@ -165,6 +147,17 @@ Napi::Value Session::PostSessionStats(const Napi::CallbackInfo &info)
 Napi::Value Session::PostTorrentUpdates(const Napi::CallbackInfo& info)
 {
     m_session->post_torrent_updates();
+    return info.Env().Undefined();
+}
+
+Napi::Value Session::RemoveTorrent(const Napi::CallbackInfo &info)
+{
+    // TODO: flags
+    auto handle = TorrentHandle::Unwrap(info[0].ToObject());
+
+    m_session->remove_torrent(
+        static_cast<lt::torrent_handle>(*handle));
+
     return info.Env().Undefined();
 }
 

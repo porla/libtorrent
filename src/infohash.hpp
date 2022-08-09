@@ -14,6 +14,8 @@ public:
     explicit InfoHash(const Napi::CallbackInfo& info);
     ~InfoHash() override;
 
+    explicit operator libtorrent::info_hash_t() { return *m_hash; }
+
 private:
     Napi::Value GetV1(const Napi::CallbackInfo& info);
     Napi::Value GetV2(const Napi::CallbackInfo& info);

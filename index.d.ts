@@ -1,424 +1,246 @@
+export declare function read_resume_data(buffer: Buffer): AddTorrentParams;
 
-export declare interface add_torrent_params {
-    dht_nodes?: any[];
-    file_priorities?: number[];
-    name?: string;
-    save_path?: string;
-    storage_mode?: number;
-    ti?: torrent_info;
-    tracker_tiers: number[];
-    trackers: string[];
+export declare function write_resume_data_buf(params: AddTorrentParams): Buffer;
+
+export declare interface AddTorrentAlert {
+  handle: TorrentHandle;
 }
 
-export declare class alert {
-    message: string;
-    type: number;
-    what: 'read_piece' | 'scrape_reply';
+export declare interface SettingsPack {
+  user_agent: string;
+  outgoing_interfaces: string;
+  listen_interfaces: string;
+  proxy_hostname: string;
+  proxy_username: string;
+  proxy_password: string;
+  i2p_hostname: string;
+  peer_fingerprint: string;
+  dht_bootstrap_nodes: string;
 
-    static all_categories: number;
-    static block_progress_notification: number;
-    static debug_notification: number;
-    static dht_log_notification: number;
-    static dht_notification: number;
-    static dht_operation_notification: number;
-    static error_notification: number;
-    static file_progress_notification: number;
-    static incoming_request_notification: number;
-    static ip_block_notification: number;
-    static peer_log_notification: number;
-    static peer_notification: number;
-    static performance_warning: number;
-    static picker_log_notification: number;
-    static piece_progress_notification: number;
-    static port_mapping_log_notification: number;
-    static port_mapping_notification: number;
-    static session_log_notification: number;
-    static stats_notification: number;
-    static status_notification: number;
-    static storage_notification: number;
-    static torrent_log_notification: number;
-    static tracker_notification: number;
-    static upload_notification: number;
+  tracker_completion_timeout: number;
+  tracker_receive_timeout: number;
+  stop_tracker_timeout: number;
+  tracker_maximum_response_length: number;
+  piece_timeout: number;
+  request_timeout: number;
+  request_queue_time: number;
+  max_allowed_in_request_queue: number;
+  max_out_request_queue: number;
+  whole_pieces_threshold: number;
+  peer_timeout: number;
+  urlseed_timeout: number;
+  urlseed_pipeline_size: number;
+  urlseed_wait_retry: number;
+  file_pool_size: number;
+  max_failcount: number;
+  min_reconnect_time: number;
+  peer_connect_timeout: number;
+  connection_speed: number;
+  inactivity_timeout: number;
+  unchoke_interval: number;
+  optimistic_unchoke_interval: number;
+  num_want: number;
+  initial_picker_threshold: number;
+  allowed_fast_set_size: number;
+  suggest_mode: number;
+  max_queued_disk_bytes: number;
+  handshake_timeout: number;
+  send_buffer_low_watermark: number;
+  send_buffer_watermark: number;
+  send_buffer_watermark_factor: number;
+  choking_algorithm: number;
+  seed_choking_algorithm: number;
+  disk_io_write_mode: number;
+  disk_io_read_mode: number;
+  outgoing_port: number;
+  num_outgoing_ports: number;
+  peer_dscp: number;
+  active_downloads: number;
+  active_seeds: number;
+  active_checking: number;
+  active_dht_limit: number;
+  active_tracker_limit: number;
+  active_lsd_limit: number;
+  active_limit: number;
+  auto_manage_interval: number;
+  seed_time_limit: number;
+  auto_scrape_interval: number;
+  auto_scrape_min_interval: number;
+  max_peerlist_size: number;
+  max_paused_peerlist_size: number;
+  min_announce_interval: number;
+  auto_manage_startup: number;
+  seeding_piece_quota: number;
+  max_rejects: number;
+  recv_socket_buffer_size: number;
+  send_socket_buffer_size: number;
+  max_peer_recv_buffer_size: number;
+  optimistic_disk_retry: number;
+  max_suggest_pieces: number;
+  local_service_announce_interval: number;
+  dht_announce_interval: number;
+  udp_tracker_token_expiry: number;
+  num_optimistic_unchoke_slots: number;
+  max_pex_peers: number;
+  tick_interval: number;
+  share_mode_target: number;
+  upload_rate_limit: number;
+  download_rate_limit: number;
+  dht_upload_rate_limit: number;
+  unchoke_slots_limit: number;
+  connections_limit: number;
+  connections_slack: number;
+  utp_target_delay: number;
+  utp_gain_factor: number;  
+  utp_min_timeout: number;
+  utp_syn_resends: number;
+  utp_fin_resends: number;
+  utp_num_resends: number;
+  utp_connect_timeout: number;
+  utp_loss_multiplier: number;
+  mixed_mode_algorithm: number;
+  listen_queue_size: number;
+  torrent_connect_boost: number;
+  alert_queue_size: number;
+  max_metadata_size: number;
+  hashing_threads: number;
+  checking_mem_usage: number;
+  predictive_piece_announce: number;
+  aio_threads: number;
+  tracker_backoff: number;
+  share_ratio_limit: number;
+  seed_time_ratio_limit: number;
+  peer_turnover: number;
+  peer_turnover_cutoff: number;
+  peer_turnover_interval: number;
+  connect_seed_every_n_download: number;
+  max_http_recv_buffer_size: number;
+  max_retry_port_bind: number;
+  alert_mask: number;
+  out_enc_policy: number;
+  in_enc_policy: number;
+  allowed_enc_level: number;
+  inactive_down_rate: number;
+  inactive_up_rate: number;
+  proxy_type: number;
+  proxy_port: number;
+  i2p_port: number;
+  urlseed_max_request_bytes: number;
+  web_seed_name_lookup_retry: number;
+  close_file_interval: number;
+  utp_cwnd_reduce_timer: number;
+  max_web_seed_connections: number;
+  resolver_cache_timeout: number;
+  send_not_sent_low_watermark: number;
+  rate_choker_initial_threshold: number;
+  upnp_lease_duration: number;
+  max_concurrent_http_announces: number;
+  dht_max_peers_reply: number;
+  dht_search_branching: number;
+  dht_max_fail_count: number;
+  dht_max_torrents: number;
+  dht_max_dht_items: number;
+  dht_max_peers: number;
+  dht_max_torrent_search_reply: number;
+  dht_block_timeout: number;
+  dht_block_ratelimit: number;
+  dht_item_lifetime: number;
+  dht_sample_infohashes_interval: number;
+  dht_max_infohashes_sample_count: number;
+  max_piece_count: number;
+  metadata_token_limit: number;
+
+  allow_multiple_connections_per_ip: boolean;
+  send_redundant_have: boolean;
+  use_dht_as_fallback: boolean;
+  upnp_ignore_nonrouters: boolean;
+  use_parole_mode: boolean;
+  auto_manage_prefer_seeds: boolean;
+  dont_count_slow_torrents: boolean;
+  close_redundant_connections: boolean;
+  prioritize_partial_pieces: boolean;
+  rate_limit_ip_overhead: boolean;
+  announce_to_all_trackers: boolean;
+  announce_to_all_tiers: boolean;
+  prefer_udp_trackers: boolean;
+  disable_hash_checks: boolean;
+  allow_i2p_mixed: boolean;
+  no_atime_storage: boolean;
+  incoming_starts_queued_torrents: boolean;
+  report_true_downloaded: boolean;
+  strict_end_game_mode: boolean;
+  enable_outgoing_utp: boolean;
+  enable_incoming_utp: boolean;
+  enable_outgoing_tcp: boolean;
+  enable_incoming_tcp: boolean;
+  no_recheck_incomplete_resume: boolean;
+  anonymous_mode: boolean;
+  report_web_seed_downloads: boolean;
+  seeding_outgoing_connections: boolean;
+  no_connect_privileged_ports: boolean;
+  smooth_connects: boolean;
+  always_send_user_agent: boolean;
+  apply_ip_filter_to_trackers: boolean;
+  ban_web_seeds: boolean;
+  support_share_mode: boolean;
+  report_redundant_bytes: boolean;
+  listen_system_port_fallback: boolean;
+  announce_crypto_support: boolean;
+  enable_upnp: boolean;
+  enable_natpmp: boolean;
+  enable_lsd: boolean;
+  enable_dht: boolean;
+  prefer_rc4: boolean;
+  proxy_hostnames: boolean;
+  proxy_peer_connections: boolean;
+  auto_sequential: boolean;
+  proxy_tracker_connections: boolean;
+  enable_ip_notifier: boolean;
+  dht_prefer_verified_node_ids: boolean;
+  dht_restrict_routing_ips: boolean;
+  dht_restrict_search_ips: boolean;
+  dht_extended_routing_table: boolean;
+  dht_aggressive_lookups: boolean;
+  dht_privacy_lookups: boolean;
+  dht_enforce_node_id: boolean;
+  dht_ignore_dark_internet: boolean;
+  dht_read_only: boolean;
+  piece_extent_affinity: boolean;
+  validate_https_trackers: boolean;
+  ssrf_mitigation: boolean;
+  allow_idna: boolean;
+  enable_set_file_valid_data: boolean;
+  socks5_udp_send_local_ep: boolean;
 }
 
-export declare interface session_settings {
-    active_checking?: number;
-    active_dht_limit?: number;
-    active_downloads?: number;
-    active_limit?: number;
-    active_lsd_limit?: number;
-    active_seeds?: number;
-    active_tracker_limit?: number;
-    aio_max?: number;
-    aio_threads?: number;
-    alert_mask?: number;
-    alert_queue_size?: number;
-    allow_i2p_mixed?: boolean;
-    allow_multiple_connections_per_ip?: boolean;
-    allow_partial_disk_writes?: boolean;
-    allowed_enc_level?: number;
-    allowed_fast_set_size?: number;
-    always_send_user_agent?: boolean;
-    announce_crypto_support?: boolean;
-
-    /**
-     * The IP address passed along to trackers as the `&ip=` parameter. If
-     * left as the default, that parameter is omitted.
-     */
-    announce_ip?: string;
-
-    announce_to_all_tiers?: boolean;
-    announce_to_all_trackers?: boolean;
-    anonymous_mode?: boolean;
-    apply_ip_filter_to_trackers?: boolean;
-    auto_manage_interval?: number;
-    auto_manage_prefer_seeds?: boolean;
-    auto_manage_startup?: number;
-    auto_scrape_interval?: number;
-    auto_scrape_min_interval?: number;
-    auto_sequential?: boolean;
-    ban_web_seeds?: boolean;
-    broadcast_lsd?: boolean;
-    cache_expiry?: number;
-    cache_size?: number;
-    cache_size_volatile?: number;
-    checking_mem_usage?: number;
-    choking_algorithm?: number;
-    close_file_interval?: number;
-    close_redundant_connections?: boolean;
-    coalesce_reads?: boolean;
-    coalesce_writes?: boolean;
-    connect_seed_every_n_download?: number;
-    connection_speed?: number;
-    connections_limit?: number;
-    connections_slack?: number;
-    decrease_est_reciprocation_rate?: number;
-    default_est_reciprocation_rate?: number;
-    dht_announce_interval?: number;
-    dht_bootstrap_nodes?: string;
-    disable_hash_checks?: boolean;
-    disk_io_read_mode?: number;
-    disk_io_write_mode?: number;
-    dont_count_slow_torrents?: boolean;
-    download_rate_limit?: number;
-    enable_dht?: boolean;
-    enable_incoming_tcp?: boolean;
-    enable_incoming_utp?: boolean;
-    enable_ip_notifier?: boolean;
-    enable_lsd?: boolean;
-    enable_natpmp?: boolean;
-    enable_outgoing_tcp?: boolean;
-    enable_outgoing_utp?: boolean;
-    enable_upnp?: boolean;
-    file_pool_size?: number;
-
-    /**
-     * The client name and version identifier sent to peers in the handshake
-     * message. If this is an empty string, the user_agent is used instead.
-     */
-    handshake_client_version?: string;
-
-    handshake_timeout?: number;
-    i2p_hostname?: string;
-    i2p_port?: number;
-    in_enc_policy?: number;
-    inactive_down_rate?: number;
-    inactive_up_rate?: number;
-    inactivity_timeout?: number;
-    incoming_starts_queued_torrents?: boolean;
-    increase_est_reciprocation_rate?: number;
-    initial_picker_threshold?: number;
-
-    /**
-     * A comma-separated list of (IP or device name, port) pairs. These are the
-     * listen ports that will be opened for accepting incoming uTP and TCP
-     * connections. It is possible to listen on multiple interfaces and
-     * multiple ports. Binding to port 0 will make the operating system pick
-     * the port. The default is "0.0.0.0:6881,[::]:6881", which binds to all
-     * interfaces on port 6881.
-     * 
-     * A port that has an "s" suffix will accept SSL connections. (note that
-     * SSL sockets are not enabled by default).
-     * 
-     * If binding fails, the listen_failed_alert is posted. If or once a socket
-     * binding succeeds, the listen_succeeded_alert is posted. There may be
-     * multiple failures before a success.
-     * 
-     * For example:
-     * `[::1]:8888` - will only accept connections on the IPv6 loopback address
-     * on port 8888.
-     * 
-     * `eth0:4444,eth1:4444` - will accept connections on port 4444 on any IP
-     * address bound to device ``eth0`` or ``eth1``.
-     * 
-     * `[::]:0s` - will accept SSL connections on a port chosen by the OS. And
-     * not accept non-SSL connections at all.
-     * 
-     * Windows OS network adapter device name can be specified with GUID. It
-     * can be obtained from "netsh lan show interfaces" command output. GUID
-     * must be uppercased string embraced in curly brackets.
-     * 
-     * `{E4F0B674-0DFC-48BB-98A5-2AA730BDB6D6}::7777` - will accept connections
-     * on port 7777 on adapter with this GUID.
-     */
-    listen_interfaces?: string;
-
-    listen_queue_size?: number;
-    listen_system_port_fallback?: boolean;
-    local_service_announce_interval?: number;
-    max_allowed_in_request_queue?: number;
-    max_failcount?: number;
-    max_http_recv_buffer_size?: number;
-    max_metadata_size?: number;
-    max_out_request_queue?: number;
-    max_paused_peerlist_size?: number;
-    max_peer_recv_buffer_size?: number;
-    max_peerlist_size?: number;
-    max_pex_peers?: number;
-    max_queued_disk_bytes?: number;
-    max_rejects?: number;
-    max_retry_port_bind?: number;
-    max_suggest_pieces?: number;
-    max_web_seed_connections?: number;
-    min_announce_interval?: number;
-    min_reconnect_time?: number;
-    mixed_mode_algorithm?: number;
-    no_atime_storage?: boolean;
-    no_connect_privileged_ports?: boolean;
-    no_recheck_incomplete_resume?: boolean;
-    num_optimistic_unchoke_slots?: number;
-    num_outgoing_ports?: number;
-    num_want?: number;
-    optimistic_disk_retry?: number;
-    optimistic_unchoke_interval?: number;
-    out_enc_policy?: number;
-
-    /**
-     * The network interface this session will use when it opens outgoing
-     * connections. By default, it binds outgoing connections to INADDR_ANY and
-     * port 0 (i.e. let the OS decide). Ths parameter must be a string
-     * containing one or more, comma separated, adapter names. Adapter names on
-     * unix systems are of the form "eth0", "eth1", "tun0", etc. When
-     * specifying multiple interfaces, they will be assigned in round-robin
-     * order. This may be useful for clients that are multi-homed. Binding an
-     * outgoing connection to a local IP does not necessarily make the
-     * connection via the associated NIC/Adapter. Setting this to an empty
-     * string will disable binding of outgoing connections.
-     */
-    outgoing_interfaces?: string;
-
-    outgoing_port?: number;
-    peer_connect_timeout?: number;
-
-    /**
-     * The fingerprint for the client. It will be used as the prefix to the
-     * peer_id. If this is 20 bytes (or longer) it will be truncated to 20
-     * bytes and used as the entire peer-id.
-     * 
-     * There is a utility function, generate_fingerprint() that can be used to
-     * generate a standard client peer ID fingerprint prefix.
-     */
-    peer_fingerprint?: string;
-
-    peer_timeout?: number;
-    peer_tos?: number;
-    peer_turnover?: number;
-    peer_turnover_cutoff?: number;
-    peer_turnover_interval?: number;
-    piece_timeout?: number;
-    predictive_piece_announce?: number;
-    prefer_rc4?: boolean;
-    prefer_udp_trackers?: boolean;
-    prioritize_partial_pieces?: boolean;
-
-    /**
-     * When using a poxy, this is the hostname where the proxy is running.
-     */
-    proxy_hostname?: string;
-
-    proxy_hostnames?: boolean;
-    proxy_password?: string;
-    proxy_peer_connections?: boolean;
-    proxy_port?: number;
-    proxy_tracker_connections?: boolean;
-    proxy_type?: number;
-    proxy_username?: string;
-    rate_limit_ip_overhead?: boolean;
-    read_cache_line_size?: number;
-    recv_socket_buffer_size?: number;
-    report_redundant_bytes?: boolean;
-    report_true_downloaded?: boolean;
-    report_web_seed_downloads?: boolean;
-    request_queue_time?: number;
-    request_timeout?: number;
-    resolver_cache_timeout?: number;
-    seed_choking_algorithm?: number;
-    seed_time_limit?: number;
-    seed_time_ratio_limit?: number;
-    seeding_outgoing_connections?: boolean;
-    seeding_piece_quota?: number;
-    send_buffer_low_watermark?: number;
-    send_buffer_watermark?: number;
-    send_buffer_watermark_factor?: number;
-    send_redundant_have?: boolean;
-    send_socket_buffer_size?: number;
-    share_mode_target?: number;
-    share_ratio_limit?: number;
-    smooth_connects?: boolean;
-    stop_tracker_timeout?: number;
-    strict_end_game_mode?: boolean;
-    strict_super_seeding?: boolean;
-    suggest_mode?: number;
-    support_merkle_torrents?: boolean;
-    support_share_mode?: boolean;
-    tick_interval?: number;
-    torrent_connect_boost?: number;
-    tracker_backoff?: number;
-    tracker_completion_timeout?: number;
-    tracker_maximum_response_length?: number;
-    tracker_receive_timeout?: number;
-    udp_tracker_token_expiry?: number;
-    unchoke_interval?: number;
-    unchoke_slots_limit?: number;
-    upload_rate_limit?: number;
-    upnp_ignore_nonrouters?: boolean;
-    urlseed_max_request_bytes?: number;
-    urlseed_pipeline_size?: number;
-    urlseed_timeout?: number;
-    urlseed_wait_retry?: number;
-    use_dht_as_fallback?: boolean;
-    use_parole_mode?: boolean;
-    use_read_cache?: boolean;
-
-    /**
-     * The client identification to the tracker. The recommended format of this
-     * string is: "ClientName/ClientVersion libtorrent/libtorrentVersion". This
-     * name will not only be used when making HTTP requests, but also when
-     * sending extended headers to peers that support that extension. It may
-     * not contain \r or \n.
-     */
-    user_agent?: string;
-
-    utp_connect_timeout?: number;
-    utp_fin_resends?: number;
-    utp_gain_factor?: number;
-    utp_loss_multiplier?: number;
-    utp_min_timeout?: number;
-    utp_num_resends?: number;
-    utp_syn_resends?: number;
-    utp_target_delay?: number;
-    volatile_read_cache?: boolean;
-    web_seed_name_lookup_retry?: number;
-    whole_pieces_threshold?: number;
-    write_cache_line_size?: number;
+export declare class Session {
+  add_torrent(params: AddTorrentParams): void;
+  on(event: "add_torrent", callback: (data: AddTorrentAlert) => void): void;
+  post_torrent_updates(): void;
 }
 
-export declare interface torrent_alert extends alert {
-    handle: torrent_handle;
+export declare class AddTorrentParams {
+  save_path: string;
+  ti: TorrentInfo;
 }
 
-export declare class torrent_info {
-    constructor(fileName: string);
+export declare class InfoHash {
+  has_v1(): boolean;
+  has_v2(): boolean;
+
+  v1: string | null;
+  v2: string | null;
 }
 
-export declare class torrent_handle {
-    is_valid(): boolean;
-    info_hash(): string;
-    pause(): void;
-    resume(): void;
-    status(): torrent_status;
+export declare class TorrentInfo {
+  constructor(file: string);
 }
 
-export declare interface error {
-    message: string;
-    value: number;
+export declare class TorrentHandle {
+  status(): TorrentStatus;
 }
 
-export declare interface torrent_status {
-    added_time: number;
-    all_time_download: number;
-    all_time_upload: number;
-    announcing_to_dht: boolean;
-    announcing_to_lsd: boolean;
-    announcing_to_trackers: boolean;
-    block_size: number;
-    completed_time: number;
-    connect_candidates: number;
-    connections_limit: number;
-    current_tracker: string;
-    distributed_copies: number;
-    down_bandwidth_queue: number;
-    download_payload_rate: number;
-    download_rate: number;
-    errc: error;
-    error_file: number;
-    finished_duration: number;
-    flags: number;
-    handle: torrent_handle;
-    has_incoming: boolean;
-    has_metadata: boolean;
-    info_hash: string;
-    is_finished: boolean;
-    is_seeding: boolean;
-    last_download: number;
-    last_seen_complete: number;
-    last_upload: number;
-    list_peers: number;
-    list_seeds: number;
-    moving_storage: boolean;
-    name: string;
-    need_save_resume: boolean;
-    next_announce: number;
-    num_complete: number;
-    num_connections: number;
-    num_incomplete: number;
-    num_peers: number;
-    num_pieces: number;
-    num_seeds: number;
-    num_uploads: number;
-    progress: number;
-    queue_position: number;
-    save_path: string;
-    seed_rank: number;
-    seeding_duration: number;
-    state: number;
-    storage_mode: number;
-    torrent_file?: torrent_info;
-    total: number;
-    total_done: number;
-    total_download: number;
-    total_failed_bytes: number;
-    total_payload_download: number;
-    total_payload_upload: number;
-    total_redundant_bytes: number;
-    total_upload: number;
-    total_wanted: number;
-    total_wanted_done: number;
-    up_bandwidth_queue: number;
-    upload_payload_rate: number;
-    upload_rate: number;
-    uploads_limit: number;
+export declare class TorrentStatus {
+  info_hashes: InfoHash;
+  name: string;
 }
-
-export declare class session {
-    constructor(settings?: session_settings);
-
-    add_torrent(params: add_torrent_params): torrent_handle;
-    pop_alerts(): Array<alert>;
-    save_state(): Object;
-    save_state_buf(): any; // TODO: buffer
-    wait_for_alert(timeout: number, callback: (err: Error, result: boolean) => void): void;
-}
-
-export declare interface stats_metric {
-    name: string;
-    type: number;
-    value_index: number;
-}
-
-export declare function bencode(obj: Object): any; // TODO: Buffer
-export declare function generate_fingerprint(name: string, major: number, minor?: number, rev?: number, tag?: number): string;
-export declare function read_resume_data(params: add_torrent_params) : Object;
-export declare function session_stats_metrics(): stats_metric[];
-export declare function write_resume_data(params: add_torrent_params) : Object;
-export declare function write_resume_data_buf(params: add_torrent_params);
