@@ -179,12 +179,12 @@ void AddTorrentParams::SetActiveTime(const Napi::CallbackInfo &info, const Napi:
 
 void AddTorrentParams::SetAddedTime(const Napi::CallbackInfo &info, const Napi::Value &value)
 {
-    m_params->added_time = value.ToNumber();
+    m_params->added_time = value.ToNumber().Int64Value();
 }
 
 void AddTorrentParams::SetCompletedTime(const Napi::CallbackInfo &info, const Napi::Value &value)
 {
-    m_params->completed_time = value.ToNumber();
+    m_params->completed_time = value.ToNumber().Int64Value();
 }
 
 void AddTorrentParams::SetDownloadLimit(const Napi::CallbackInfo &info, const Napi::Value &value)
@@ -205,7 +205,7 @@ void AddTorrentParams::SetInfoHashes(const Napi::CallbackInfo &info, const Napi:
 
 void AddTorrentParams::SetLastSeenComplete(const Napi::CallbackInfo &info, const Napi::Value &value)
 {
-    m_params->last_seen_complete = value.ToNumber();
+    m_params->last_seen_complete = value.ToNumber().Int64Value();
 }
 
 void AddTorrentParams::SetMaxConnections(const Napi::CallbackInfo &info, const Napi::Value &value)
