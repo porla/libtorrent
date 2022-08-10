@@ -6,6 +6,7 @@
 #include "addtorrentparams.hpp"
 #include "alert.hpp"
 #include "sessionparams.hpp"
+#include "settingspack.hpp"
 #include "torrenthandle.hpp"
 
 namespace lt = libtorrent;
@@ -15,6 +16,7 @@ Napi::Object Session::Init(Napi::Env env, Napi::Object exports)
     Napi::Function func = DefineClass(env, "Session", {
         InstanceMethod<&Session::AddDhtNode>("add_dht_node"),
         InstanceMethod<&Session::AddTorrent>("add_torrent"),
+        InstanceMethod<&Session::ApplySettings>("apply_settings"),
         InstanceMethod<&Session::IsDhtRunning>("is_dht_running"),
         InstanceMethod<&Session::IsListening>("is_listening"),
         InstanceMethod<&Session::IsPaused>("is_paused"),
@@ -98,6 +100,13 @@ Napi::Value Session::AddTorrent(const Napi::CallbackInfo &info)
     m_session->async_add_torrent(
         static_cast<lt::add_torrent_params>(*params));
 
+    return info.Env().Undefined();
+}
+
+Napi::Value Session::ApplySettings(const Napi::CallbackInfo &info)
+{
+    m_session->apply_settings(
+        SettingsPack::Unwrap(info[0].ToObject()));
     return info.Env().Undefined();
 }
 

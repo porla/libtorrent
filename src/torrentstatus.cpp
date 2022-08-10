@@ -3,6 +3,7 @@
 #include <libtorrent/torrent_status.hpp>
 
 #include "infohash.hpp"
+#include "torrenthandle.hpp"
 
 namespace lt = libtorrent;
 
@@ -15,6 +16,7 @@ Napi::Object TorrentStatus::Init(Napi::Env env, Napi::Object exports)
         InstanceAccessor<&TorrentStatus::GetCurrentTracker>("current_tracker"),
         InstanceAccessor<&TorrentStatus::GetDownloadPayloadRate>("download_payload_rate"),
         InstanceAccessor<&TorrentStatus::GetDownloadRate>("download_rate"),
+        InstanceAccessor<&TorrentStatus::GetHandle>("handle"),
         InstanceAccessor<&TorrentStatus::GetInfoHashes>("info_hashes"),
         InstanceAccessor<&TorrentStatus::GetName>("name"),
         InstanceAccessor<&TorrentStatus::GetProgress>("progress"),
@@ -69,6 +71,11 @@ Napi::Value TorrentStatus::GetDownloadPayloadRate(const Napi::CallbackInfo &info
 Napi::Value TorrentStatus::GetDownloadRate(const Napi::CallbackInfo &info)
 {
     return Napi::Number::New(info.Env(), m_status->download_rate);
+}
+
+Napi::Value TorrentStatus::GetHandle(const Napi::CallbackInfo &info)
+{
+    return TorrentHandle::New(info.Env(), m_status->handle);
 }
 
 Napi::Value TorrentStatus::GetInfoHashes(const Napi::CallbackInfo &info)

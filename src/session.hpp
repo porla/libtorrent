@@ -21,6 +21,7 @@ public:
 private:
     Napi::Value AddDhtNode(const Napi::CallbackInfo& info);
     Napi::Value AddTorrent(const Napi::CallbackInfo& info);
+    Napi::Value ApplySettings(const Napi::CallbackInfo& info);
     Napi::Value IsDhtRunning(const Napi::CallbackInfo& info);
     Napi::Value IsListening(const Napi::CallbackInfo& info);
     Napi::Value IsPaused(const Napi::CallbackInfo& info);

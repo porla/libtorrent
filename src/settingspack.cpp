@@ -33,6 +33,32 @@ lt::settings_pack SettingsPack::Unwrap(const Napi::Object obj)
 
     for (const auto&& [index,property] : obj.GetPropertyNames())
     {
+        std::string key = Napi::Value(property).ToString().Utf8Value();
+        int setting = lt::setting_by_name(key);
+
+        if (setting < 0)
+        {
+            throw Napi::Error::New(obj.Env(), "Unknown setting: " + key);
+        }
+
+        try
+        {
+            Napi::Value value = obj[property];
+
+            switch (setting & lt::settings_pack::type_mask)
+            {
+            case lt::settings_pack::string_type_base:
+                sp.set_str(setting, value.ToString().Utf8Value());
+                break;
+            case lt::settings_pack::int_type_base:
+                sp.set_int(setting, static_cast<int>(value.ToNumber().Int64Value()));
+                break;
+            case lt::settings_pack::bool_type_base:
+                sp.set_bool(setting, value.ToBoolean().Value());
+                break;
+            }
+        }
+        catch (const std::exception&) {}
     }
 
     return sp;

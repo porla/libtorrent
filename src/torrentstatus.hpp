@@ -19,6 +19,7 @@ private:
     Napi::Value GetCurrentTracker(const Napi::CallbackInfo& info);
     Napi::Value GetDownloadPayloadRate(const Napi::CallbackInfo& info);
     Napi::Value GetDownloadRate(const Napi::CallbackInfo& info);
+    Napi::Value GetHandle(const Napi::CallbackInfo& info);
     Napi::Value GetInfoHashes(const Napi::CallbackInfo& info);
     Napi::Value GetName(const Napi::CallbackInfo& info);
     Napi::Value GetProgress(const Napi::CallbackInfo& info);

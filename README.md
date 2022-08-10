@@ -4,14 +4,26 @@ This library provides (mostly) complete bindings against Rasterbar-libtorrent
 compiled with SSL support. It tries to map one-to-one against the Rastebar-
 libtorrent API.
 
-***Warning:** The library is currently under development and should not be used
-in a production environment.*
+## Getting started
 
+```js
+const lt = require("@porla/libtorrent");
+
+const params = new lt.AddTorrentParams();
+params.save_path = ".";
+params.ti = new lt.TorrentInfo("/path/to/torrent");
+
+const session = new lt.Session();
+session.add_torrent(params);
+session.on("add_torrent", () => console.log("Torrent added"));
+session.on("state_update", () => console.log("State updated"));
+
+setInterval(() => s.post_torrent_updates(), 1000);
+```
 
 ## Building
 
-The bindings *should* build on most platforms when you run `npm install`. Make
-sure you run `git submodule update --init` first to get the vendor dependencies
-installed.
+`vcpkg` is used for native dependency management. You need CMake and a proper
+C++ toolchain.
 
-There is a *Dockerfile* to build against the `node:10` image.
+Running `yarn` should build everything.
