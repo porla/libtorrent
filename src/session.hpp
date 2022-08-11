@@ -40,6 +40,5 @@ private:
 
     std::unique_ptr<libtorrent::session> m_session;
 
-    Napi::ObjectReference m_opts;
     Napi::ThreadSafeFunction m_tsfn;
 };

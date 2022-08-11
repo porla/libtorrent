@@ -44,7 +44,6 @@ Napi::Object Session::Init(Napi::Env env, Napi::Object exports)
 Session::Session(const Napi::CallbackInfo& info)
     : Napi::ObjectWrap<Session>(info)
 {
-    m_opts = Napi::ObjectReference::New(info[0].As<Napi::Object>());
     m_tsfn = Napi::ThreadSafeFunction::New(
         info.Env(),
         Napi::Function::New(
