@@ -19,17 +19,14 @@ jobs:
           # macos
           - os: macos-11
             arch: arm64
-            is-native: false
 
           # linux
           - os: ubuntu-20.04
             arch: x64
-            is-native: true
 
           # linux-musl
           - os: ubuntu-20.04
             arch: x64
-            is-native: false
             docker-arch: linux/amd64
             docker-image: node:16-alpine3.16
             libc: musl
@@ -56,7 +53,6 @@ jobs:
         run: |
           yarn
           yarn compile --arch=${{ matrix.arch }}
-          yarn rebuild --arch=${{ matrix.arch }}
           yarn pkg-prebuilds-copy --source build/Release/$BINDING_NAME.node --name=$BINDING_NAME --strip  --napi_version=$NAPI_VERSION --arch=${{ matrix.arch }}
         env:
           npm_config_build_from_source: true
@@ -65,7 +61,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
         if: matrix.docker-arch
 
-      - name: Rebuild (in docker)
+      - name: Rebuild (in Docker)
         uses: addnab/docker-run-action@v3
         if: matrix.docker-arch
         with:
@@ -87,6 +83,7 @@ jobs:
             cd /work
 
             yarn
+            yarn compile --arch=${{ matrix.arch }}
             yarn pkg-prebuilds-copy --source build/Release/$BINDING_NAME.node --name=$BINDING_NAME --strip --napi_version=$NAPI_VERSION --arch=${{ matrix.arch }} --libc=${{ matrix.libc }}
 
 
