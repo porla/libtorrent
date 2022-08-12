@@ -6,7 +6,8 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "cmake-js build --target porla_libtorrent",
-    "install": "pkg-prebuilds-verify ./binding-options.js || cmake-js compile --target porla_libtorrent",
+    "compile": "cmake-js compile --target porla_libtorrent",
+    "install": "pkg-prebuilds-verify ./binding-options.js || echo \"Prebuild verification failed.\"",
     "rebuild": "cmake-js rebuild --target porla_libtorrent"
   },
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
