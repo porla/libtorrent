@@ -1,8 +1,16 @@
+.github/
+.idea/
 .vscode/
 binding.gyp
 build/
+cmake-*/
 examples/
 src/
 vendor/
 
+.dockerignore
 .gitmodules
+CMakeLists.txt
+test.js
+vcpkg.json
+yarn.lock
