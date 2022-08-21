@@ -315,6 +315,8 @@ export declare class AddTorrentParams {
   set num_downloaded(val: number);
   get num_incomplete(): number;
   set num_incomplete(val: number);
+  get queue_position(): number;
+  set queue_position(val: number);
   get save_path(): string;
   set save_path(val: string);
   get seeding_time(): number;
