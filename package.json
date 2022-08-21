@@ -13,6 +13,7 @@
   "author": "Viktor Elofsson <viktor@viktorelofsson.se>",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^18.7.8",
     "cmake-js": "7.0.0-3",
     "node-addon-api": "^5.0.0"
   },

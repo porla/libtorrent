@@ -87,7 +87,7 @@ Session::~Session()
 
 Napi::Value Session::AddDhtNode(const Napi::CallbackInfo &info)
 {
-    m_session->add_dht_node({ info[0].ToString(), info[0].ToNumber() });
+    m_session->add_dht_node({ info[0].ToString(), info[1].ToNumber() });
     return info.Env().Undefined();
 }
 
