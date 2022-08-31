@@ -112,6 +112,13 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
         "write_session_params_buf",
         Napi::Function::New(env, &WriteSessionParamsBuf));
 
+    auto resume_data_flags_t = Napi::Object::New(env);
+    resume_data_flags_t["flush_disk_cache"] = Napi::Number::New(env, static_cast<uint8_t>(lt::torrent_handle::flush_disk_cache));
+    resume_data_flags_t["save_info_dict"] = Napi::Number::New(env, static_cast<uint8_t>(lt::torrent_handle::save_info_dict));
+    resume_data_flags_t["only_if_modified"] = Napi::Number::New(env, static_cast<uint8_t>(lt::torrent_handle::only_if_modified));
+
+    exports.Set("resume_data_flags_t", resume_data_flags_t);
+
     return exports;
 }
 

@@ -251,8 +251,15 @@ Napi::Value TorrentHandle::Resume(const Napi::CallbackInfo &info)
 
 Napi::Value TorrentHandle::SaveResumeData(const Napi::CallbackInfo &info)
 {
-    // TODO: flags
-    m_handle->save_resume_data();
+    auto flags = lt::resume_data_flags_t{};
+
+    if (info[0].IsNumber())
+    {
+        flags = static_cast<lt::resume_data_flags_t>(info[0].ToNumber().Uint32Value());
+    }
+
+    m_handle->save_resume_data(flags);
+
     return info.Env().Undefined();
 }
 

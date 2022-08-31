@@ -26,6 +26,9 @@ export declare interface AddTorrentAlert extends TorrentAlert {
   params: AddTorrentParams;
 }
 
+export declare interface MetadataReceivedAlert extends TorrentAlert {
+}
+
 export declare interface SaveResumeDataAlert extends TorrentAlert {
   params: AddTorrentParams;
 }
@@ -277,6 +280,7 @@ export declare class Session extends EventEmitter {
   is_valid(): boolean;
   listen_port(): number;
   on(event: "add_torrent", callback: (data: AddTorrentAlert) => void): this;
+  on(event: "metadata_received", callback: (data: MetadataReceivedAlert) => void): this;
   on(event: "save_resume_data", callback: (data: SaveResumeDataAlert) => void): this;
   on(event: "save_resume_data_failed", callback: (data: SaveResumeDataFailedAlert) => void): this;
   on(event: "state_update", callback: (data: StateUpdateAlert) => void): this;
@@ -372,7 +376,7 @@ export declare class TorrentHandle {
   read_piece(idx: number): void;
   rename_file(idx: number, new_name: string): void;
   resume(): void;
-  save_resume_data(): void;
+  save_resume_data(flags?: number): void;
   set_download_limit(limit: number): void;
   set_max_connections(max_connections: number): void;
   set_upload_limit(limit: number): void;
@@ -417,4 +421,10 @@ export declare interface ErrorCode {
   message: string;
   value: number;
   what: string;
+}
+
+export declare class resume_data_flags_t {
+  static flush_disk_cache: number;
+  static save_info_dict: number;
+  static only_if_modified: number;
 }
