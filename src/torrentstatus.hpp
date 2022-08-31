@@ -44,6 +44,7 @@ private:
     Napi::Value GetTotalUpload(const Napi::CallbackInfo& info);
     Napi::Value GetTotalWanted(const Napi::CallbackInfo& info);
     Napi::Value GetTotalWantedDone(const Napi::CallbackInfo& info);
+    Napi::Value GetUploadPayloadRate(const Napi::CallbackInfo& info);
 
     std::unique_ptr<libtorrent::torrent_status> m_status;
 

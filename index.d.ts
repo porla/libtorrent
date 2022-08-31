@@ -2,6 +2,8 @@ import {EventEmitter} from "events";
 
 export declare function default_settings(): SettingsPack;
 
+export declare function parse_magnet_uri(magnet: string): AddTorrentParams;
+
 export declare function read_resume_data(buffer: Buffer): AddTorrentParams;
 
 export declare function read_session_params(buffer: Buffer): SessionParams;
@@ -356,6 +358,7 @@ export declare class TorrentHandle {
   have_piece(idx: number): boolean;
   id(): number;
   in_session(): boolean;
+  info_hashes(): InfoHash;
   is_valid(): boolean;
   max_connections(): number;
   max_uploads(): number;
@@ -407,6 +410,7 @@ export declare class TorrentStatus {
   get total_upload(): number;
   get total_wanted(): number;
   get total_wanted_done(): number;
+  get upload_payload_rate(): number;
 }
 
 export declare interface ErrorCode {

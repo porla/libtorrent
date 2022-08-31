@@ -1,4 +1,5 @@
 #include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session_params.hpp>
 #include <libtorrent/write_resume_data.hpp>
@@ -14,9 +15,18 @@
 #include "torrentinfo.hpp"
 #include "torrentstatus.hpp"
 
+namespace lt = libtorrent;
+
 static Napi::Value DefaultSettings(const Napi::CallbackInfo& info)
 {
     return SettingsPack::Wrap(info.Env(), lt::default_settings());
+}
+
+static Napi::Value ParseMagnetUri(const Napi::CallbackInfo& info)
+{
+    return AddTorrentParams::New(
+        info.Env(),
+        lt::parse_magnet_uri(info[0].ToString().Utf8Value()));
 }
 
 static Napi::Value ReadResumeData(const Napi::CallbackInfo& info)
@@ -81,6 +91,10 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
     exports.Set(
         "default_settings",
         Napi::Function::New(env, &DefaultSettings));
+
+    exports.Set(
+        "parse_magnet_uri",
+        Napi::Function::New(env, &ParseMagnetUri));
 
     exports.Set(
         "read_resume_data",

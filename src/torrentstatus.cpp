@@ -42,6 +42,7 @@ Napi::Object TorrentStatus::Init(Napi::Env env, Napi::Object exports)
         InstanceAccessor<&TorrentStatus::GetTotalUpload>("total_upload"),
         InstanceAccessor<&TorrentStatus::GetTotalWanted>("total_wanted"),
         InstanceAccessor<&TorrentStatus::GetTotalWantedDone>("total_wanted_done"),
+        InstanceAccessor<&TorrentStatus::GetUploadPayloadRate>("upload_payload_rate"),
     });
 
     m_ctor = new Napi::FunctionReference();
@@ -240,5 +241,12 @@ Napi::Value TorrentStatus::GetTotalWantedDone(const Napi::CallbackInfo &info)
 {
     napi_value v;
     napi_create_int64(info.Env(), m_status->total_wanted_done, &v);
+    return {info.Env(), v};
+}
+
+Napi::Value TorrentStatus::GetUploadPayloadRate(const Napi::CallbackInfo &info)
+{
+    napi_value v;
+    napi_create_int64(info.Env(), m_status->upload_payload_rate, &v);
     return {info.Env(), v};
 }
