@@ -30,6 +30,8 @@ private:
     Napi::Value GetName(const Napi::CallbackInfo& info);
     Napi::Value GetNeedSaveResume(const Napi::CallbackInfo& info);
     Napi::Value GetNextAnnounce(const Napi::CallbackInfo& info);
+    Napi::Value GetNumPeers(const Napi::CallbackInfo& info);
+    Napi::Value GetNumSeeds(const Napi::CallbackInfo& info);
     Napi::Value GetProgress(const Napi::CallbackInfo& info);
     Napi::Value GetQueuePosition(const Napi::CallbackInfo& info);
     Napi::Value GetSavePath(const Napi::CallbackInfo& info);

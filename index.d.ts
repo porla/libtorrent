@@ -357,6 +357,7 @@ export declare class TorrentHandle {
   add_tracker(entry: { tier?: number,  url?: string }): void;
   clear_error(): void;
   download_limit(): number;
+  flags(): number;
   flush_cache(): void;
   force_recheck(): void;
   have_piece(idx: number): boolean;
@@ -368,6 +369,7 @@ export declare class TorrentHandle {
   max_uploads(): number;
   move_storage(save_path: string, flags?: number): void;
   need_save_resume_data(): boolean;
+  pause(): void;
   queue_position(): number;
   queue_position_bottom(): void;
   queue_position_down(): void;
@@ -378,10 +380,12 @@ export declare class TorrentHandle {
   resume(): void;
   save_resume_data(flags?: number): void;
   set_download_limit(limit: number): void;
+  set_flags(flags: number): void;
   set_max_connections(max_connections: number): void;
   set_upload_limit(limit: number): void;
   status(): TorrentStatus;
   trackers(): any;
+  unset_flags(flags: number): void;
   upload_limit(): number;
 }
 
@@ -401,6 +405,8 @@ export declare class TorrentStatus {
   get name(): string;
   get need_save_resume(): boolean;
   get next_announce(): number;
+  get num_peers(): number;
+  get num_seeds(): number;
   get progress(): number;
   get save_path(): string;
   get state(): number;
@@ -427,4 +433,25 @@ export declare class resume_data_flags_t {
   static flush_disk_cache: number;
   static save_info_dict: number;
   static only_if_modified: number;
+}
+
+export declare class torrent_flags_t {
+  static seed_mode: number;
+  static upload_mode: number;
+  static share_mode: number;
+  static apply_ip_filter: number;
+  static paused: number;
+  static auto_managed: number;
+  static duplicate_is_error: number;
+  static update_subscribe: number;
+  static super_seeding: number;
+  static sequential_download: number;
+  static stop_when_ready: number;
+  static override_trackers: number;
+  static override_web_seeds: number;
+  static need_save_resume: number;
+  static disable_dht: number;
+  static disable_lsd: number;
+  static disable_pex: number;
+  static no_verify_files: number;
 }

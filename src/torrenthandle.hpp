@@ -19,6 +19,7 @@ private:
     void AddTracker(const Napi::CallbackInfo& info);
     Napi::Value ClearError(const Napi::CallbackInfo& info);
     Napi::Value DownloadLimit(const Napi::CallbackInfo& info);
+    Napi::Value Flags(const Napi::CallbackInfo& info);
     void FlushCache(const Napi::CallbackInfo& info);
     void ForceRecheck(const Napi::CallbackInfo& info);
     Napi::Value HavePiece(const Napi::CallbackInfo& info);
@@ -41,10 +42,12 @@ private:
     Napi::Value Resume(const Napi::CallbackInfo& info);
     Napi::Value SaveResumeData(const Napi::CallbackInfo& info);
     void SetDownloadLimit(const Napi::CallbackInfo& info);
+    void SetFlags(const Napi::CallbackInfo& info);
     void SetMaxConnections(const Napi::CallbackInfo& info);
     void SetUploadLimit(const Napi::CallbackInfo& info);
     Napi::Value Status(const Napi::CallbackInfo& info);
     Napi::Value Trackers(const Napi::CallbackInfo& info);
+    void UnsetFlags(const Napi::CallbackInfo& info);
     Napi::Value UploadLimit(const Napi::CallbackInfo& info);
 
     std::unique_ptr<libtorrent::torrent_handle> m_handle;

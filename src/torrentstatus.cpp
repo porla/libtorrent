@@ -28,6 +28,8 @@ Napi::Object TorrentStatus::Init(Napi::Env env, Napi::Object exports)
         InstanceAccessor<&TorrentStatus::GetName>("name"),
         InstanceAccessor<&TorrentStatus::GetNeedSaveResume>("need_save_resume"),
         InstanceAccessor<&TorrentStatus::GetNextAnnounce>("next_announce"),
+        InstanceAccessor<&TorrentStatus::GetNumPeers>("num_peers"),
+        InstanceAccessor<&TorrentStatus::GetNumSeeds>("num_seeds"),
         InstanceAccessor<&TorrentStatus::GetProgress>("progress"),
         InstanceAccessor<&TorrentStatus::GetQueuePosition>("queue_position"),
         InstanceAccessor<&TorrentStatus::GetSavePath>("save_path"),
@@ -152,6 +154,16 @@ Napi::Value TorrentStatus::GetNextAnnounce(const Napi::CallbackInfo &info)
     napi_value result;
     napi_create_int64(info.Env(), lt::total_seconds(m_status->next_announce), &result);
     return {info.Env(), result};
+}
+
+Napi::Value TorrentStatus::GetNumPeers(const Napi::CallbackInfo &info)
+{
+    return Napi::Number::New(info.Env(), m_status->num_peers);
+}
+
+Napi::Value TorrentStatus::GetNumSeeds(const Napi::CallbackInfo &info)
+{
+    return Napi::Number::New(info.Env(), m_status->num_seeds);
 }
 
 Napi::Value TorrentStatus::GetProgress(const Napi::CallbackInfo &info)

@@ -17,6 +17,7 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&TorrentHandle::AddTracker>("add_tracker"),
         InstanceMethod<&TorrentHandle::ClearError>("clear_error"),
         InstanceMethod<&TorrentHandle::DownloadLimit>("download_limit"),
+        InstanceMethod<&TorrentHandle::Flags>("flags"),
         InstanceMethod<&TorrentHandle::FlushCache>("flush_cache"),
         InstanceMethod<&TorrentHandle::ForceRecheck>("force_recheck"),
         InstanceMethod<&TorrentHandle::HavePiece>("have_piece"),
@@ -39,10 +40,12 @@ Napi::Object TorrentHandle::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&TorrentHandle::Resume>("resume"),
         InstanceMethod<&TorrentHandle::SaveResumeData>("save_resume_data"),
         InstanceMethod<&TorrentHandle::SetDownloadLimit>("set_download_limit"),
+        InstanceMethod<&TorrentHandle::SetFlags>("set_flags"),
         InstanceMethod<&TorrentHandle::SetMaxConnections>("set_max_connections"),
         InstanceMethod<&TorrentHandle::SetUploadLimit>("set_upload_limit"),
         InstanceMethod<&TorrentHandle::Status>("status"),
         InstanceMethod<&TorrentHandle::Trackers>("trackers"),
+        InstanceMethod<&TorrentHandle::UnsetFlags>("unset_flags"),
         InstanceMethod<&TorrentHandle::UploadLimit>("upload_limit"),
     });
 
@@ -129,6 +132,11 @@ Napi::Value TorrentHandle::ClearError(const Napi::CallbackInfo &info)
 Napi::Value TorrentHandle::DownloadLimit(const Napi::CallbackInfo &info)
 {
     return Napi::Number::New(info.Env(), m_handle->download_limit());
+}
+
+Napi::Value TorrentHandle::Flags(const Napi::CallbackInfo &info)
+{
+    return Napi::Number::New(info.Env(), static_cast<uint64_t>(m_handle->flags()));
 }
 
 void TorrentHandle::FlushCache(const Napi::CallbackInfo &info)
@@ -268,6 +276,18 @@ void TorrentHandle::SetDownloadLimit(const Napi::CallbackInfo &info)
     m_handle->set_download_limit(info[0].ToNumber());
 }
 
+void TorrentHandle::SetFlags(const Napi::CallbackInfo &info)
+{
+    switch (info.Length())
+    {
+    case 1:
+        m_handle->set_flags(
+            static_cast<lt::torrent_flags_t>(
+                info[0].ToNumber().Int64Value()));
+        break;
+    }
+}
+
 void TorrentHandle::SetMaxConnections(const Napi::CallbackInfo &info)
 {
     m_handle->set_max_connections(info[0].ToNumber());
@@ -326,6 +346,13 @@ Napi::Value TorrentHandle::Trackers(const Napi::CallbackInfo &info)
     }
 
     return arr;
+}
+
+void TorrentHandle::UnsetFlags(const Napi::CallbackInfo &info)
+{
+    m_handle->unset_flags(
+        static_cast<lt::torrent_flags_t>(
+            info[0].ToNumber().Int64Value()));
 }
 
 Napi::Value TorrentHandle::UploadLimit(const Napi::CallbackInfo &info)

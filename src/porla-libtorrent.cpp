@@ -117,7 +117,28 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
     resume_data_flags_t["save_info_dict"] = Napi::Number::New(env, static_cast<uint8_t>(lt::torrent_handle::save_info_dict));
     resume_data_flags_t["only_if_modified"] = Napi::Number::New(env, static_cast<uint8_t>(lt::torrent_handle::only_if_modified));
 
+    auto torrent_flags_t = Napi::Object::New(env);
+    torrent_flags_t["seed_mode"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::seed_mode));
+    torrent_flags_t["upload_mode"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::upload_mode));
+    torrent_flags_t["share_mode"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::share_mode));
+    torrent_flags_t["apply_ip_filter"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::apply_ip_filter));
+    torrent_flags_t["paused"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::paused));
+    torrent_flags_t["auto_managed"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::auto_managed));
+    torrent_flags_t["duplicate_is_error"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::duplicate_is_error));
+    torrent_flags_t["update_subscribe"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::update_subscribe));
+    torrent_flags_t["super_seeding"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::super_seeding));
+    torrent_flags_t["sequential_download"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::sequential_download));
+    torrent_flags_t["stop_when_ready"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::stop_when_ready));
+    torrent_flags_t["override_trackers"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::override_trackers));
+    torrent_flags_t["override_web_seeds"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::override_web_seeds));
+    torrent_flags_t["need_save_resume"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::need_save_resume));
+    torrent_flags_t["disable_dht"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::disable_dht));
+    torrent_flags_t["disable_lsd"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::disable_lsd));
+    torrent_flags_t["disable_pex"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::disable_pex));
+    torrent_flags_t["no_verify_files"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::no_verify_files));
+
     exports.Set("resume_data_flags_t", resume_data_flags_t);
+    exports.Set("torrent_flags_t", torrent_flags_t);
 
     return exports;
 }
