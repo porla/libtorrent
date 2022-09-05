@@ -1,6 +1,7 @@
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/read_resume_data.hpp>
+#include <libtorrent/session.hpp>
 #include <libtorrent/session_params.hpp>
 #include <libtorrent/write_resume_data.hpp>
 
@@ -112,6 +113,18 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
         "write_session_params_buf",
         Napi::Function::New(env, &WriteSessionParamsBuf));
 
+    auto move_flags_t = Napi::Object::New(env);
+    move_flags_t["always_replace_files"] = Napi::Number::New(env, static_cast<uint8_t>(lt::move_flags_t::always_replace_files));
+    move_flags_t["fail_if_exist"] = Napi::Number::New(env, static_cast<uint8_t>(lt::move_flags_t::fail_if_exist));
+    move_flags_t["dont_replace"] = Napi::Number::New(env, static_cast<uint8_t>(lt::move_flags_t::dont_replace));
+
+    auto pause_flags_t = Napi::Object::New(env);
+    pause_flags_t["graceful_pause"] = Napi::Number::New(env, static_cast<uint8_t>(lt::torrent_handle::graceful_pause));
+
+    auto remove_flags_t = Napi::Object::New(env);
+    remove_flags_t["delete_files"] = Napi::Number::New(env, static_cast<uint8_t>(lt::session::delete_files));
+    remove_flags_t["delete_partfile"] = Napi::Number::New(env, static_cast<uint8_t>(lt::session::delete_partfile));
+
     auto resume_data_flags_t = Napi::Object::New(env);
     resume_data_flags_t["flush_disk_cache"] = Napi::Number::New(env, static_cast<uint8_t>(lt::torrent_handle::flush_disk_cache));
     resume_data_flags_t["save_info_dict"] = Napi::Number::New(env, static_cast<uint8_t>(lt::torrent_handle::save_info_dict));
@@ -137,6 +150,9 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
     torrent_flags_t["disable_pex"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::disable_pex));
     torrent_flags_t["no_verify_files"] = Napi::Number::New(env, static_cast<uint64_t>(lt::torrent_flags::no_verify_files));
 
+    exports.Set("move_flags_t", move_flags_t);
+    exports.Set("pause_flags_t", pause_flags_t);
+    exports.Set("remove_flags_t", remove_flags_t);
     exports.Set("resume_data_flags_t", resume_data_flags_t);
     exports.Set("torrent_flags_t", torrent_flags_t);
 

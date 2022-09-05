@@ -15,9 +15,9 @@ public:
     explicit operator libtorrent::torrent_handle();
 
 private:
-    Napi::Value AddPiece(const Napi::CallbackInfo& info);
+    void AddPiece(const Napi::CallbackInfo& info);
     void AddTracker(const Napi::CallbackInfo& info);
-    Napi::Value ClearError(const Napi::CallbackInfo& info);
+    void ClearError(const Napi::CallbackInfo& info);
     Napi::Value DownloadLimit(const Napi::CallbackInfo& info);
     Napi::Value Flags(const Napi::CallbackInfo& info);
     void FlushCache(const Napi::CallbackInfo& info);
@@ -29,18 +29,18 @@ private:
     Napi::Value IsValid(const Napi::CallbackInfo& info);
     Napi::Value MaxConnections(const Napi::CallbackInfo& info);
     Napi::Value MaxUploads(const Napi::CallbackInfo& info);
-    Napi::Value MoveStorage(const Napi::CallbackInfo& info);
+    void MoveStorage(const Napi::CallbackInfo& info);
     Napi::Value NeedSaveResumeData(const Napi::CallbackInfo& info);
-    Napi::Value Pause(const Napi::CallbackInfo& info);
+    void Pause(const Napi::CallbackInfo& info);
     Napi::Value QueuePosition(const Napi::CallbackInfo& info);
     void QueuePositionBottom(const Napi::CallbackInfo& info);
     void QueuePositionDown(const Napi::CallbackInfo& info);
     void QueuePositionTop(const Napi::CallbackInfo& info);
     void QueuePositionUp(const Napi::CallbackInfo& info);
-    Napi::Value ReadPiece(const Napi::CallbackInfo& info);
+    void ReadPiece(const Napi::CallbackInfo& info);
     void RenameFile(const Napi::CallbackInfo& info);
-    Napi::Value Resume(const Napi::CallbackInfo& info);
-    Napi::Value SaveResumeData(const Napi::CallbackInfo& info);
+    void Resume(const Napi::CallbackInfo& info);
+    void SaveResumeData(const Napi::CallbackInfo& info);
     void SetDownloadLimit(const Napi::CallbackInfo& info);
     void SetFlags(const Napi::CallbackInfo& info);
     void SetMaxConnections(const Napi::CallbackInfo& info);

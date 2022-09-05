@@ -19,24 +19,24 @@ public:
     ~Session() override;
 
 private:
-    Napi::Value AddDhtNode(const Napi::CallbackInfo& info);
-    Napi::Value AddTorrent(const Napi::CallbackInfo& info);
-    Napi::Value ApplySettings(const Napi::CallbackInfo& info);
+    void AddDhtNode(const Napi::CallbackInfo& info);
+    void AddTorrent(const Napi::CallbackInfo& info);
+    void ApplySettings(const Napi::CallbackInfo& info);
     Napi::Value IsDhtRunning(const Napi::CallbackInfo& info);
     Napi::Value IsListening(const Napi::CallbackInfo& info);
     Napi::Value IsPaused(const Napi::CallbackInfo& info);
     Napi::Value IsValid(const Napi::CallbackInfo& info);
     Napi::Value ListenPort(const Napi::CallbackInfo& info);
-    Napi::Value Pause(const Napi::CallbackInfo& info);
-    Napi::Value PostDhtStats(const Napi::CallbackInfo& info);
-    Napi::Value PostSessionStats(const Napi::CallbackInfo& info);
-    Napi::Value PostTorrentUpdates(const Napi::CallbackInfo& info);
-    Napi::Value RemoveTorrent(const Napi::CallbackInfo& info);
-    Napi::Value Resume(const Napi::CallbackInfo& info);
+    void Pause(const Napi::CallbackInfo& info);
+    void PostDhtStats(const Napi::CallbackInfo& info);
+    void PostSessionStats(const Napi::CallbackInfo& info);
+    void PostTorrentUpdates(const Napi::CallbackInfo& info);
+    void RemoveTorrent(const Napi::CallbackInfo& info);
+    void Resume(const Napi::CallbackInfo& info);
     Napi::Value SessionState(const Napi::CallbackInfo& info);
     Napi::Value SslListenPort(const Napi::CallbackInfo& info);
 
-    Napi::Value AlertNotify(const Napi::CallbackInfo& info);
+    void AlertNotify(const Napi::CallbackInfo& info);
 
     std::unique_ptr<libtorrent::session> m_session;
 

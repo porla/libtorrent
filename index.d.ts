@@ -292,7 +292,7 @@ export declare class Session extends EventEmitter {
   post_dht_stats(): void;
   post_session_stats(): void;
   post_torrent_updates(): void;
-  remove_torrent(torrent: TorrentHandle): void;
+  remove_torrent(torrent: TorrentHandle, flags?: remove_flags_t): void;
   resume(): void;
   session_state(): SessionParams;
   ssl_listen_port(): number;
@@ -427,6 +427,21 @@ export declare interface ErrorCode {
   message: string;
   value: number;
   what: string;
+}
+
+export declare class move_flags_t {
+  static always_replace_files: number;
+  static fail_if_exist: number;
+  static dont_replace: number;
+}
+
+export declare class pause_flags_t {
+  static graceful_pause: number;
+}
+
+export declare class remove_flags_t {
+  static delete_files: number;
+  static delete_partfile: number;
 }
 
 export declare class resume_data_flags_t {

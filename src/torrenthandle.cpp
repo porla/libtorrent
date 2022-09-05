@@ -84,7 +84,7 @@ TorrentHandle::operator libtorrent::torrent_handle()
     return *m_handle;
 }
 
-Napi::Value TorrentHandle::AddPiece(const Napi::CallbackInfo &info)
+void TorrentHandle::AddPiece(const Napi::CallbackInfo &info)
 {
     auto buf = info[1].As<Napi::Buffer<char>>();
 
@@ -93,8 +93,6 @@ Napi::Value TorrentHandle::AddPiece(const Napi::CallbackInfo &info)
     m_handle->add_piece(
         lt::piece_index_t{info[0].ToNumber()},
         std::vector<char>(buf.Data(), buf.Data() + buf.Length()));
-
-    return info.Env().Undefined();
 }
 
 void TorrentHandle::AddTracker(const Napi::CallbackInfo &info)
@@ -123,10 +121,9 @@ void TorrentHandle::AddTracker(const Napi::CallbackInfo &info)
     throw Napi::Error::New(info.Env(), "Invalid args.");
 }
 
-Napi::Value TorrentHandle::ClearError(const Napi::CallbackInfo &info)
+void TorrentHandle::ClearError(const Napi::CallbackInfo &info)
 {
     m_handle->clear_error();
-    return info.Env().Undefined();
 }
 
 Napi::Value TorrentHandle::DownloadLimit(const Napi::CallbackInfo &info)
@@ -187,7 +184,7 @@ Napi::Value TorrentHandle::MaxUploads(const Napi::CallbackInfo &info)
     return Napi::Number::New(info.Env(), m_handle->max_uploads());
 }
 
-Napi::Value TorrentHandle::MoveStorage(const Napi::CallbackInfo &info)
+void TorrentHandle::MoveStorage(const Napi::CallbackInfo &info)
 {
     lt::move_flags_t flags = lt::move_flags_t::always_replace_files;
 
@@ -197,8 +194,6 @@ Napi::Value TorrentHandle::MoveStorage(const Napi::CallbackInfo &info)
     }
 
     m_handle->move_storage(info[0].ToString(), flags);
-
-    return info.Env().Undefined();
 }
 
 Napi::Value TorrentHandle::NeedSaveResumeData(const Napi::CallbackInfo &info)
@@ -206,10 +201,17 @@ Napi::Value TorrentHandle::NeedSaveResumeData(const Napi::CallbackInfo &info)
     return Napi::Boolean::New(info.Env(), m_handle->need_save_resume_data());
 }
 
-Napi::Value TorrentHandle::Pause(const Napi::CallbackInfo &info)
+void TorrentHandle::Pause(const Napi::CallbackInfo &info)
 {
-    m_handle->pause(); // TODO: flags
-    return info.Env().Undefined();
+    auto flags = lt::pause_flags_t{};
+
+    if (info.Length() > 0 && info[0].IsNumber())
+    {
+        flags = static_cast<lt::pause_flags_t>(
+            info[0].ToNumber().Int64Value());
+    }
+
+    m_handle->pause(flags);
 }
 
 Napi::Value TorrentHandle::QueuePosition(const Napi::CallbackInfo &info)
@@ -237,11 +239,10 @@ void TorrentHandle::QueuePositionUp(const Napi::CallbackInfo &info)
     m_handle->queue_position_up();
 }
 
-Napi::Value TorrentHandle::ReadPiece(const Napi::CallbackInfo &info)
+void TorrentHandle::ReadPiece(const Napi::CallbackInfo &info)
 {
     m_handle->read_piece(
         lt::piece_index_t{ info[0].ToNumber() });
-    return info.Env().Undefined();
 }
 
 void TorrentHandle::RenameFile(const Napi::CallbackInfo &info)
@@ -251,24 +252,21 @@ void TorrentHandle::RenameFile(const Napi::CallbackInfo &info)
         info[1].ToString());
 }
 
-Napi::Value TorrentHandle::Resume(const Napi::CallbackInfo &info)
+void TorrentHandle::Resume(const Napi::CallbackInfo &info)
 {
     m_handle->resume();
-    return info.Env().Undefined();
 }
 
-Napi::Value TorrentHandle::SaveResumeData(const Napi::CallbackInfo &info)
+void TorrentHandle::SaveResumeData(const Napi::CallbackInfo &info)
 {
     auto flags = lt::resume_data_flags_t{};
 
-    if (info[0].IsNumber())
+    if (info.Length() > 0 && info[0].IsNumber())
     {
         flags = static_cast<lt::resume_data_flags_t>(info[0].ToNumber().Uint32Value());
     }
 
     m_handle->save_resume_data(flags);
-
-    return info.Env().Undefined();
 }
 
 void TorrentHandle::SetDownloadLimit(const Napi::CallbackInfo &info)

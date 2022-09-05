@@ -85,28 +85,24 @@ Session::~Session()
     m_tsfn.Release();
 }
 
-Napi::Value Session::AddDhtNode(const Napi::CallbackInfo &info)
+void Session::AddDhtNode(const Napi::CallbackInfo &info)
 {
     m_session->add_dht_node({ info[0].ToString(), info[1].ToNumber() });
-    return info.Env().Undefined();
 }
 
-Napi::Value Session::AddTorrent(const Napi::CallbackInfo &info)
+void Session::AddTorrent(const Napi::CallbackInfo &info)
 {
     auto obj = info[0].ToObject();
     auto params = AddTorrentParams::Unwrap(obj);
 
     m_session->async_add_torrent(
         static_cast<lt::add_torrent_params>(*params));
-
-    return info.Env().Undefined();
 }
 
-Napi::Value Session::ApplySettings(const Napi::CallbackInfo &info)
+void Session::ApplySettings(const Napi::CallbackInfo &info)
 {
     m_session->apply_settings(
         SettingsPack::Unwrap(info[0].ToObject()));
-    return info.Env().Undefined();
 }
 
 Napi::Value Session::IsDhtRunning(const Napi::CallbackInfo &info)
@@ -134,45 +130,45 @@ Napi::Value Session::ListenPort(const Napi::CallbackInfo& info)
     return Napi::Number::New(info.Env(), m_session->listen_port());
 }
 
-Napi::Value Session::Pause(const Napi::CallbackInfo& info)
+void Session::Pause(const Napi::CallbackInfo& info)
 {
     m_session->pause();
-    return info.Env().Undefined();
 }
 
-Napi::Value Session::PostDhtStats(const Napi::CallbackInfo &info)
+void Session::PostDhtStats(const Napi::CallbackInfo &info)
 {
     m_session->post_dht_stats();
-    return info.Env().Undefined();
 }
 
-Napi::Value Session::PostSessionStats(const Napi::CallbackInfo &info)
+void Session::PostSessionStats(const Napi::CallbackInfo &info)
 {
     m_session->post_session_stats();
-    return info.Env().Undefined();
 }
 
-Napi::Value Session::PostTorrentUpdates(const Napi::CallbackInfo& info)
+void Session::PostTorrentUpdates(const Napi::CallbackInfo& info)
 {
     m_session->post_torrent_updates();
-    return info.Env().Undefined();
 }
 
-Napi::Value Session::RemoveTorrent(const Napi::CallbackInfo &info)
+void Session::RemoveTorrent(const Napi::CallbackInfo &info)
 {
-    // TODO: flags
     auto handle = TorrentHandle::Unwrap(info[0].ToObject());
+    auto flags = lt::remove_flags_t{};
+
+    if (info.Length() > 1 && info[1].IsNumber())
+    {
+        flags = static_cast<lt::remove_flags_t>(
+            info[1].ToNumber().Int64Value());
+    }
 
     m_session->remove_torrent(
-        static_cast<lt::torrent_handle>(*handle));
-
-    return info.Env().Undefined();
+        static_cast<lt::torrent_handle>(*handle),
+        flags);
 }
 
-Napi::Value Session::Resume(const Napi::CallbackInfo& info)
+void Session::Resume(const Napi::CallbackInfo& info)
 {
     m_session->resume();
-    return info.Env().Undefined();
 }
 
 Napi::Value Session::SessionState(const Napi::CallbackInfo& info)
@@ -186,7 +182,7 @@ Napi::Value Session::SslListenPort(const Napi::CallbackInfo &info)
     return Napi::Number::New(info.Env(), m_session->ssl_listen_port());
 }
 
-Napi::Value Session::AlertNotify(const Napi::CallbackInfo& info)
+void Session::AlertNotify(const Napi::CallbackInfo& info)
 {
     std::vector<lt::alert*> alerts;
     m_session->pop_alerts(&alerts);
@@ -203,6 +199,4 @@ Napi::Value Session::AlertNotify(const Napi::CallbackInfo& info)
                 AlertWrap::Wrap(info.Env(), alert)
             });
     }
-
-    return info.Env().Undefined();
 }
