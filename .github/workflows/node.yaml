@@ -19,7 +19,7 @@ jobs:
           # macos
           - os: macos-11
             arch: arm64
-            triplet: arm64-osx
+            triplet: arm64-osx-release
 
           # linux
           - os: ubuntu-20.04
