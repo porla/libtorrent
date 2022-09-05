@@ -40,6 +40,13 @@ add_library(
     src/torrentstatus.cpp
     src/torrentstatus.hpp)
 
+if(MSVC)
+    target_link_options(
+        ${PROJECT_NAME}
+        PUBLIC
+        /FORCE:MULTIPLE)
+endif()
+
 set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES
