@@ -41,6 +41,18 @@ TorrentInfo::TorrentInfo(const Napi::CallbackInfo &info)
             throw Napi::Error::New(info.Env(), ec.message());
         }
     }
+    else if (info[0].IsBuffer())
+    {
+        auto buf = info[0].As<Napi::Buffer<char>>();
+
+        lt::error_code ec;
+        m_ti = std::make_shared<lt::torrent_info>(buf.Data(), static_cast<int>(buf.Length()), ec);
+
+        if (ec)
+        {
+            throw Napi::Error::New(info.Env(), ec.message());
+        }
+    }
     else
     {
         throw Napi::Error::New(info.Env(), "Unknown constructor argument. Expected string or buffer.");
